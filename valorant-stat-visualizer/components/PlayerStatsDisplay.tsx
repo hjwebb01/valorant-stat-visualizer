@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { getPlayerStatsWithRankings } from '@/lib/player-stats'
-import type { Player } from '@/types/database'
+import type { Player } from '@/lib/supabase'
 
 export default function PlayerStatsDisplay() {
   const [players, setPlayers] = useState<(Player & { rank_position?: number })[]>([])
@@ -89,16 +89,16 @@ export default function PlayerStatsDisplay() {
                   {player.name}
                 </td>
                 <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {player.total_matches}
+                  {player.total_matches || 0}
                 </td>
                 <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {player.avg_kd_ratio.toFixed(2)}
+                  {player.avg_kd_ratio ? player.avg_kd_ratio.toFixed(2) : '0.00'}
                 </td>
                 <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {player.avg_acs.toFixed(1)}
+                  {player.avg_acs ? player.avg_acs.toFixed(1) : '0.0'}
                 </td>
                 <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {player.avg_headshot_percent.toFixed(1)}%
+                  {player.avg_headshot_percent ? player.avg_headshot_percent.toFixed(1) : '0.0'}%
                 </td>
                 <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
                   {player.current_rank || 'Unranked'}

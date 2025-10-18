@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase'
-import type { Player, MatchStat } from '@/types/database'
+import type { Player, MatchStat } from '@/lib/supabase'
 
 /**
  * Calculate aggregated statistics for a player from their match stats
@@ -46,8 +46,8 @@ export function calculatePlayerStats(matchStats: MatchStat[]): Partial<Player> {
     return counts
   }, {} as Record<string, number>)
 
-  const favoriteAgent = Object.entries(agentCounts)
-    .sort(([,a], [,b]) => b - a)[0]?.[0] || null
+  const favoriteAgent = (Object.entries(agentCounts) as [string, number][])
+    .sort(([, countA], [, countB]) => countB - countA)[0]?.[0] || null
 
   // For now, we'll set wins/losses to 0 since we don't have match outcome data yet
   // This would need to be calculated based on match results
