@@ -102,7 +102,7 @@ export default function PlayerStatsDisplay() {
                 </td>
                 <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
                   {player.current_rank || 'Unranked'}
-                  {player.rank_rating && ` (${player.rank_rating} RR)`}
+                  {player.rank_rating !== undefined && ` (${player.rank_rating} RR)`}
                 </td>
                 <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
                   {player.favorite_agent || 'N/A'}
