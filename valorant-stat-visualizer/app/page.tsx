@@ -1,5 +1,4 @@
 import Image from "next/image";
-import DatabaseTest from "@/components/DatabaseTest";
 import PlayerStatsDisplay from "@/components/PlayerStatsDisplay";
 
 export default function Home() {
