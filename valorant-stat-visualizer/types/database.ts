@@ -6,6 +6,31 @@ export type Player = {
   name: string
   tracker_id: string | null
   created_at: string
+  // Individual player statistics
+  total_matches: number
+  total_kills: number
+  total_deaths: number
+  total_assists: number
+  total_acs: number
+  total_headshot_percent: number
+  total_first_bloods: number
+  total_plants: number
+  total_defuses: number
+  // Calculated averages
+  avg_kd_ratio: number
+  avg_acs: number
+  avg_headshot_percent: number
+  // Rank information
+  current_rank: string | null
+  rank_rating: number | null
+  peak_rank: string | null
+  peak_rank_rating: number | null
+  // Most played agent
+  favorite_agent: string | null
+  // Win/loss tracking
+  wins: number
+  losses: number
+  win_rate: number
 }
 
 export type Match = {

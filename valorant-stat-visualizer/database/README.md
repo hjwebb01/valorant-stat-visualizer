@@ -35,11 +35,38 @@ This folder contains the database schema for the Valorant Match Tracker.
 
 ## Tables Overview
 
-- **players**: Stores unique player information
+- **players**: Stores unique player information with aggregated statistics and rank data
 - **teams**: Stores team information
 - **team_members**: Many-to-many relationship between teams and players
 - **matches**: Stores match metadata (URL, date, map)
 - **match_stats**: Stores individual player performance per match
+
+## Player Statistics & Rank Fields
+
+The `players` table now includes comprehensive statistics and ranking information:
+
+### Aggregated Statistics
+- `total_matches`: Total number of matches played
+- `total_kills`, `total_deaths`, `total_assists`: Career totals
+- `total_acs`: Total ACS (Average Combat Score)
+- `total_headshot_percent`: Total headshot percentage
+- `total_first_bloods`, `total_plants`, `total_defuses`: Special action totals
+
+### Calculated Averages
+- `avg_kd_ratio`: Average K/D ratio across all matches
+- `avg_acs`: Average ACS across all matches
+- `avg_headshot_percent`: Average headshot percentage
+
+### Rank Information
+- `current_rank`: Current Valorant rank (e.g., "Radiant", "Immortal 3")
+- `rank_rating`: Current RR (Rank Rating) points
+- `peak_rank`: Highest rank achieved
+- `peak_rank_rating`: RR at peak rank
+
+### Additional Data
+- `favorite_agent`: Most played agent
+- `wins`, `losses`: Win/loss record
+- `win_rate`: Win percentage (calculated)
 
 ## Indexes
 

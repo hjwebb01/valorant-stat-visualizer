@@ -6,7 +6,32 @@ CREATE TABLE players (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   name TEXT NOT NULL UNIQUE,
   tracker_id TEXT UNIQUE,
-  created_at TIMESTAMP DEFAULT NOW()
+  created_at TIMESTAMP DEFAULT NOW(),
+  -- Individual player statistics
+  total_matches INTEGER DEFAULT 0,
+  total_kills INTEGER DEFAULT 0,
+  total_deaths INTEGER DEFAULT 0,
+  total_assists INTEGER DEFAULT 0,
+  total_acs INTEGER DEFAULT 0,
+  total_headshot_percent DECIMAL DEFAULT 0,
+  total_first_bloods INTEGER DEFAULT 0,
+  total_plants INTEGER DEFAULT 0,
+  total_defuses INTEGER DEFAULT 0,
+  -- Calculated averages
+  avg_kd_ratio DECIMAL DEFAULT 0,
+  avg_acs DECIMAL DEFAULT 0,
+  avg_headshot_percent DECIMAL DEFAULT 0,
+  -- Rank information
+  current_rank TEXT,
+  rank_rating INTEGER,
+  peak_rank TEXT,
+  peak_rank_rating INTEGER,
+  -- Most played agent
+  favorite_agent TEXT,
+  -- Win/loss tracking
+  wins INTEGER DEFAULT 0,
+  losses INTEGER DEFAULT 0,
+  win_rate DECIMAL DEFAULT 0
 );
 
 -- Teams table: stores team information
