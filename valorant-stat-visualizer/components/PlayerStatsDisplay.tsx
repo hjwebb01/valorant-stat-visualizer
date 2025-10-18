@@ -4,10 +4,14 @@ import { useState, useEffect } from 'react'
 import { getPlayerStatsWithRankings } from '@/lib/player-stats'
 import type { Player } from '@/lib/supabase'
 
+
+
+
 export default function PlayerStatsDisplay() {
   const [players, setPlayers] = useState<(Player & { rank_position?: number })[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  
 
   useEffect(() => {
     async function fetchPlayerStats() {
@@ -43,8 +47,8 @@ export default function PlayerStatsDisplay() {
     return (
       <div className="p-6">
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-          <p className="font-medium">Error loading player stats:</p>
-          <p>{error}</p>
+          <p className="font-medium font-mono">Error loading player stats:</p>
+          <p className="font-mono">{error}</p>
         </div>
       </div>
     )
@@ -54,8 +58,8 @@ export default function PlayerStatsDisplay() {
     return (
       <div className="p-6">
         <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded">
-          <p className="font-medium">No player data available</p>
-          <p>Import some matches to see player statistics.</p>
+          <p className="font-medium font-mono">No player data available</p>
+          <p className="font-mono">Import some matches to see player statistics.</p>
         </div>
       </div>
     )
@@ -63,48 +67,48 @@ export default function PlayerStatsDisplay() {
 
   return (
     <div className="p-6">
-      <h2 className="text-2xl font-bold mb-6 text-gray-900">Player Statistics</h2>
+      <h2 className="text-2xl font-bold mb-6 text-gray-900 font-mono">Player Statistics</h2>
 
       <div className="overflow-x-auto">
         <table className="min-w-full bg-white border border-gray-200 rounded-lg">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rank</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Player</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Matches</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">K/D</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ACS</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">HS%</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rank</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Agent</th>
+              <th className="px-4 py-3 text-left text-xs font-mono text-gray-500 uppercase tracking-wider">Rank</th>
+              <th className="px-4 py-3 text-left text-xs font-mono text-gray-500 uppercase tracking-wider">Player</th>
+              <th className="px-4 py-3 text-left text-xs font-mono text-gray-500 uppercase tracking-wider">Matches</th>
+              <th className="px-4 py-3 text-left text-xs font-mono text-gray-500 uppercase tracking-wider">K/D</th>
+              <th className="px-4 py-3 text-left text-xs font-mono text-gray-500 uppercase tracking-wider">ACS</th>
+              <th className="px-4 py-3 text-left text-xs font-mono text-gray-500 uppercase tracking-wider">HS%</th>
+              <th className="px-4 py-3 text-left text-xs font-mono text-gray-500 uppercase tracking-wider">Rank</th>
+              <th className="px-4 py-3 text-left text-xs font-mono text-gray-500 uppercase tracking-wider">Agent</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
             {players.map((player) => (
               <tr key={player.id} className="hover:bg-gray-50">
-                <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900 font-mono">
                   #{player.rank_position}
                 </td>
-                <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900 font-mono">
                   {player.name}
                 </td>
-                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">
                   {player.total_matches || 0}
                 </td>
-                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">
                   {player.avg_kd_ratio ? player.avg_kd_ratio.toFixed(2) : '0.00'}
                 </td>
-                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">
                   {player.avg_acs ? player.avg_acs.toFixed(1) : '0.0'}
                 </td>
-                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">
                   {player.avg_headshot_percent ? player.avg_headshot_percent.toFixed(1) : '0.0'}%
                 </td>
-                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">
                   {player.current_rank || 'Unranked'}
                   {player.rank_rating !== undefined && ` (${player.rank_rating} RR)`}
                 </td>
-                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">
                   {player.favorite_agent || 'N/A'}
                 </td>
               </tr>

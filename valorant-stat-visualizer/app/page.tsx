@@ -15,18 +15,18 @@ export default function Home() {
             height={30}
             priority
           />
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
+            <h1 className="font-sans font-bold text-6xl text-gray-900 mb-2">
             Valorant Match Tracker
-          </h1>
-          <p className="text-lg text-gray-600">
+            </h1>
+          <p className="font-sans text-2xl text-gray-700">
             Import and analyze your Valorant matches from tracker.gg
           </p>
         </div>
-
+        
         {/* Database Connection Test */}
-        <div className="mb-8">
+        {/* <div className="mb-8">
           <DatabaseTest />
-        </div>
+        </div> */}
 
         {/* Player Statistics Display */}
         <div className="bg-white rounded-lg shadow-md">
