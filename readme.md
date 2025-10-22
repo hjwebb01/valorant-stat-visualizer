@@ -1,17 +1,38 @@
-# valorant-stat-visualizer — Preview
+# sv
 
-Visualize Valorant match data quickly. Import a tracker.gg match, save player stats to Supabase, and explore charts to find trends.
+Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
 
-What it does
-- Scrapes tracker.gg match pages (server-side) and extracts players, agents, and match metadata
-- Stores normalized data in a Supabase Postgres schema
-- Provides import UI and starter dashboards using Recharts
+## Creating a project
 
-Tech stack
-- Next.js 14+ (App Router) · TypeScript · Tailwind CSS
-- Supabase (Postgres) · Cheerio · Recharts
+If you're seeing this, you've probably already done this step. Congrats!
 
-Getting started (short)
-- Copy environment variables into `.env.local`
-- npm install && npm run dev
-- Use the Import Match form to paste a tracker.gg match URL
+```sh
+# create a new project in the current directory
+npx sv create
+
+# create a new project in my-app
+npx sv create my-app
+```
+
+## Developing
+
+Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+
+```sh
+npm run dev
+
+# or start the server and open the app in a new browser tab
+npm run dev -- --open
+```
+
+## Building
+
+To create a production version of your app:
+
+```sh
+npm run build
+```
+
+You can preview the production build with `npm run preview`.
+
+> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
