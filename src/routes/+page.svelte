@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { supabase } from '$lib/supabaseClient';
+  import { supabase } from '../lib/supabaseClient';
   export let data: { metrics?: any[] } = {};
   let metrics = data.metrics ?? [];
 
