@@ -24,14 +24,14 @@ DATABASE_URL="postgresql://postgres:<password>@<project>.pooler.supabase.com:654
 
 Download your Supabase SSL certificate and place it here:
 ```
-D:\Personal Projects\valorant-stat-visualizer\supabase-ca.crt
+PATH\valorant-stat-visualizer\supabase-ca.crt
 ```
 
 ---
 
 ## 🔐 4. Set SSL environment variable (Windows PowerShell)
 ```powershell
-$env:NODE_EXTRA_CA_CERTS = "D:\Personal Projects\valorant-stat-visualizer\supabase-ca.crt"
+$env:NODE_EXTRA_CA_CERTS = "PATH\valorant-stat-visualizer\supabase-ca.crt"
 ```
 
 ---
