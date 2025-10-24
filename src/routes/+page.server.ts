@@ -4,7 +4,7 @@ import { supabaseAdmin } from '$lib/server/supabaseAdmin';
 
 export const load: PageServerLoad = async () => {
 	const { data, error } = await supabaseAdmin
-		.from('v_player_stats_alltime')
+		.from('valorant_players')
 		.select('*')
 		.order('acs', { ascending: false });
 	if (error) console.error(error);

@@ -1,7 +1,6 @@
 <script lang="ts">
 	import '../app.css';
 	import favicon from '$lib/assets/favicon.svg';
-	import '@skeletonlabs/skeleton/styles/all.css';
 
 	let { children } = $props();
 </script>
