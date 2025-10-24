@@ -4,9 +4,23 @@ import { Pool } from "pg";
 import { z } from "zod";
 import "dotenv/config";
 
+/** CLI args */
+const arg = (name: string) => process.argv.find(a => a.startsWith(`--${name}=`))?.split("=")[1];
+
 const CSV_PATH = process.argv[2];
 if (!CSV_PATH) {
-  console.error("Usage: npm run import ./data/valorant.csv");
+  console.error("Usage: npm run import-valorant -- ./data/file.csv --type=week|season|manual --start=YYYY-MM-DD --end=YYYY-MM-DD [--season=S10] [--label=...]");
+  process.exit(1);
+}
+
+const type = arg("type") as "week" | "season" | "manual" | undefined;
+const periodStart = arg("start");
+const periodEnd = arg("end");
+const season = arg("season");
+const label = arg("label") || (type === "season" ? (season ?? "season") : (periodStart ?? "dataset"));
+
+if (!type || !periodStart || !periodEnd) {
+  console.error("Missing required flags: --type --start --end");
   process.exit(1);
 }
 
@@ -45,28 +59,25 @@ const headerMap: Record<string, string> = {
   "ECON RATING": "econ_rating"
 };
 
-// Coercion helpers
+// Helpers
 const toNumber = (v: unknown) => {
   if (v === null || v === undefined) return null;
   let s = String(v).trim();
-  if (!s) return null;
-  if (s === "N/A") return null;
-  // strip thousands commas if any
+  if (!s || s === "N/A") return null;
   s = s.replace(/,/g, "");
   const n = Number(s);
   return Number.isFinite(n) ? n : null;
 };
-
 const toPercentNumber = (v: unknown) => {
   if (v === null || v === undefined) return null;
   const s = String(v).trim();
   if (!s || s === "N/A") return null;
   const stripped = s.replace(/%/g, "").replace(/,/g, "");
   const n = Number(stripped);
-  return Number.isFinite(n) ? n : null; // keep as 0..100
+  return Number.isFinite(n) ? n : null;
 };
 
-// Zod schema (nullable where N/A appears)
+// Zod schema for a normalized row
 const Row = z.object({
   player: z.string(),
   agents: z.string(),
@@ -100,10 +111,9 @@ const Row = z.object({
   defuses_per_game: z.coerce.number(),
   econ_rating: z.coerce.number()
 });
-
 type RowT = z.infer<typeof Row>;
 
-function normalize(rec: Record<string,string>): RowT {
+function normalize(rec: Record<string, string>): RowT {
   const out: any = {};
   for (const [csvKey, value] of Object.entries(rec)) {
     const dbKey = headerMap[csvKey.trim()];
@@ -111,17 +121,12 @@ function normalize(rec: Record<string,string>): RowT {
 
     if (dbKey === "kast_pct" || dbKey === "hs_pct") {
       out[dbKey] = toPercentNumber(value);
+    } else if (["player", "agents"].includes(dbKey)) {
+      out[dbKey] = String(value ?? "").trim();
     } else {
-      const n = toNumber(value);
-      // string fields:
-      if (["player", "agents"].includes(dbKey)) {
-        out[dbKey] = String(value ?? "").trim();
-      } else {
-        out[dbKey] = n;
-      }
+      out[dbKey] = toNumber(value);
     }
   }
-  // Zod coercion/validation will catch missing fields
   return Row.parse(out);
 }
 
@@ -131,6 +136,18 @@ async function main() {
   try {
     await client.query("begin");
 
+    // 1) Upsert dataset and get id
+    const dsRes = await client.query(
+      `insert into public.datasets (label, type, period_start, period_end, season)
+       values ($1,$2,$3,$4,$5)
+       on conflict (type, period_start, period_end)
+       do update set label = excluded.label, season = excluded.season
+       returning id`,
+      [label, type, periodStart, periodEnd, season ?? null]
+    );
+    const datasetId: string = dsRes.rows[0].id;
+
+    // 2) Stream CSV and batch insert
     const parser = createReadStream(CSV_PATH).pipe(
       parse({ columns: true, bom: true, trim: true })
     );
@@ -141,6 +158,7 @@ async function main() {
     const flush = async () => {
       if (!batch.length) return;
       const cols = [
+        "dataset_id",
         "player","agents","games","games_won","games_lost",
         "rounds","rounds_won","rounds_lost",
         "acs","kd","kast_pct","adr",
@@ -159,6 +177,7 @@ async function main() {
           `(${cols.map((_, j) => `$${base + j + 1}`).join(",")})`
         );
         values.push(
+          datasetId,
           r.player, r.agents, r.games, r.games_won, r.games_lost,
           r.rounds, r.rounds_won, r.rounds_lost,
           r.acs, r.kd, r.kast_pct, r.adr,
@@ -171,12 +190,11 @@ async function main() {
         );
       });
 
-      // If you created a UNIQUE index on (player), this upserts; otherwise it just inserts.
       const sql = `
-        insert into public.valorant_players
+        insert into public.player_stats
         (${cols.join(",")})
         values ${placeholders.join(",")}
-        on conflict (player) do update set
+        on conflict (dataset_id, player) do update set
           agents = excluded.agents,
           games = excluded.games,
           games_won = excluded.games_won,
@@ -213,14 +231,14 @@ async function main() {
     };
 
     for await (const raw of parser) {
-      const row = normalize(raw);
+      const row = normalize(raw as Record<string,string>);
       batch.push(row);
       if (batch.length >= BATCH_SIZE) await flush();
     }
     await flush();
 
     await client.query("commit");
-    console.log("CSV import complete ✅");
+    console.log(`CSV import complete ✅  (dataset: ${label} | ${type} ${periodStart}..${periodEnd})`);
   } catch (e) {
     await client.query("rollback");
     console.error(e);

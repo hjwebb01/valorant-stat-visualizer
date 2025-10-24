@@ -1,38 +1,68 @@
-# sv
+# ⚙️ Valorant Stat Visualizer — Quick Setup
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
-
-## Creating a project
-
-If you're seeing this, you've probably already done this step. Congrats!
-
-```sh
-# create a new project in the current directory
-npx sv create
-
-# create a new project in my-app
-npx sv create my-app
+## 🚀 1. Clone the repository
+```bash
+git clone https://github.com/<your-username>/valorant-stat-visualizer.git
+cd valorant-stat-visualizer
 ```
 
-## Developing
+---
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+## 📦 2. Install dependencies
+```bash
+npm install
+```
 
-```sh
+---
+
+## ⚙️ 3. Set up environment variables  
+Create a `.env` file in the project root with:
+
+```
+DATABASE_URL="postgresql://postgres:<password>@<project>.pooler.supabase.com:6543/postgres?sslmode=require"
+```
+
+Download your Supabase SSL certificate and place it here:
+```
+PATH\valorant-stat-visualizer\supabase-ca.crt
+```
+
+---
+
+## 🔐 4. Set SSL environment variable (Windows PowerShell)
+```powershell
+$env:NODE_EXTRA_CA_CERTS = "PATH\valorant-stat-visualizer\supabase-ca.crt"
+```
+
+---
+
+## 🧱 5. Generate and apply database migrations
+```bash
+npx drizzle-kit generate
+npx drizzle-kit migrate
+```
+
+---
+
+## 📊 6. Import CSV data into the database
+Example — weekly dataset:
+```bash
+npm run import-valorant -- ./data/valorant_week42.csv --type=week --start=2025-10-13 --end=2025-10-20 --label=2025-W42
+```
+
+Example — seasonal dataset:
+```bash
+npm run import-valorant -- ./data/valorant_s10.csv --type=season --start=2025-09-01 --end=2025-12-01 --season=S10 --label=S10
+```
+
+---
+
+## 🧩 7. Run the app locally
+```bash
 npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
 ```
 
-## Building
+---
 
-To create a production version of your app:
-
-```sh
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+✅ **That’s it!**  
+Your database is migrated, data imported, and the SvelteKit app is ready to run.

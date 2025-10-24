@@ -1,7 +1,12 @@
-import { supabaseAdmin } from '../lib/server/supabaseAdmin';
+// src/routes/all-time/+page.server.ts
+import type { PageServerLoad } from './$types';
+import { supabaseAdmin } from '$lib/server/supabaseAdmin';
 
-export const load = async () => {
-  const { data, error } = await supabaseAdmin.from('metrics').select('*').order('metric_date');
+export const load: PageServerLoad = async () => {
+  const { data, error } = await supabaseAdmin
+    .from('v_player_stats_alltime')
+    .select('*')
+    .order('acs', { ascending: false });
   if (error) console.error(error);
-  return { metrics: data ?? [] };
+  return { players: data ?? [] };
 };
