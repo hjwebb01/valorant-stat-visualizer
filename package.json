@@ -20,8 +20,7 @@
 		"db:generate": "drizzle-kit generate",
 		"db:migrate": "drizzle-kit migrate",
 		"db:studio": "drizzle-kit studio",
-		"postinstall": "node ./scripts/ensure-sveltekit-tsconfig.js",
-		"lint-staged": "lint-staged"
+		"postinstall": "node ./scripts/ensure-sveltekit-tsconfig.js"
 	},
 	"devDependencies": {
 		"@eslint/compat": "^1.4.0",
@@ -55,8 +54,6 @@
 		"eslint-plugin-import": "^2.32.0",
 		"eslint-plugin-svelte": "^3.12.5",
 		"globals": "^16.4.0",
-		"husky": "^9.1.7",
-		"lint-staged": "^16.2.6",
 		"playwright": "^1.56.1",
 		"prettier": "^3.6.2",
 		"prettier-plugin-svelte": "^3.4.0",
