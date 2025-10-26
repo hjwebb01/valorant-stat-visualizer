@@ -1,6 +1,6 @@
 <script lang="ts">
-	import type { HTMLAttributes } from "svelte/elements";
-	import { cn, type WithElementRef } from "$lib/utils.js";
+	import type { HTMLAttributes } from 'svelte/elements';
+	import { cn, type WithElementRef } from '$lib/utils.js';
 
 	let {
 		ref = $bindable(null),
@@ -11,7 +11,7 @@
 	}: WithElementRef<HTMLAttributes<HTMLDivElement> & { maxHeight?: string }> = $props();
 </script>
 
-<div bind:this={ref} data-slot="card-content" class={cn("px-6", className)} {...restProps}>
+<div bind:this={ref} data-slot="card-content" class={cn('px-6', className)} {...restProps}>
 	{#if maxHeight}
 		<div style={`max-height: ${maxHeight};`} class="overflow-auto">
 			{@render children?.()}

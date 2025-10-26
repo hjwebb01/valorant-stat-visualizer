@@ -12,45 +12,45 @@ import svelteConfig from './svelte.config.js';
 const gitignorePath = fileURLToPath(new URL('./.gitignore', import.meta.url));
 
 export default defineConfig([
-  // Respect .gitignore
-  includeIgnoreFile(gitignorePath),
+	// Respect .gitignore
+	includeIgnoreFile(gitignorePath),
 
-  // Base JS rules
-  js.configs.recommended,
+	// Base JS rules
+	js.configs.recommended,
 
-  // TypeScript rules
-  ...ts.configs.recommended,
+	// TypeScript rules
+	...ts.configs.recommended,
 
-  // Svelte rules (flat config)
-  ...svelte.configs['flat/recommended'],
+	// Svelte rules (flat config)
+	...svelte.configs['flat/recommended'],
 
-  // Project-wide language options & common rules
-  {
-    languageOptions: {
-      globals: { ...globals.browser, ...globals.node }
-    },
-    rules: {
-      // TS projects shouldn’t use no-undef
-      'no-undef': 'off'
-    }
-  },
+	// Project-wide language options & common rules
+	{
+		languageOptions: {
+			globals: { ...globals.browser, ...globals.node }
+		},
+		rules: {
+			// TS projects shouldn’t use no-undef
+			'no-undef': 'off'
+		}
+	},
 
-  // Svelte-specific parser options (only for .svelte files)
-  {
-    files: ['**/*.svelte'],
-    languageOptions: {
-      parserOptions: {
-        projectService: true,
-        extraFileExtensions: ['.svelte'],
-        parser: ts.parser,
-        // Provide your svelte.config.js contents so ESLint/Svelte share settings
-        svelteConfig
-        // Alternatively: svelteConfigFile: 'svelte.config.js'
-      }
-    }
-  },
+	// Svelte-specific parser options (only for .svelte files)
+	{
+		files: ['**/*.svelte'],
+		languageOptions: {
+			parserOptions: {
+				projectService: true,
+				extraFileExtensions: ['.svelte'],
+				parser: ts.parser,
+				// Provide your svelte.config.js contents so ESLint/Svelte share settings
+				svelteConfig
+				// Alternatively: svelteConfigFile: 'svelte.config.js'
+			}
+		}
+	},
 
-  // Prettier last: disable formatting-conflict rules
-  prettier,
-  ...svelte.configs['flat/prettier']
+	// Prettier last: disable formatting-conflict rules
+	prettier,
+	...svelte.configs['flat/prettier']
 ]);
