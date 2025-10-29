@@ -10,7 +10,7 @@
   const cols: Col[] = [
     { key: 'player', label: 'Player', align: 'left', widthClass: 'min-w-0 truncate whitespace-nowrap' },
     { key: 'agents', label: 'Agents', align: 'left', widthClass: 'min-w-0 truncate whitespace-nowrap' },
-    { key: 'games', label: 'G', align: 'right', digits: 0, hidden: true },
+    { key: 'games', label: 'G', align: 'right', digits: 0 },
     { key: 'games_won', label: 'W', align: 'right', digits: 0 },
     { key: 'games_lost', label: 'L', align: 'right', digits: 0 },
     { key: 'rounds', label: 'Rnds', align: 'right', digits: 0, hidden: true },
@@ -74,23 +74,28 @@
 </script>
 
 <!-- FULL-VIEWPORT WRAPPER: no page scroll -->
-<div class="fixed inset-0 h-dvh overflow-hidden bg-background">
-  <div class="grid h-full min-h-0 w-full grid-cols-1 gap-3 p-3 md:grid-cols-[clamp(160px,22vw,220px)_minmax(0,1fr)] lg:grid-cols-[clamp(200px,18vw,260px)_minmax(0,1fr)] xl:grid-cols-[280px_minmax(0,1fr)]">
-    <ColumnsFilter
-      {cols}
-      {visibleSet}
-      on:toggle={(e) => toggleColumn(e.detail.key)}
-      on:showAll={showAll}
-      on:hideAll={hideAll}
-      on:reset={resetDefaults}
-    />
-    <LeaderboardTable
-      {players}
-      {cols}
-      {visibleCols}
-      {sortKey}
-      {sortAsc}
-      on:sort={(e) => sortBy(e.detail.key)}
-    />
+<div class="fixed inset-0 h-dvh bg-background pt-[3rem]">
+  <div class="h-full min-h-0 overflow-y-auto" data-scrollport>
+    <div class="grid h-full min-h-0 w-full grid-cols-1 gap-3 p-3 md:grid-cols-[clamp(160px,22vw,220px)_minmax(0,1fr)] lg:grid-cols-[clamp(200px,18vw,260px)_minmax(0,1fr)] xl:grid-cols-[280px_minmax(0,1fr)]">
+      <div class="min-h-0">
+        <ColumnsFilter
+          {cols}
+          {visibleSet}
+          on:toggle={(e) => toggleColumn(e.detail.key)}
+          on:showAll={showAll}
+          on:hideAll={hideAll}
+          on:reset={resetDefaults}
+        />
+      </div>
+      <div class="min-h-0">
+        <LeaderboardTable
+          {players}
+          {visibleCols}
+          {sortKey}
+          {sortAsc}
+          on:sort={(e) => sortBy(e.detail.key)}
+        />
+      </div>
+    </div>
   </div>
 </div>
