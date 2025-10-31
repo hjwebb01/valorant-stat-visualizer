@@ -10,17 +10,6 @@
 		TableCell,
 		TableCaption
 	} from '$lib/components/ui/table';
-	// UI components
-	import { Card, CardHeader, CardTitle, CardContent } from '$lib/components/ui/card';
-	import {
-		Table,
-		TableHeader,
-		TableRow,
-		TableHead,
-		TableBody,
-		TableCell,
-		TableCaption
-	} from '$lib/components/ui/table';
 
 	// Server-provided data
 	export let data: {
