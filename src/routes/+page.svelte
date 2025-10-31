@@ -80,10 +80,10 @@
 	function sortedEntries(obj: Record<string, any>): Array<[string, any]> {
 		const entries = Object.entries(obj);
 		// prioritize some keys
-		const priority = new Map(
-			['player', 'id', 'acs', 'kd', 'adr'].map((k, i) => [k, i])
+		const priority = new Map(['player', 'id', 'acs', 'kd', 'adr'].map((k, i) => [k, i]));
+		return entries.sort(
+			([a], [b]) => (priority.get(a) ?? 999) - (priority.get(b) ?? 999) || a.localeCompare(b)
 		);
-		return entries.sort(([a], [b]) => (priority.get(a) ?? 999) - (priority.get(b) ?? 999) || a.localeCompare(b));
 	}
 	// Layout components
 	import DashboardCenter from '$lib/components/layout/DashboardCenter.svelte';
@@ -112,7 +112,7 @@
 					<TableBody>
 						{#each players as p, i (p.id ?? i)}
 							<TableRow
-								class={`hover:bg-muted/50 cursor-pointer focus:outline-none focus:ring-2 focus:ring-ring ${selected?.id === p.id ? 'bg-accent/20' : ''}`}
+								class={`hover:bg-muted/50 focus:ring-ring cursor-pointer focus:ring-2 focus:outline-none ${selected?.id === p.id ? 'bg-accent/20' : ''}`}
 								tabindex={0}
 								aria-selected={selected?.id === p.id}
 								onclick={() => (selected = p)}
@@ -147,18 +147,22 @@
 						<div class="text-lg font-semibold">{selected.player ?? '(Unknown Player)'}</div>
 						<div class="grid grid-cols-2 gap-x-4 gap-y-2">
 							{#each sortedEntries(selected) as [k, v]}
-								<div class="text-sm text-muted-foreground">{formatHeader(k)}</div>
+								<div class="text-muted-foreground text-sm">{formatHeader(k)}</div>
 								<div class="text-right font-mono">
 									{formatValue(v)}
 									{#if selectedPercentiles && selectedPercentiles[k] > 50}
-										<span class="ml-2 text-xs text-muted-foreground">(Top {selectedPercentiles[k]}%)</span>
+										<span class="text-muted-foreground ml-2 text-xs"
+											>(Top {selectedPercentiles[k]}%)</span
+										>
 									{/if}
 								</div>
 							{/each}
 						</div>
 					</div>
 				{:else}
-					<div class="text-center text-sm text-muted-foreground">Click a row to preview player details here.</div>
+					<div class="text-muted-foreground text-center text-sm">
+						Click a row to preview player details here.
+					</div>
 				{/if}
 			</CardContent>
 		</Card>
