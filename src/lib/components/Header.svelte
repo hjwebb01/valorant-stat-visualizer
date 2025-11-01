@@ -20,7 +20,7 @@
 </script>
 
 <header
-	class="sticky top-0 z-50 w-full transition-all duration-200"
+	class="sticky top-0 z-60 w-full transition-all duration-200"
 	style="background-color: #2a2a2e; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);"
 >
 	<div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-3">

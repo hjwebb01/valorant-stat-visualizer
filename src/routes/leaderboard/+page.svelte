@@ -126,7 +126,7 @@
 </script>
 
 <!-- FULL-VIEWPORT WRAPPER: no page scroll -->
-<div class="bg-background fixed inset-0 h-dvh pt-[3rem]">
+<div class="bg-background fixed inset-0 h-dvh pt-20">
 	<div class="h-full min-h-0 overflow-y-auto" data-scrollport>
 		<div
 			class="grid h-full min-h-0 w-full grid-cols-1 gap-3 p-3 md:grid-cols-[clamp(160px,22vw,220px)_minmax(0,1fr)] lg:grid-cols-[clamp(200px,18vw,260px)_minmax(0,1fr)] xl:grid-cols-[280px_minmax(0,1fr)]"
