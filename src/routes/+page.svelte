@@ -88,10 +88,11 @@
 	// Layout components
 	import DashboardCenter from '$lib/components/layout/DashboardCenter.svelte';
 	import DashboardGrid from '$lib/components/layout/DashboardGrid.svelte';
+	import PercentileCard from '$lib/components/PercentileCard.svelte';
 </script>
 
-<DashboardCenter max="max-w-4xl" vertical="center">
-	<DashboardGrid cols="md:grid-cols-2" gap="gap-6">
+<DashboardCenter max="max-w-7xl" vertical="center">
+	<DashboardGrid cols={selected ? 'md:grid-cols-3' : 'md:grid-cols-2'} gap="gap-6">
 		<Card class="w-full">
 			<CardHeader>
 				<CardTitle class="text-center text-2xl">Top 20 Players</CardTitle>
@@ -166,5 +167,8 @@
 				{/if}
 			</CardContent>
 		</Card>
+		{#if selected}
+			<PercentileCard percentiles={selectedPercentiles} player={selected} />
+		{/if}
 	</DashboardGrid>
 </DashboardCenter>
