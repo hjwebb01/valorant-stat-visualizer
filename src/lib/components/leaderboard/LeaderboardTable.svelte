@@ -13,7 +13,6 @@
 	import { createEventDispatcher } from 'svelte';
 
 	export let players: Player[] = [];
-	export let cols: Col[] = [];
 	export let visibleCols: Col[] = [];
 	export let sortKey: Key;
 	export let sortAsc: boolean;
