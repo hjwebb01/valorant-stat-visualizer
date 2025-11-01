@@ -15,7 +15,8 @@
 	export let data: {
 		players?: Array<Record<string, any>>;
 	} = {};
-	let players: Array<Record<string, any>> = data.players ?? [];
+	let allPlayers: Array<Record<string, any>> = data.players ?? [];
+	let renderedPlayers: Array<Record<string, any>> = allPlayers.slice(0, 20);
 	let selected: Record<string, any> | null = null;
 
 	const cols: Array<{
@@ -59,7 +60,7 @@
 	}
 
 	let selectedPercentiles: Record<string, number> = {};
-	$: selectedPercentiles = selected ? computeSelectedPercentiles(selected, players) : {};
+	$: selectedPercentiles = selected ? computeSelectedPercentiles(selected, allPlayers) : {};
 
 	function formatHeader(k: string): string {
 		return k.replace(/_/g, ' ').replace(/\b\w/g, (m) => m.toUpperCase());
@@ -99,7 +100,7 @@
 			</CardHeader>
 			<CardContent>
 				<Table class="w-full">
-					<TableCaption>{players.length} players (ordered by ACS)</TableCaption>
+					<TableCaption>{allPlayers.length} players (ordered by ACS)</TableCaption>
 					<TableHeader>
 						<TableRow>
 							<TableHead class="w-12 text-right">#</TableHead>
@@ -111,7 +112,7 @@
 						</TableRow>
 					</TableHeader>
 					<TableBody>
-						{#each players as p, i (p.id ?? i)}
+						{#each renderedPlayers as p, i (p.id ?? i)}
 							<TableRow
 								class={`hover:bg-muted/50 focus:ring-ring cursor-pointer focus:ring-2 focus:outline-none ${selected?.id === p.id ? 'bg-accent/20' : ''}`}
 								tabindex={0}

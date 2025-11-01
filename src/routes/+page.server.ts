@@ -6,7 +6,6 @@ export const load: PageServerLoad = async () => {
 	const { data, error } = await supabaseAdmin
 		.from('valorant_players')
 		.select('*')
-		.limit(20)
 		.order('acs', { ascending: false });
 	if (error) console.error(error);
 	return { players: data ?? [] };
