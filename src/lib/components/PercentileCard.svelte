@@ -2,6 +2,7 @@
 	import { Card, CardHeader, CardTitle, CardContent } from '$lib/components/ui/card';
 
 	export let percentiles: Record<string, number> = {};
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	export let player: Record<string, any> | null = null;
 
 	// Top 5 stats to display
@@ -29,6 +30,7 @@
 		return 'text-red-600';
 	}
 
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	function formatValue(value: any): string {
 		if (value == null) return '-';
 		if (typeof value === 'number') {
@@ -48,7 +50,7 @@
 				<div class="text-muted-foreground mb-4 text-center text-sm">
 					Showing {player.player}'s ranking among all players
 				</div>
-				{#each topStats as stat}
+				{#each topStats as stat (stat.key)}
 					{#if percentiles[stat.key] !== undefined}
 						<div class="space-y-2">
 							<div class="flex items-center justify-between">
