@@ -153,7 +153,7 @@
 									{formatValue(v)}
 									{#if selectedPercentiles && selectedPercentiles[k] > 50}
 										<span class="text-muted-foreground ml-2 text-xs"
-											>(Top {selectedPercentiles[k]}%)</span
+											>(Top {100 - selectedPercentiles[k]}%)</span
 										>
 									{/if}
 								</div>

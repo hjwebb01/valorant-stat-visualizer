@@ -14,19 +14,27 @@
 		{ key: 'hs_pct', label: 'HS% (Headshot %)' }
 	];
 
+	// Helper to convert percentile rank to "top X%" value
+	// If percentile is 92, player is better than 92% of players, so they're in the top 8%
+	function getTopPercent(percentile: number): number {
+		return 100 - percentile;
+	}
+
 	function getPercentileColor(percentile: number): string {
-		if (percentile >= 90) return 'bg-green-500';
-		if (percentile >= 75) return 'bg-blue-500';
-		if (percentile >= 50) return 'bg-yellow-500';
-		if (percentile >= 25) return 'bg-orange-500';
+		const topPercent = getTopPercent(percentile);
+		if (topPercent <= 10) return 'bg-green-500';
+		if (topPercent <= 25) return 'bg-blue-500';
+		if (topPercent <= 50) return 'bg-yellow-500';
+		if (topPercent <= 75) return 'bg-orange-500';
 		return 'bg-red-500';
 	}
 
 	function getPercentileTextColor(percentile: number): string {
-		if (percentile >= 90) return 'text-green-600';
-		if (percentile >= 75) return 'text-blue-600';
-		if (percentile >= 50) return 'text-yellow-600';
-		if (percentile >= 25) return 'text-orange-600';
+		const topPercent = getTopPercent(percentile);
+		if (topPercent <= 10) return 'text-green-600';
+		if (topPercent <= 25) return 'text-blue-600';
+		if (topPercent <= 50) return 'text-yellow-600';
+		if (topPercent <= 75) return 'text-orange-600';
 		return 'text-red-600';
 	}
 
@@ -62,7 +70,7 @@
 									<span
 										class={`text-sm font-bold ${getPercentileTextColor(percentiles[stat.key])}`}
 									>
-										Top {percentiles[stat.key]}%
+										Top {getTopPercent(percentiles[stat.key])}%
 									</span>
 								</div>
 							</div>

@@ -5,10 +5,8 @@ import PercentileCard from './PercentileCard.svelte';
 describe('PercentileCard', () => {
 	it('should render empty state when no player is selected', () => {
 		const { container } = render(PercentileCard, {
-			props: {
-				percentiles: {},
-				player: null
-			}
+			percentiles: {},
+			player: null
 		});
 		expect(container.textContent).toContain('Select a player');
 	});
@@ -32,14 +30,12 @@ describe('PercentileCard', () => {
 		};
 
 		const { container } = render(PercentileCard, {
-			props: {
-				percentiles: mockPercentiles,
-				player: mockPlayer
-			}
+			percentiles: mockPercentiles,
+			player: mockPlayer
 		});
 
 		expect(container.textContent).toContain('TestPlayer');
-		expect(container.textContent).toContain('Top 92%');
+		expect(container.textContent).toContain('Top 8%');
 		expect(container.textContent).toContain('ACS');
 	});
 });
