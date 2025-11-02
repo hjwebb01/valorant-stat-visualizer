@@ -49,6 +49,38 @@
 				: na - nb;
 		return sortAsc ? cmp : -cmp;
 	});
+
+	// Preload all agent icons and index by agent name (case-insensitive)
+	const iconModules = import.meta.glob('../../assets/agents/*_icon.png', {
+		eager: true,
+		import: 'default'
+	}) as Record<string, string>;
+
+	const iconsByName: Record<string, string> = {};
+	for (const [path, url] of Object.entries(iconModules)) {
+		const m = path.match(/\/([^\/]+)_icon\.png$/);
+		if (m) iconsByName[m[1].toLowerCase()] = url as unknown as string;
+	}
+
+	function normKey(name: string): string {
+		let k = name.toLowerCase();
+		// Normalize special cases and strip punctuation that doesn't exist in filenames
+		k = k.replace(/\//g, ''); // e.g., KAY/O -> KAYO
+		if (k === 'harbour') k = 'harbor';
+		return k;
+	}
+
+	function agentListToIcons(list: unknown): Array<{ name: string; url?: string }> {
+		const s = String(list ?? '').trim();
+		if (!s) return [];
+		return s
+			.split(/\s+/)
+			.filter(Boolean)
+			.map((name) => {
+				const key = normKey(name);
+				return { name, url: iconsByName[key] };
+			});
+	}
 </script>
 
 <section class="h-full min-h-0">
@@ -101,7 +133,19 @@
 									<TableCell
 										class={`${c.align === 'right' ? 'text-right' : 'text-left'} ${c.widthClass ?? ''} border-r last:border-r-0`}
 									>
-										{fmt(c, p)}
+										{#if c.key === 'agents'}
+											<div class="flex flex-wrap items-center gap-1">
+												{#each agentListToIcons(p.agents) as a}
+													{#if a.url}
+														<img src={a.url} alt={a.name} class="h-6 w-6 rounded" loading="lazy" />
+													{:else}
+														<span class="text-xs text-muted-foreground">{a.name}</span>
+													{/if}
+												{/each}
+											</div>
+										{:else}
+											{fmt(c, p)}
+										{/if}
 									</TableCell>
 								{/each}
 							</TableRow>
