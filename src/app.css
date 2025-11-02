@@ -150,3 +150,7 @@
 		transition: box-shadow 0.2s ease;
 	}
 }
+
+* {
+	font-family: 'Excon', sans-serif;
+}
