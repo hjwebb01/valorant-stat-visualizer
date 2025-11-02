@@ -68,9 +68,9 @@
 		{ key: 'kd', label: 'K/D', format: (v: any) => fmtNum(v, 2) },
 		{ key: 'adr', label: 'ADR', format: (v: any) => fmtNum(v, 1) },
 		{ key: 'kast_pct', label: 'KAST%', format: (v: any) => fmtNum(v, 1) },
-		{ key: 'hs_pct', label: 'HS%', format: (v: any) => fmtNum(v, 1) },
-		{ key: 'kpr', label: 'KPR', format: (v: any) => fmtNum(v, 2) },
-		{ key: 'econ_rating', label: 'Econ Rating', format: (v: any) => fmtNum(v, 1) }
+		{ key: 'hs_pct', label: 'HS%', format: (v: any) => fmtNum(v, 1) }
+		// { key: 'kpr', label: 'KPR', format: (v: any) => fmtNum(v, 2) },
+		// { key: 'econ_rating', label: 'Econ Rating', format: (v: any) => fmtNum(v, 1) }
 	];
 
 	function getTopPercent(percentile: number): number {
@@ -107,7 +107,7 @@
 <DashboardCenter max="max-w-7xl" vertical="center">
 	<DashboardGrid cols="md:grid-cols-2" gap="gap-8">
 		<Card class="w-full minimal-shadow minimal-shadow-hover border border-[#E5E7EB] rounded-xl bg-white">
-			<CardHeader class="pb-6">
+			<CardHeader class="pb-1">
 				<CardTitle class="text-center text-2xl font-heading text-[#111827] font-semibold">Top 20 Players</CardTitle>
 			</CardHeader>
 			<CardContent>
@@ -117,9 +117,9 @@
 						<TableRow>
 							<TableHead class="w-12 text-right">#</TableHead>
 							{#each cols as c}
-								<TableHead class={c.align === 'right' ? 'text-right' : 'text-left'}
-									>{c.label}</TableHead
-								>
+								<TableHead class={`${c.align === 'right' ? 'text-right' : 'text-left'} ${c.key === 'player' ? 'w-44 md:w-48' : 'px-4'} last:pr-2 md:last:pr-4`}>
+									{c.label}
+								</TableHead>
 							{/each}
 						</TableRow>
 					</TableHeader>
@@ -133,7 +133,7 @@
 							>
 								<TableCell class={`text-right font-mono font-medium ${selected?.id === p.id ? 'text-[#3B82F6]' : i === 0 ? 'text-[#3B82F6]' : 'text-[#6B7280]'}`}>{i + 1}</TableCell>
 								{#each cols as c}
-									<TableCell class={c.align === 'right' ? 'text-right' : 'text-left'}>
+									<TableCell class={`${c.align === 'right' ? 'text-right' : 'text-left'} ${c.key === 'player' ? 'w-44 md:w-48' : 'px-4'} last:pr-2 md:last:pr-4`}>
 										{#if c.key === 'player'}
 											<div class="flex items-center gap-3">
 												<img
@@ -180,7 +180,7 @@
 								loading="lazy"
 							/>
 							<div class="text-muted-foreground text-center text-sm">
-								Top 7 stats with percentile rankings
+								Top 5 stats with percentile rankings
 							</div>
 						</div>
 						{#each topStats as stat (stat.key)}
