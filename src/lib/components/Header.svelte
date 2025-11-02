@@ -20,12 +20,11 @@
 </script>
 
 <header
-	class="sticky top-0 z-60 w-full transition-all duration-200"
-	style="background-color: #2a2a2e; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);"
+	class="sticky top-0 z-60 w-full transition-all duration-200 bg-white border-b border-[#E5E7EB] minimal-shadow"
 >
 	<div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-3">
 		<!-- Logo -->
-		<a href="/" class="text-xl font-bold tracking-tight transition-colors" style="color: #ffffff;">
+		<a href="/" class="text-xl font-bold tracking-tight transition-colors font-heading text-[#111827] hover:text-[#3B82F6]">
 			Valorant Stat Visualizer
 		</a>
 
@@ -36,8 +35,7 @@
 				<NavigationMenuItem>
 					<NavigationMenuLink
 						href="/"
-						class="flex items-center gap-2 rounded-md px-3 py-2 transition-colors"
-						style="color: #e0e0e0; hover:background-color: rgba(255,255,255,0.1);"
+						class="flex items-center gap-2 rounded-md px-3 py-2 transition-colors hover:bg-[#F8F9FA] hover:text-[#3B82F6] text-[#6B7280]"
 					>
 						<Home size={18} />
 						<span>Home</span>
@@ -46,8 +44,7 @@
 				<NavigationMenuItem>
 					<NavigationMenuLink
 						href="/leaderboard"
-						class="flex items-center gap-2 rounded-md px-3 py-2 transition-colors"
-						style="color: #e0e0e0;"
+						class="flex items-center gap-2 rounded-md px-3 py-2 transition-colors hover:bg-[#F8F9FA] hover:text-[#3B82F6] text-[#6B7280]"
 					>
 						<Trophy size={18} />
 						<span>Leaderboard</span>
@@ -66,8 +63,7 @@
 		<!-- Mobile: Sheet (hamburger → drawer) -->
 		<Sheet>
 			<SheetTrigger
-				class="inline-flex items-center justify-center rounded-md p-2 transition-colors md:hidden"
-				style="color: #e0e0e0;"
+				class="inline-flex items-center justify-center rounded-md p-2 transition-colors md:hidden hover:bg-[#F8F9FA] text-[#6B7280]"
 			>
 				<Menu size={24} />
 				<span class="sr-only">Open menu</span>
