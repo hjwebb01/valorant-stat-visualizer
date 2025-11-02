@@ -18,7 +18,7 @@
 			key: 'agents',
 			label: 'Agents',
 			align: 'left',
-			widthClass: 'min-w-0 truncate whitespace-nowrap'
+			widthClass: 'min-w-0 whitespace-nowrap'
 		},
 		{ key: 'games', label: 'G', align: 'right', digits: 0 },
 		{ key: 'games_won', label: 'W', align: 'right', digits: 0 },
@@ -129,9 +129,9 @@
 <div class="bg-background fixed inset-0 h-dvh pt-20">
 	<div class="h-full min-h-0 overflow-y-auto" data-scrollport>
 		<div
-			class="grid h-full min-h-0 w-full grid-cols-1 gap-3 p-3 md:grid-cols-[clamp(160px,22vw,220px)_minmax(0,1fr)] lg:grid-cols-[clamp(200px,18vw,260px)_minmax(0,1fr)] xl:grid-cols-[280px_minmax(0,1fr)]"
+			class="grid h-full min-h-0 w-full grid-cols-1 grid-rows-[30dvh_minmax(0,1fr)] gap-3 p-3 md:grid-rows-none md:grid-cols-[clamp(160px,22vw,220px)_minmax(0,1fr)] lg:grid-cols-[clamp(200px,18vw,260px)_minmax(0,1fr)] xl:grid-cols-[280px_minmax(0,1fr)]"
 		>
-			<div class="min-h-0">
+			<div class="min-h-0 h-full overflow-auto md:overflow-visible">
 				<ColumnsFilter
 					{cols}
 					{visibleSet}
@@ -141,7 +141,7 @@
 					on:reset={resetDefaults}
 				/>
 			</div>
-			<div class="min-h-0">
+			<div class="min-h-0 h-full">
 				<LeaderboardTable
 					{players}
 					{visibleCols}

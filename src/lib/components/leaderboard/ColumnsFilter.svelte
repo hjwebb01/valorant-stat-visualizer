@@ -34,7 +34,7 @@
 <aside class="h-full min-h-0">
 	<Card class="flex h-full min-h-0 flex-col">
 		<CardHeader class="shrink-0">
-			<CardTitle class="text-base md:text-lg">Columns</CardTitle>
+			<CardTitle class="text-base md:text-lg">Filter Stats</CardTitle>
 		</CardHeader>
 
 		<CardContent class="flex min-h-0 flex-1 flex-col gap-2 overflow-hidden">

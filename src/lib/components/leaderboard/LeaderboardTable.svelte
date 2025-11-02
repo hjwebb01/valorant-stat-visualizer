@@ -134,12 +134,12 @@
 										class={`${c.align === 'right' ? 'text-right' : 'text-left'} ${c.widthClass ?? ''} border-r last:border-r-0`}
 									>
 										{#if c.key === 'agents'}
-											<div class="flex flex-wrap items-center gap-1">
+											<div class="flex flex-wrap min-w-50 items-center gap-1 whitespace-nowrap">
 												{#each agentListToIcons(p.agents) as a}
 													{#if a.url}
-														<img src={a.url} alt={a.name} class="h-6 w-6 rounded" loading="lazy" />
+														<img src={a.url} alt={a.name} class="h-7 w-7 shrink-0 rounded" loading="lazy" />
 													{:else}
-														<span class="text-xs text-muted-foreground">{a.name}</span>
+														<span class="max-w-full truncate text-xs text-muted-foreground">{a.name}</span>
 													{/if}
 												{/each}
 											</div>
