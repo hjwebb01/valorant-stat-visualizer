@@ -62,44 +62,56 @@
 	let selectedPercentiles: Record<string, number> = {};
 	$: selectedPercentiles = selected ? computeSelectedPercentiles(selected, allPlayers) : {};
 
-	function formatHeader(k: string): string {
-		return k.replace(/_/g, ' ').replace(/\b\w/g, (m) => m.toUpperCase());
+	// Top 7 stats to display with equal emphasis
+	const topStats = [
+		{ key: 'acs', label: 'ACS', format: (v: any) => fmtNum(v, 1) },
+		{ key: 'kd', label: 'K/D', format: (v: any) => fmtNum(v, 2) },
+		{ key: 'adr', label: 'ADR', format: (v: any) => fmtNum(v, 1) },
+		{ key: 'kast_pct', label: 'KAST%', format: (v: any) => fmtNum(v, 1) },
+		{ key: 'hs_pct', label: 'HS%', format: (v: any) => fmtNum(v, 1) },
+		{ key: 'kpr', label: 'KPR', format: (v: any) => fmtNum(v, 2) },
+		{ key: 'econ_rating', label: 'Econ Rating', format: (v: any) => fmtNum(v, 1) }
+	];
+
+	function getTopPercent(percentile: number): number {
+		return 100 - percentile;
 	}
 
-	function formatValue(v: any): string {
-		if (v == null) return '';
-		if (typeof v === 'number') return fmtNum(v);
-		if (typeof v === 'boolean') return v ? 'true' : 'false';
-		// simple ISO date-ish
-		if (typeof v === 'string' && /\d{4}-\d{2}-\d{2}T/.test(v)) {
-			const d = new Date(v);
-			if (!Number.isNaN(d.valueOf())) return d.toLocaleString();
-		}
-		return String(v);
+	function getPercentileColor(percentile: number): string {
+		const topPercent = getTopPercent(percentile);
+		// Simple blue gradient - professional and subtle
+		if (topPercent <= 10) return 'bg-gradient-to-r from-[#3B82F6] to-[#2563EB]'; // Deep blue
+		if (topPercent <= 25) return 'bg-gradient-to-r from-[#60A5FA] to-[#3B82F6]'; // Medium blue
+		if (topPercent <= 50) return 'bg-gradient-to-r from-[#93C5FD] to-[#60A5FA]'; // Light blue
+		if (topPercent <= 75) return 'bg-gradient-to-r from-[#DBEAFE] to-[#93C5FD]'; // Very light blue
+		return 'bg-gradient-to-r from-[#E5E7EB] to-[#D1D5DB]'; // Gray
 	}
 
-	function sortedEntries(obj: Record<string, any>): Array<[string, any]> {
-		const entries = Object.entries(obj);
-		// prioritize some keys
-		const priority = new Map(['player', 'id', 'acs', 'kd', 'adr'].map((k, i) => [k, i]));
-		return entries.sort(
-			([a], [b]) => (priority.get(a) ?? 999) - (priority.get(b) ?? 999) || a.localeCompare(b)
-		);
+	function getPercentileTextColor(percentile: number): string {
+		const topPercent = getTopPercent(percentile);
+		// Blue accent for percentile text - clean and professional
+		if (topPercent <= 10) return 'text-[#2563EB]'; // Deep blue
+		if (topPercent <= 25) return 'text-[#3B82F6]'; // Blue
+		if (topPercent <= 50) return 'text-[#60A5FA]'; // Medium blue
+		if (topPercent <= 75) return 'text-[#93C5FD]'; // Light blue
+		return 'text-[#6B7280]'; // Gray
 	}
 	// Layout components
 	import DashboardCenter from '$lib/components/layout/DashboardCenter.svelte';
 	import DashboardGrid from '$lib/components/layout/DashboardGrid.svelte';
-	import PercentileCard from '$lib/components/PercentileCard.svelte';
+	
+	// Profile picture placeholder
+	import profilePicture from '$lib/assets/fatpig.jpg';
 </script>
 
 <DashboardCenter max="max-w-7xl" vertical="center">
-	<DashboardGrid cols={selected ? 'md:grid-cols-3' : 'md:grid-cols-2'} gap="gap-6">
-		<Card class="w-full">
-			<CardHeader>
-				<CardTitle class="text-center text-2xl">Top 20 Players</CardTitle>
+	<DashboardGrid cols="md:grid-cols-2" gap="gap-8">
+		<Card class="w-full minimal-shadow minimal-shadow-hover border border-[#E5E7EB] rounded-xl bg-white">
+			<CardHeader class="pb-6">
+				<CardTitle class="text-center text-2xl font-heading text-[#111827] font-semibold">Top 20 Players</CardTitle>
 			</CardHeader>
 			<CardContent>
-				<Table class="w-full">
+				<Table class="w-full border-separate border-spacing-y-2 border-spacing-x-0">
 					<TableCaption>{allPlayers.length} players (ordered by ACS)</TableCaption>
 					<TableHeader>
 						<TableRow>
@@ -114,16 +126,24 @@
 					<TableBody>
 						{#each renderedPlayers as p, i (p.id ?? i)}
 							<TableRow
-								class={`hover:bg-muted/50 focus:ring-ring cursor-pointer focus:ring-2 focus:outline-none ${selected?.id === p.id ? 'bg-accent/20' : ''}`}
+								class={`relative hover:bg-[#F8F9FA] cursor-pointer focus:outline-none transition-all duration-150 rounded-xl ${selected?.id === p.id ? 'bg-[#EFF6FF] selected-row' : 'bg-white'}`}
 								tabindex={0}
 								aria-selected={selected?.id === p.id}
 								onclick={() => (selected = p)}
 							>
-								<TableCell class="text-right font-mono">{i + 1}</TableCell>
+								<TableCell class={`text-right font-mono font-medium ${selected?.id === p.id ? 'text-[#3B82F6]' : i === 0 ? 'text-[#3B82F6]' : 'text-[#6B7280]'}`}>{i + 1}</TableCell>
 								{#each cols as c}
 									<TableCell class={c.align === 'right' ? 'text-right' : 'text-left'}>
 										{#if c.key === 'player'}
-											{p.player}
+											<div class="flex items-center gap-3">
+												<img
+													src={profilePicture}
+													alt={`${p.player}'s profile picture`}
+													class="h-8 w-8 shrink-0 rounded-full object-cover md:h-10 md:w-10 border {selected?.id === p.id ? 'border-[#3B82F6] border-2' : 'border-[#E5E7EB]'} hover:border-[#3B82F6] transition-colors duration-150"
+													loading="lazy"
+												/>
+												<span>{p.player}</span>
+											</div>
 										{:else if c.key === 'acs'}
 											{fmtNum(p.acs, 1)}
 										{:else if c.key === 'kd'}
@@ -139,37 +159,83 @@
 				</Table>
 			</CardContent>
 		</Card>
-		<Card class="w-full">
-			<CardHeader>
-				<CardTitle class="text-center text-2xl">Selected Player</CardTitle>
+		<Card class="w-full minimal-shadow minimal-shadow-hover border border-[#E5E7EB] rounded-xl bg-white">
+			<CardHeader class="pb-6">
+				<CardTitle class="text-center text-2xl font-heading text-[#111827] font-semibold">
+					{#if selected}
+						{selected.player ?? '(Unknown Player)'}
+					{:else}
+						Player Stats & Rankings
+					{/if}
+				</CardTitle>
 			</CardHeader>
-			<CardContent maxHeight="80vh">
-				{#if selected}
-					<div class="space-y-3">
-						<div class="text-lg font-semibold">{selected.player ?? '(Unknown Player)'}</div>
-						<div class="grid grid-cols-2 gap-x-4 gap-y-2">
-							{#each sortedEntries(selected) as [k, v]}
-								<div class="text-muted-foreground text-sm">{formatHeader(k)}</div>
-								<div class="text-right font-mono">
-									{formatValue(v)}
-									{#if selectedPercentiles && selectedPercentiles[k] > 50}
-										<span class="text-muted-foreground ml-2 text-xs"
-											>(Top {100 - selectedPercentiles[k]}%)</span
-										>
-									{/if}
-								</div>
-							{/each}
+			<CardContent>
+				{#if selected && Object.keys(selectedPercentiles).length > 0}
+					<div class="space-y-6">
+						<div class="flex flex-col items-center gap-3 pb-2">
+							<img
+								src={profilePicture}
+								alt={`${selected.player}'s profile picture`}
+								class="h-20 w-20 shrink-0 rounded-full object-cover md:h-24 md:w-24 border-2 border-[#3B82F6] minimal-shadow"
+								loading="lazy"
+							/>
+							<div class="text-muted-foreground text-center text-sm">
+								Top 7 stats with percentile rankings
+							</div>
 						</div>
+						{#each topStats as stat (stat.key)}
+							{#if selectedPercentiles[stat.key] !== undefined && selected[stat.key] != null}
+								<div class="space-y-2">
+									<div class="flex items-center justify-between">
+										<span class="text-sm font-medium">{stat.label}</span>
+										<div class="flex items-center gap-4">
+											<span class="text-base font-bold font-mono">
+												{stat.format(selected[stat.key])}
+											</span>
+											<span
+												class={`text-base font-bold ${getPercentileTextColor(selectedPercentiles[stat.key])}`}
+											>
+												Top {getTopPercent(selectedPercentiles[stat.key])}%
+											</span>
+										</div>
+									</div>
+									<div class="bg-[#E5E7EB] h-2 w-full overflow-hidden rounded-full">
+										<div
+											class={`h-full transition-all duration-300 ${getPercentileColor(selectedPercentiles[stat.key])}`}
+											style={`width: ${selectedPercentiles[stat.key]}%`}
+										></div>
+									</div>
+								</div>
+							{/if}
+						{/each}
 					</div>
 				{:else}
 					<div class="text-muted-foreground text-center text-sm">
-						Click a row to preview player details here.
+						Click a row to see player stats and percentile rankings here.
 					</div>
 				{/if}
 			</CardContent>
 		</Card>
-		{#if selected}
-			<PercentileCard percentiles={selectedPercentiles} player={selected} />
-		{/if}
 	</DashboardGrid>
 </DashboardCenter>
+
+<style>
+
+:global(tr[data-slot='table-row']) {
+	border-bottom: none;
+	border: none;
+}
+
+:global(.selected-row) {
+	position: relative;
+}
+
+:global(.selected-row::after) {
+	content: '';
+	position: absolute;
+	inset: 2px;
+	border: 2px solid #3B82F6;
+	border-radius: 0.75rem;
+	pointer-events: none;
+}
+</style>

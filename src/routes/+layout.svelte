@@ -13,6 +13,6 @@
 	<script defer data-domain="yourdomain.com" src="https://plausible.io/js/script.js"></script>
 </svelte:head>
 
-<div style="box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1) inset;">
+<div class="min-h-screen bg-[#F8F9FA]">
 	{@render children?.()}
 </div>
