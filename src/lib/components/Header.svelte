@@ -17,6 +17,7 @@
 
 	// Icons from lucide
 	import { Home, Trophy, LogIn, Menu } from '@lucide/svelte';
+  import ThemeToggle from '$lib/components/ThemeToggle.svelte';
 </script>
 
 <header
@@ -24,87 +25,101 @@
 	style="background-color: var(--color-card); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);"
 >
 	<div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-3">
-		<!-- Logo -->
-		<a href="/" class="text-xl font-bold tracking-tight transition-colors">
-			Valorant Stat Visualizer
-		</a>
 
-		<!-- Desktop Nav (shadcn NavigationMenu) -->
-		<NavigationMenu class="hidden md:flex">
-			<NavigationMenuList class="items-center gap-2">
-				<!-- Fill these in with your routes -->
-				<NavigationMenuItem>
-					<NavigationMenuLink
-						href="/"
-						class="flex items-center gap-2 rounded-md px-3 py-2 transition-colors"
-					>
-						<Home size={18} />
-						<span>Home</span>
-					</NavigationMenuLink>
-				</NavigationMenuItem>
-				<NavigationMenuItem>
-					<NavigationMenuLink
-						href="/leaderboard"
-						class="flex items-center gap-2 rounded-md px-3 py-2 transition-colors"
-					>
-						<Trophy size={18} />
-						<span>Leaderboard</span>
-					</NavigationMenuLink>
-				</NavigationMenuItem>
-				<!-- Example right-aligned action -->
-				<NavigationMenuItem class="ml-2">
-					<Button variant="secondary" class="flex items-center gap-2 px-3">
-						<LogIn size={18} />
-						<span>Sign in</span>
-					</Button>
-				</NavigationMenuItem>
-			</NavigationMenuList>
-		</NavigationMenu>
+		<!-- Left cluster: logo + desktop theme toggle -->
+		<div class="flex items-center gap-2">
+			<a href="/" class="text-xl font-bold tracking-tight transition-colors">
+				Valorant Stat Visualizer
+			</a>
+			<div class="hidden items-center md:flex">
+				<ThemeToggle />
+			</div>
+		</div>
 
-		<!-- Mobile: Sheet (hamburger → drawer) -->
-		<Sheet>
-			<SheetTrigger
-				class="inline-flex items-center justify-center rounded-md p-2 transition-colors md:hidden"
-			>
-				<Menu size={24} />
-				<span class="sr-only">Open menu</span>
-			</SheetTrigger>
+		<!-- Right-side controls: desktop nav, mobile toggle, mobile menu -->
+		<div class="flex items-center gap-2">
+        <!-- Desktop Nav (shadcn NavigationMenu) -->
+        <NavigationMenu class="hidden md:flex">
+            <NavigationMenuList class="items-center gap-2">
+                <!-- Fill these in with your routes -->
+                <NavigationMenuItem>
+                    <NavigationMenuLink
+                        href="/"
+                        class="flex items-center gap-2 rounded-md px-3 py-2 transition-colors"
+                    >
+                        <Home size={18} />
+                        <span>Home</span>
+                    </NavigationMenuLink>
+                </NavigationMenuItem>
+                <NavigationMenuItem>
+                    <NavigationMenuLink
+                        href="/leaderboard"
+                        class="flex items-center gap-2 rounded-md px-3 py-2 transition-colors"
+                    >
+                        <Trophy size={18} />
+                        <span>Leaderboard</span>
+                    </NavigationMenuLink>
+                </NavigationMenuItem>
+                <!-- Example right-aligned action -->
+                <NavigationMenuItem class="ml-2">
+                    <Button variant="secondary" class="flex items-center gap-2 px-3">
+                        <LogIn size={18} />
+                        <span>Sign in</span>
+                    </Button>
+                </NavigationMenuItem>
+            </NavigationMenuList>
+        </NavigationMenu>
 
-			<SheetContent side="left" class="w-72 p-0">
-				<SheetHeader class="border-b px-6 py-4">
-					<SheetTitle class="text-base">Menu</SheetTitle>
-				</SheetHeader>
+			<!-- Theme toggle on mobile (desktop toggle is near title) -->
+			<div class="md:hidden">
+				<ThemeToggle />
+			</div>
 
-				<nav class="px-6 py-4">
-					<ul class="flex flex-col space-y-2 text-sm font-medium">
-						<!-- Same links as desktop -->
-						<li>
-							<a
-								href="/"
-								class="hover:bg-accent hover:text-accent-foreground flex items-center gap-2 rounded-md px-3 py-2"
-							>
-								<Home size={18} />
-								<span>Home</span>
-							</a>
-						</li>
-						<li>
-							<a
-								href="/leaderboard"
-								class="hover:bg-accent hover:text-accent-foreground flex items-center gap-2 rounded-md px-3 py-2"
-							>
-								<Trophy size={18} />
-								<span>Leaderboard</span>
-							</a>
-						</li>
-						<li class="pt-2">
-							<Button variant="secondary" class="flex w-full items-center justify-center gap-2">
-								<LogIn size={18} />
-								<span>Sign in</span>
-							</Button>
-						</li>
-					</ul>
-				</nav>
-			</SheetContent>
-		</Sheet>
+        <!-- Mobile: Sheet (hamburger → drawer) -->
+        <Sheet>
+            <SheetTrigger
+                class="inline-flex items-center justify-center rounded-md p-2 transition-colors md:hidden"
+            >
+                <Menu size={24} />
+                <span class="sr-only">Open menu</span>
+            </SheetTrigger>
+
+            <SheetContent side="left" class="w-72 p-0">
+                <SheetHeader class="border-b px-6 py-4">
+                    <SheetTitle class="text-base">Menu</SheetTitle>
+                </SheetHeader>
+
+                <nav class="px-6 py-4">
+                    <ul class="flex flex-col space-y-2 text-sm font-medium">
+                        <!-- Same links as desktop -->
+                        <li>
+                            <a
+                                href="/"
+                                class="hover:bg-accent hover:text-accent-foreground flex items-center gap-2 rounded-md px-3 py-2"
+                            >
+                                <Home size={18} />
+                                <span>Home</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a
+                                href="/leaderboard"
+                                class="hover:bg-accent hover:text-accent-foreground flex items-center gap-2 rounded-md px-3 py-2"
+                            >
+                                <Trophy size={18} />
+                                <span>Leaderboard</span>
+                            </a>
+                        </li>
+                        <li class="pt-2">
+                            <Button variant="secondary" class="flex w-full items-center justify-center gap-2">
+                                <LogIn size={18} />
+                                <span>Sign in</span>
+                            </Button>
+                        </li>
+                    </ul>
+                </nav>
+            </SheetContent>
+        </Sheet>
+    </div>
 	</div>
 </header>
