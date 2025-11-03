@@ -1,11 +1,16 @@
 <script lang="ts">
 	import ColumnsFilter from '$lib/components/leaderboard/ColumnsFilter.svelte';
 	import LeaderboardTable from '$lib/components/leaderboard/LeaderboardTable.svelte';
+	import { Card, CardHeader, CardTitle, CardContent } from '$lib/components/ui/card';
+	import { Button } from '$lib/components/ui/button';
 	import type { Col, Key, Player } from '$lib/types';
 	import { onMount } from 'svelte';
+	import { percentileRank, toPercent } from '$lib/utils';
+	import profilePicture from '$lib/assets/fatpig.jpg';
 
 	export let data: { players: Player[] };
 	let players = data.players ?? [];
+	let selectedPlayer: Player | null = null;
 
 	const cols: Col[] = [
 		{
@@ -82,6 +87,70 @@
 		visibleSet = new Set<Key>(cols.filter((c) => !c.hidden).map((c) => c.key));
 	}
 
+	// Percentile helpers
+	const percentileExclude = new Set(['id', 'player', 'agents', 'created_at', 'dataset_id']);
+	function computeSelectedPercentiles(
+		sel: Player,
+		arr: Player[]
+	): Record<string, number> {
+		const out: Record<string, number> = {};
+		for (const [k, v] of Object.entries(sel)) {
+			if (percentileExclude.has(k)) continue;
+			const val = typeof v === 'number' ? v : Number(v);
+			if (!Number.isFinite(val)) continue;
+			const series = arr
+				.map((p) => {
+					const vv = (p as any)[k];
+					return typeof vv === 'number' ? vv : Number(vv);
+				})
+				.filter((n) => Number.isFinite(n)) as number[];
+			if (series.length === 0) continue;
+			const p = percentileRank(series, val);
+			const pct = toPercent(p);
+			if (Number.isFinite(pct)) out[k] = pct;
+		}
+		return out;
+	}
+
+	let selectedPercentiles: Record<string, number> = {};
+	$: selectedPercentiles = selectedPlayer ? computeSelectedPercentiles(selectedPlayer, players) : {};
+
+	// Top stats to display with equal emphasis
+	const topStats: Array<{ key: Key; label: string; format: (v: any) => string }> = [
+		{ key: 'acs', label: 'ACS', format: (v: any) => fmtNum(v, 1) },
+		{ key: 'kd', label: 'K/D', format: (v: any) => fmtNum(v, 2) },
+		{ key: 'adr', label: 'ADR', format: (v: any) => fmtNum(v, 1) },
+		{ key: 'kast_pct', label: 'KAST%', format: (v: any) => fmtNum(v, 1) },
+		{ key: 'hs_pct', label: 'HS%', format: (v: any) => fmtNum(v, 1) }
+	];
+
+	const fmtNum = (n: unknown, digits = 2) =>
+		typeof n === 'number' && Number.isFinite(n) ? n.toFixed(digits) : String(n ?? '');
+
+	function getTopPercent(percentile: number): number {
+		return 100 - percentile;
+	}
+
+	function getPercentileColor(percentile: number): string {
+		const topPercent = getTopPercent(percentile);
+		// Simple blue gradient - professional and subtle
+		if (topPercent <= 10) return 'bg-gradient-to-r from-[#3B82F6] to-[#2563EB]'; // Deep blue
+		if (topPercent <= 25) return 'bg-gradient-to-r from-[#60A5FA] to-[#3B82F6]'; // Medium blue
+		if (topPercent <= 50) return 'bg-gradient-to-r from-[#93C5FD] to-[#60A5FA]'; // Light blue
+		if (topPercent <= 75) return 'bg-gradient-to-r from-[#DBEAFE] to-[#93C5FD]'; // Very light blue
+		return 'bg-gradient-to-r from-[#E5E7EB] to-[#D1D5DB]'; // Gray
+	}
+
+	function getPercentileTextColor(percentile: number): string {
+		const topPercent = getTopPercent(percentile);
+		// Blue accent for percentile text - clean and professional
+		if (topPercent <= 10) return 'text-[#2563EB]'; // Deep blue
+		if (topPercent <= 25) return 'text-[#3B82F6]'; // Blue
+		if (topPercent <= 50) return 'text-[#60A5FA]'; // Medium blue
+		if (topPercent <= 75) return 'text-[#93C5FD]'; // Light blue
+		return 'text-[#6B7280]'; // Gray
+	}
+
 	// Sorting
 	let sortKey: Key = 'acs',
 		sortAsc = false;
@@ -123,13 +192,21 @@
 			sortAsc = !descPref.has(k);
 		}
 	}
+
+	function handleSelect(event: CustomEvent<{ player: Player }>) {
+		selectedPlayer = event.detail.player;
+	}
+
+	function clearSelection() {
+		selectedPlayer = null;
+	}
 </script>
 
 <!-- FULL-VIEWPORT WRAPPER: no page scroll -->
 <div class="bg-background fixed inset-0 h-dvh pt-20">
 	<div class="h-full min-h-0 overflow-y-auto" data-scrollport>
 		<div
-			class="grid h-full min-h-0 w-full grid-cols-1 grid-rows-[30dvh_minmax(0,1fr)] gap-3 p-3 md:grid-rows-none md:grid-cols-[clamp(160px,22vw,220px)_minmax(0,1fr)] lg:grid-cols-[clamp(200px,18vw,260px)_minmax(0,1fr)] xl:grid-cols-[280px_minmax(0,1fr)]"
+			class="grid h-full min-h-0 w-full gap-3 p-3 grid-cols-1 grid-rows-[30dvh_minmax(0,1fr)] md:grid-rows-none {selectedPlayer ? 'md:grid-cols-[clamp(160px,22vw,220px)_minmax(0,1fr)_clamp(300px,25vw,400px)] lg:grid-cols-[clamp(200px,18vw,260px)_minmax(0,1fr)_clamp(320px,22vw,420px)] xl:grid-cols-[280px_minmax(0,1fr)_360px]' : 'md:grid-cols-[clamp(160px,22vw,220px)_minmax(0,1fr)] lg:grid-cols-[clamp(200px,18vw,260px)_minmax(0,1fr)] xl:grid-cols-[280px_minmax(0,1fr)]'}"
 		>
 			<div class="min-h-0 h-full overflow-auto md:overflow-visible">
 				<ColumnsFilter
@@ -147,9 +224,92 @@
 					{visibleCols}
 					{sortKey}
 					{sortAsc}
+					selectedPlayer={selectedPlayer}
 					on:sort={(e) => sortBy(e.detail.key)}
+					on:select={handleSelect}
 				/>
 			</div>
+			{#if selectedPlayer}
+				<div class="min-h-0 h-full overflow-auto md:overflow-visible">
+					<Card class="w-full minimal-shadow minimal-shadow-hover border border-[#E5E7EB] rounded-xl bg-white h-full flex flex-col">
+						<CardHeader class="pb-6 shrink-0">
+							<div class="flex items-center justify-between">
+								<CardTitle class="text-center text-2xl font-heading text-[#111827] font-semibold flex-1">
+									{selectedPlayer.player ?? '(Unknown Player)'}
+								</CardTitle>
+								<Button
+									variant="ghost"
+									size="icon"
+									onclick={clearSelection}
+									class="shrink-0 ml-2"
+									aria-label="Close player stats"
+								>
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										width="24"
+										height="24"
+										viewBox="0 0 24 24"
+										fill="none"
+										stroke="currentColor"
+										stroke-width="2"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+									>
+										<path d="M18 6L6 18" />
+										<path d="M6 6l12 12" />
+									</svg>
+								</Button>
+							</div>
+						</CardHeader>
+						<CardContent class="flex-1 min-h-0 overflow-y-auto">
+							{#if Object.keys(selectedPercentiles).length > 0}
+								<div class="space-y-6">
+									<div class="flex flex-col items-center gap-3 pb-2">
+										<img
+											src={profilePicture}
+											alt={`${selectedPlayer.player}'s profile picture`}
+											class="h-20 w-20 shrink-0 rounded-full object-cover md:h-24 md:w-24 border-2 border-[#3B82F6] minimal-shadow"
+											loading="lazy"
+										/>
+										<div class="text-muted-foreground text-center text-sm">
+											Top 5 stats with percentile rankings
+										</div>
+									</div>
+									{#each topStats as stat (stat.key)}
+										{#if selectedPercentiles[stat.key] !== undefined && selectedPlayer[stat.key as keyof Player] != null}
+											<div class="space-y-2">
+												<div class="flex items-center justify-between">
+													<span class="text-sm font-medium">{stat.label}</span>
+													<div class="flex items-center gap-4">
+														<span class="text-base font-bold font-mono">
+															{stat.format(selectedPlayer[stat.key as keyof Player])}
+														</span>
+														<span
+															class={`text-base font-bold ${getPercentileTextColor(selectedPercentiles[stat.key])}`}
+														>
+															Top {getTopPercent(selectedPercentiles[stat.key])}%
+														</span>
+													</div>
+												</div>
+												<div class="bg-[#E5E7EB] h-2 w-full overflow-hidden rounded-full">
+													<div
+														class={`h-full transition-all duration-300 ${getPercentileColor(selectedPercentiles[stat.key])}`}
+														style={`width: ${selectedPercentiles[stat.key]}%`}
+													></div>
+												</div>
+											</div>
+										{/if}
+									{/each}
+								</div>
+							{:else}
+								<div class="text-muted-foreground text-center text-sm">
+									Loading stats...
+								</div>
+							{/if}
+						</CardContent>
+					</Card>
+				</div>
+			{/if}
 		</div>
 	</div>
 </div>

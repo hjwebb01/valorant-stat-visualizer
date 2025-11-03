@@ -16,8 +16,9 @@
 	export let visibleCols: Col[] = [];
 	export let sortKey: Key;
 	export let sortAsc: boolean;
+	export let selectedPlayer: Player | null = null;
 
-	const dispatch = createEventDispatcher<{ sort: { key: Key } }>();
+	const dispatch = createEventDispatcher<{ sort: { key: Key }; select: { player: Player } }>();
 
 	const fmtNum = (v: unknown, d = 2) =>
 		typeof v === 'number' && Number.isFinite(v)
@@ -127,8 +128,15 @@
 
 					<TableBody>
 						{#each sorted as p, i (p.id)}
-							<TableRow class="hover:bg-muted/50 odd:bg-muted/20">
-								<TableCell class="border-r text-right font-mono">{i + 1}</TableCell>
+							<TableRow
+								class={`hover:bg-muted/50 odd:bg-muted/20 cursor-pointer transition-all duration-150 ${
+									selectedPlayer?.id === p.id ? 'bg-[#EFF6FF] selected-row' : ''
+								}`}
+								tabindex={0}
+								aria-selected={selectedPlayer?.id === p.id}
+								onclick={() => dispatch('select', { player: p })}
+							>
+								<TableCell class={`border-r text-right font-mono ${selectedPlayer?.id === p.id ? 'text-[#3B82F6]' : ''}`}>{i + 1}</TableCell>
 								{#each visibleCols as c}
 									<TableCell
 										class={`${c.align === 'right' ? 'text-right' : 'text-left'} ${c.widthClass ?? ''} border-r last:border-r-0`}
@@ -156,3 +164,23 @@
 		</CardContent>
 	</Card>
 </section>
+
+<style>
+	:global(tr[data-slot='table-row']) {
+		border-bottom: none;
+		border: none;
+	}
+
+	:global(.selected-row) {
+		position: relative;
+	}
+
+	:global(.selected-row::after) {
+		content: '';
+		position: absolute;
+		inset: 2px;
+		border: 2px solid #3B82F6;
+		border-radius: 0.75rem;
+		pointer-events: none;
+	}
+</style>

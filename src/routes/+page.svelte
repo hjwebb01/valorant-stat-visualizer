@@ -131,7 +131,7 @@
 								aria-selected={selected?.id === p.id}
 								onclick={() => (selected = p)}
 							>
-								<TableCell class={`text-right font-mono font-medium ${selected?.id === p.id ? 'text-[#3B82F6]' : i === 0 ? 'text-[#3B82F6]' : 'text-[#6B7280]'}`}>{i + 1}</TableCell>
+								<TableCell class={`text-right font-mono font-medium ${selected?.id === p.id ? 'text-[#3B82F6]' : 'text-[#6B7280]'}`}>{i + 1}</TableCell>
 								{#each cols as c}
 									<TableCell class={`${c.align === 'right' ? 'text-right' : 'text-left'} ${c.key === 'player' ? 'w-44 md:w-48' : 'px-4'} last:pr-2 md:last:pr-4`}>
 										{#if c.key === 'player'}
