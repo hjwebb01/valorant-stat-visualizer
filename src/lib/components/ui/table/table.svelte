@@ -12,7 +12,7 @@
 
 <div
 	data-slot="table-container"
-	class="bg-background p-4 relative w-full overflow-x-auto rounded-lg border shadow-md"
+	class="bg-secondary p-4 relative w-full overflow-x-auto rounded-lg border shadow-md"
 >
 	<table
 		bind:this={ref}
