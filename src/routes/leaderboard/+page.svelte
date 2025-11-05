@@ -89,10 +89,7 @@
 
 	// Percentile helpers
 	const percentileExclude = new Set(['id', 'player', 'agents', 'created_at', 'dataset_id']);
-	function computeSelectedPercentiles(
-		sel: Player,
-		arr: Player[]
-	): Record<string, number> {
+	function computeSelectedPercentiles(sel: Player, arr: Player[]): Record<string, number> {
 		const out: Record<string, number> = {};
 		for (const [k, v] of Object.entries(sel)) {
 			if (percentileExclude.has(k)) continue;
@@ -113,7 +110,9 @@
 	}
 
 	let selectedPercentiles: Record<string, number> = {};
-	$: selectedPercentiles = selectedPlayer ? computeSelectedPercentiles(selectedPlayer, players) : {};
+	$: selectedPercentiles = selectedPlayer
+		? computeSelectedPercentiles(selectedPlayer, players)
+		: {};
 
 	// Top stats to display with equal emphasis
 	const topStats: Array<{ key: Key; label: string; format: (v: any) => string }> = [
@@ -206,9 +205,11 @@
 <div class="bg-background fixed inset-0 h-dvh pt-20">
 	<div class="h-full min-h-0 overflow-y-auto" data-scrollport>
 		<div
-			class="grid h-full min-h-0 w-full gap-3 p-3 grid-cols-1 grid-rows-[30dvh_minmax(0,1fr)] md:grid-rows-none {selectedPlayer ? 'md:grid-cols-[clamp(160px,22vw,220px)_minmax(0,1fr)_clamp(300px,25vw,400px)] lg:grid-cols-[clamp(200px,18vw,260px)_minmax(0,1fr)_clamp(320px,22vw,420px)] xl:grid-cols-[280px_minmax(0,1fr)_360px]' : 'md:grid-cols-[clamp(160px,22vw,220px)_minmax(0,1fr)] lg:grid-cols-[clamp(200px,18vw,260px)_minmax(0,1fr)] xl:grid-cols-[280px_minmax(0,1fr)]'}"
+			class="grid h-full min-h-0 w-full grid-cols-1 grid-rows-[30dvh_minmax(0,1fr)] gap-3 p-3 md:grid-rows-none {selectedPlayer
+				? 'md:grid-cols-[clamp(160px,22vw,220px)_minmax(0,1fr)_clamp(300px,25vw,400px)] lg:grid-cols-[clamp(200px,18vw,260px)_minmax(0,1fr)_clamp(320px,22vw,420px)] xl:grid-cols-[280px_minmax(0,1fr)_360px]'
+				: 'md:grid-cols-[clamp(160px,22vw,220px)_minmax(0,1fr)] lg:grid-cols-[clamp(200px,18vw,260px)_minmax(0,1fr)] xl:grid-cols-[280px_minmax(0,1fr)]'}"
 		>
-			<div class="min-h-0 h-full overflow-auto md:overflow-visible">
+			<div class="h-full min-h-0 overflow-auto md:overflow-visible">
 				<ColumnsFilter
 					{cols}
 					{visibleSet}
@@ -218,30 +219,34 @@
 					on:reset={resetDefaults}
 				/>
 			</div>
-			<div class="min-h-0 h-full">
+			<div class="h-full min-h-0">
 				<LeaderboardTable
 					{players}
 					{visibleCols}
 					{sortKey}
 					{sortAsc}
-					selectedPlayer={selectedPlayer}
+					{selectedPlayer}
 					on:sort={(e) => sortBy(e.detail.key)}
 					on:select={handleSelect}
 				/>
 			</div>
 			{#if selectedPlayer}
-				<div class="min-h-0 h-full overflow-auto md:overflow-visible">
-					<Card class="w-full minimal-shadow minimal-shadow-hover border border-[#E5E7EB] rounded-xl bg-white h-full flex flex-col">
-						<CardHeader class="pb-6 shrink-0">
+				<div class="h-full min-h-0 overflow-auto md:overflow-visible">
+					<Card
+						class="minimal-shadow minimal-shadow-hover border-border flex h-full w-full flex-col rounded-xl border"
+					>
+						<CardHeader class="shrink-0 pb-6">
 							<div class="flex items-center justify-between">
-								<CardTitle class="text-center text-2xl font-heading text-[#111827] font-semibold flex-1">
+								<CardTitle
+									class="font-heading flex-1 text-center text-2xl font-semibold text-[#111827]"
+								>
 									{selectedPlayer.player ?? '(Unknown Player)'}
 								</CardTitle>
 								<Button
 									variant="ghost"
 									size="icon"
 									onclick={clearSelection}
-									class="shrink-0 ml-2"
+									class="ml-2 shrink-0"
 									aria-label="Close player stats"
 								>
 									<svg
@@ -261,14 +266,14 @@
 								</Button>
 							</div>
 						</CardHeader>
-						<CardContent class="flex-1 min-h-0 overflow-y-auto">
+						<CardContent class="min-h-0 flex-1 overflow-y-auto">
 							{#if Object.keys(selectedPercentiles).length > 0}
 								<div class="space-y-6">
 									<div class="flex flex-col items-center gap-3 pb-2">
 										<img
 											src={profilePicture}
 											alt={`${selectedPlayer.player}'s profile picture`}
-											class="h-20 w-20 shrink-0 rounded-full object-cover md:h-24 md:w-24 border-2 border-[#3B82F6] minimal-shadow"
+											class="minimal-shadow h-20 w-20 shrink-0 rounded-full border-2 border-[#3B82F6] object-cover md:h-24 md:w-24"
 											loading="lazy"
 										/>
 										<div class="text-muted-foreground text-center text-sm">
@@ -281,7 +286,7 @@
 												<div class="flex items-center justify-between">
 													<span class="text-sm font-medium">{stat.label}</span>
 													<div class="flex items-center gap-4">
-														<span class="text-base font-bold font-mono">
+														<span class="font-mono text-base font-bold">
 															{stat.format(selectedPlayer[stat.key as keyof Player])}
 														</span>
 														<span
@@ -291,7 +296,7 @@
 														</span>
 													</div>
 												</div>
-												<div class="bg-[#E5E7EB] h-2 w-full overflow-hidden rounded-full">
+												<div class="h-2 w-full overflow-hidden rounded-full bg-[#E5E7EB]">
 													<div
 														class={`h-full transition-all duration-300 ${getPercentileColor(selectedPercentiles[stat.key])}`}
 														style={`width: ${selectedPercentiles[stat.key]}%`}
@@ -302,9 +307,7 @@
 									{/each}
 								</div>
 							{:else}
-								<div class="text-muted-foreground text-center text-sm">
-									Loading stats...
-								</div>
+								<div class="text-muted-foreground text-center text-sm">Loading stats...</div>
 							{/if}
 						</CardContent>
 					</Card>

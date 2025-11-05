@@ -79,43 +79,52 @@
 
 	function getPercentileColor(percentile: number): string {
 		const topPercent = getTopPercent(percentile);
-		// Map gradients to theme variables
-		if (topPercent <= 10) return 'bg-gradient-to-r from-primary to-accent';
-		if (topPercent <= 25) return 'bg-gradient-to-r from-primary to-secondary';
-		if (topPercent <= 50) return 'bg-gradient-to-r from-secondary to-accent';
-		if (topPercent <= 75) return 'bg-gradient-to-r from-muted to-secondary';
-		return 'bg-gradient-to-r from-muted to-border';
+		// Simple blue gradient - professional and subtle
+		if (topPercent <= 10) return 'bg-gradient-to-r from-[#3B82F6] to-[#2563EB]'; // Deep blue
+		if (topPercent <= 25) return 'bg-gradient-to-r from-[#60A5FA] to-[#3B82F6]'; // Medium blue
+		if (topPercent <= 50) return 'bg-gradient-to-r from-[#93C5FD] to-[#60A5FA]'; // Light blue
+		if (topPercent <= 75) return 'bg-gradient-to-r from-[#DBEAFE] to-[#93C5FD]'; // Very light blue
+		return 'bg-gradient-to-r from-[#E5E7EB] to-[#D1D5DB]'; // Gray
 	}
 
 	function getPercentileTextColor(percentile: number): string {
 		const topPercent = getTopPercent(percentile);
-		if (topPercent <= 25) return 'text-primary';
-		if (topPercent <= 50) return 'text-secondary';
-		if (topPercent <= 75) return 'text-accent';
-		return 'text-muted-foreground';
+		// Blue accent for percentile text - clean and professional
+		if (topPercent <= 10) return 'text-[#2563EB]'; // Deep blue
+		if (topPercent <= 25) return 'text-[#3B82F6]'; // Blue
+		if (topPercent <= 50) return 'text-[#60A5FA]'; // Medium blue
+		if (topPercent <= 75) return 'text-[#93C5FD]'; // Light blue
+		return 'text-[#6B7280]'; // Gray
 	}
+
 	// Layout components
 	import DashboardCenter from '$lib/components/layout/DashboardCenter.svelte';
 	import DashboardGrid from '$lib/components/layout/DashboardGrid.svelte';
-	
+
 	// Profile picture placeholder
 	import profilePicture from '$lib/assets/fatpig.jpg';
 </script>
 
 <DashboardCenter max="max-w-7xl" vertical="center">
 	<DashboardGrid cols="md:grid-cols-2" gap="gap-8">
-		<Card class="w-full minimal-shadow minimal-shadow-hover border border-border rounded-xl bg-card">
+		<Card
+			class="minimal-shadow minimal-shadow-hover border-border bg-card w-full rounded-xl border"
+		>
 			<CardHeader class="pb-1">
-					<CardTitle class="text-center text-2xl font-heading text-foreground font-semibold">Top 20 Players</CardTitle>
+				<CardTitle class="font-heading text-foreground text-center text-2xl font-semibold"
+					>Top 20 Players</CardTitle
+				>
 			</CardHeader>
-				<CardContent>
-				<Table class="w-full border-separate border-spacing-y-2 border-spacing-x-0">
+			<CardContent>
+				<Table class="w-full border-separate border-spacing-x-0 border-spacing-y-2">
 					<TableCaption>{allPlayers.length} players (ordered by ACS)</TableCaption>
 					<TableHeader>
 						<TableRow>
 							<TableHead class="w-12 text-right">#</TableHead>
 							{#each cols as c}
-								<TableHead class={`${c.align === 'right' ? 'text-right' : 'text-left'} ${c.key === 'player' ? 'w-44 md:w-48' : 'px-4'} last:pr-2 md:last:pr-4`}>
+								<TableHead
+									class={`${c.align === 'right' ? 'text-right' : 'text-left'} ${c.key === 'player' ? 'w-44 md:w-48' : 'px-4'} last:pr-2 md:last:pr-4`}
+								>
 									{c.label}
 								</TableHead>
 							{/each}
@@ -123,21 +132,29 @@
 					</TableHeader>
 					<TableBody>
 						{#each renderedPlayers as p, i (p.id ?? i)}
-								<TableRow
-									class={`relative hover:bg-accent cursor-pointer focus:outline-none transition-all duration-150 rounded-xl ${selected?.id === p.id ? 'bg-accent selected-row' : 'bg-card'}`}
+							<TableRow
+								class={`hover:bg-accent relative cursor-pointer rounded-xl transition-all duration-150 focus:outline-none ${selected?.id === p.id ? 'bg-accent selected-row' : 'bg-card'}`}
 								tabindex={0}
 								aria-selected={selected?.id === p.id}
 								onclick={() => (selected = p)}
 							>
-								<TableCell class={`text-right font-mono font-medium ${selected?.id === p.id ? 'text-[#3B82F6]' : 'text-[#6B7280]'}`}>{i + 1}</TableCell>
+								<TableCell
+									class={`text-right font-mono font-medium ${selected?.id === p.id ? 'text-[#3B82F6]' : 'text-[#6B7280]'}`}
+									>{i + 1}</TableCell
+								>
 								{#each cols as c}
-									<TableCell class={`${c.align === 'right' ? 'text-right' : 'text-left'} ${c.key === 'player' ? 'w-44 md:w-48' : 'px-4'} last:pr-2 md:last:pr-4`}>
+									<TableCell
+										class={`${c.align === 'right' ? 'text-right' : 'text-left'} ${c.key === 'player' ? 'w-44 md:w-48' : 'px-4'} last:pr-2 md:last:pr-4`}
+									>
 										{#if c.key === 'player'}
 											<div class="flex items-center gap-3">
 												<img
 													src={profilePicture}
 													alt={`${p.player}'s profile picture`}
-														class="h-8 w-8 shrink-0 rounded-full object-cover md:h-10 md:w-10 border {selected?.id === p.id ? 'border-primary border-2' : 'border-border'} hover:border-primary transition-colors duration-150"
+													class="h-8 w-8 shrink-0 rounded-full border object-cover md:h-10 md:w-10 {selected?.id ===
+													p.id
+														? 'border-primary border-2'
+														: 'border-border'} hover:border-primary transition-colors duration-150"
 													loading="lazy"
 												/>
 												<span>{p.player}</span>
@@ -157,9 +174,11 @@
 				</Table>
 			</CardContent>
 		</Card>
-			<Card class="w-full minimal-shadow minimal-shadow-hover border border-border rounded-xl bg-card">
+		<Card
+			class="minimal-shadow minimal-shadow-hover border-border bg-card w-full rounded-xl border"
+		>
 			<CardHeader class="pb-6">
-					<CardTitle class="text-center text-2xl font-heading text-foreground font-semibold">
+				<CardTitle class="font-heading text-foreground text-center text-2xl font-semibold">
 					{#if selected}
 						{selected.player ?? '(Unknown Player)'}
 					{:else}
@@ -174,7 +193,7 @@
 							<img
 								src={profilePicture}
 								alt={`${selected.player}'s profile picture`}
-									class="h-20 w-20 shrink-0 rounded-full object-cover md:h-24 md:w-24 border-2 border-primary minimal-shadow"
+								class="border-primary minimal-shadow h-20 w-20 shrink-0 rounded-full border-2 object-cover md:h-24 md:w-24"
 								loading="lazy"
 							/>
 							<div class="text-muted-foreground text-center text-sm">
@@ -187,7 +206,7 @@
 									<div class="flex items-center justify-between">
 										<span class="text-sm font-medium">{stat.label}</span>
 										<div class="flex items-center gap-4">
-											<span class="text-base font-bold font-mono">
+											<span class="font-mono text-base font-bold">
 												{stat.format(selected[stat.key])}
 											</span>
 											<span
@@ -197,7 +216,7 @@
 											</span>
 										</div>
 									</div>
-										<div class="bg-muted h-2 w-full overflow-hidden rounded-full">
+									<div class="bg-muted h-2 w-full overflow-hidden rounded-full">
 										<div
 											class={`h-full transition-all duration-300 ${getPercentileColor(selectedPercentiles[stat.key])}`}
 											style={`width: ${selectedPercentiles[stat.key]}%`}
@@ -218,11 +237,10 @@
 </DashboardCenter>
 
 <style>
-
-:global(tr[data-slot='table-row']) {
+	:global(tr[data-slot='table-row']) {
 		border-bottom: none;
 		border: none;
-}
+	}
 
-/* Removed inner rounded selection outline to avoid mismatch */
+	/* Removed inner rounded selection outline to avoid mismatch */
 </style>

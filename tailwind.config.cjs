@@ -6,9 +6,9 @@ export default {
 	theme: {
 		extend: {
 			fontFamily: {
-				'sans': ['Roboto Mono', 'Courier New', 'monospace'],
-				'heading': ['Orbitron', 'sans-serif'],
-				'mono': ['JetBrains Mono', 'Roboto Mono', 'Courier New', 'monospace']
+				sans: ['Roboto Mono', 'Courier New', 'monospace'],
+				heading: ['Orbitron', 'sans-serif'],
+				mono: ['JetBrains Mono', 'Roboto Mono', 'Courier New', 'monospace']
 			}
 		}
 	},

@@ -1,4 +1,5 @@
 <!-- e3dad202-0767-4fc6-a5a5-8abcffed95a0 a61bc112-cffd-4430-a4be-1d54bf6b5835 -->
+
 # Front Page Design Refactor Options
 
 ## Current State Analysis

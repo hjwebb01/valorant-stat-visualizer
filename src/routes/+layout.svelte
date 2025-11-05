@@ -13,6 +13,6 @@
 	<script defer data-domain="yourdomain.com" src="https://plausible.io/js/script.js"></script>
 </svelte:head>
 
-<div class="min-h-screen bg-background">
+<div class="bg-background min-h-screen">
 	{@render children?.()}
 </div>

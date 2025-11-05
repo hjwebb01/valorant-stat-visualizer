@@ -129,25 +129,35 @@
 					<TableBody>
 						{#each sorted as p, i (p.id)}
 							<TableRow
-								class={`hover:bg-muted/50 odd:bg-muted/20 cursor-pointer transition-all duration-150 ${
-									selectedPlayer?.id === p.id ? 'bg-[#EFF6FF] selected-row' : ''
+								class={`hover:bg-input/50 odd:bg-muted/10 even:bg-ring cursor-pointer transition-all duration-150 ${
+									selectedPlayer?.id === p.id ? 'bg-primary/10 selected-row' : ''
 								}`}
 								tabindex={0}
 								aria-selected={selectedPlayer?.id === p.id}
 								onclick={() => dispatch('select', { player: p })}
 							>
-								<TableCell class={`border-r text-right font-mono ${selectedPlayer?.id === p.id ? 'text-[#3B82F6]' : ''}`}>{i + 1}</TableCell>
+								<TableCell
+									class={`border-r text-right font-mono ${selectedPlayer?.id === p.id ? 'text-primary' : ''}`}
+									>{i + 1}</TableCell
+								>
 								{#each visibleCols as c}
 									<TableCell
 										class={`${c.align === 'right' ? 'text-right' : 'text-left'} ${c.widthClass ?? ''} border-r last:border-r-0`}
 									>
 										{#if c.key === 'agents'}
-											<div class="flex flex-wrap min-w-50 items-center gap-1 whitespace-nowrap">
+											<div class="flex min-w-50 flex-wrap items-center gap-1 whitespace-nowrap">
 												{#each agentListToIcons(p.agents) as a}
 													{#if a.url}
-														<img src={a.url} alt={a.name} class="h-7 w-7 shrink-0 rounded" loading="lazy" />
+														<img
+															src={a.url}
+															alt={a.name}
+															class="h-7 w-7 shrink-0 rounded"
+															loading="lazy"
+														/>
 													{:else}
-														<span class="max-w-full truncate text-xs text-muted-foreground">{a.name}</span>
+														<span class="text-muted-foreground max-w-full truncate text-xs"
+															>{a.name}</span
+														>
 													{/if}
 												{/each}
 											</div>
@@ -179,7 +189,7 @@
 		content: '';
 		position: absolute;
 		inset: 2px;
-		border: 2px solid #3B82F6;
+		border: 2px solid var(--color-primary);
 		border-radius: 0.75rem;
 		pointer-events: none;
 	}
