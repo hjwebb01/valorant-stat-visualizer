@@ -1,7 +1,12 @@
 <script lang="ts">
 	import '../app.css';
-	import favicon from '$lib/assets/favicon.svg';
+	import favicon from '$lib/assets/rivals_logo.png';
 	import Header from '$lib/components/Header.svelte';
+	import { initializeAuth } from '$lib/stores/auth';
+	import { onMount } from 'svelte';
+	onMount(() => {
+		initializeAuth();
+	});
 
 	let { children } = $props();
 </script>
