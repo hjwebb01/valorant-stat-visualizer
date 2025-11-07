@@ -6,6 +6,9 @@ declare module '$env/static/private' {
 	// server-only compile-time private env vars
 	export const SUPABASE_URL: string;
 	export const SUPABASE_SERVICE_ROLE_KEY: string;
+	export const GOOGLE_SERVICE_KEY_PATH: string;
+	export const SHEET_ID_TEAMS: string;
+	export const SHEET_ID_STATS: string;
 }
 
 declare module '$env/dynamic/private' {
