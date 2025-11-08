@@ -95,11 +95,11 @@
 				class="h-full w-full overflow-x-scroll overflow-y-auto pb-4"
 				style="scrollbar-gutter: stable both-edges;"
 			>
-				<Table class="w-full rounded-xl border">
+				<Table class="leaderboard-table w-full overflow-hidden rounded-xl border">
 					<TableCaption>{sorted.length} players. Scroll inside this card to view more.</TableCaption
 					>
 
-					<TableHeader>
+					<TableHeader class="leaderboard-header border-b">
 						<TableRow
 							class="bg-background/95 supports-[backdrop-filter]:bg-background/75 sticky top-0 z-10 shadow-sm backdrop-blur"
 						>
@@ -129,7 +129,7 @@
 					<TableBody>
 						{#each sorted as p, i (p.id)}
 							<TableRow
-								class={`hover:bg-input/50 odd:bg-muted/10 even:bg-ring cursor-pointer transition-all duration-150 ${
+								class={`leaderboard-row cursor-pointer transition-all duration-150 odd:bg-[color:var(--leaderboard-row-odd)] even:bg-[color:var(--leaderboard-row-even)] hover:bg-[color:var(--leaderboard-row-hover)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--leaderboard-row-hover)] ${
 									selectedPlayer?.id === p.id ? 'bg-primary/10 selected-row' : ''
 								}`}
 								tabindex={0}
@@ -176,7 +176,25 @@
 </section>
 
 <style>
-	:global(tr[data-slot='table-row']) {
+	:global(.leaderboard-table) {
+		border-color: var(--leaderboard-border);
+		background: var(--background);
+	}
+
+	:global(.leaderboard-header) {
+		border-color: var(--leaderboard-border);
+		background-color: var(--leaderboard-row-odd);
+	}
+
+	:global(.leaderboard-row) {
+		border-bottom: 1px solid var(--leaderboard-border);
+	}
+
+	:global(.leaderboard-row:last-child) {
+		border-bottom: none;
+	}
+
+	:global(tr[data-slot='table-row']:not(.leaderboard-row)) {
 		border-bottom: none;
 		border: none;
 	}
