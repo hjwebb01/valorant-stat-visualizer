@@ -231,7 +231,15 @@ export async function POST() {
     const STATS_SHEET_ID = SHEET_ID_STATS;
     const meta = await sheets.spreadsheets.get({ spreadsheetId: STATS_SHEET_ID });
     const sheetTabs =
-      meta.data.sheets?.map((s) => s.properties?.title).filter((t): t is string => !!t && /stats/i.test(t)) ?? [];
+    meta.data.sheets
+      ?.filter((s) => !s.properties?.hidden)
+      .map((s) => s.properties?.title)
+      .filter((t): t is string =>
+        !!t &&
+        /^w\d+\s*stats$/i.test(t.trim())
+      )
+      ?? [];
+
     console.log('📊 Found stat tabs:', sheetTabs);
 
     for (const tab of sheetTabs) {

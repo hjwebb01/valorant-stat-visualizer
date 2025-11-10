@@ -1,33 +1,25 @@
-// src/routes/leaderboard/+page.server.ts
+// src/routes/api/leaderboard/+server.ts
+import { json } from '@sveltejs/kit';
 import { supabaseAdmin } from '$lib/server/supabaseAdmin';
 
-export const load = async ({ url }) => {
+export async function GET({ url }) {
   const label = url.searchParams.get('label') ?? 'All-Time';
-  console.log(`📥 Loading leaderboard data for ${label}...`);
-
-  let players: any[] = [];
-  let datasets: string[] = [];
-
-  // 🗂️ Fetch available dataset labels (plus All-Time)
-  const { data: datasetRows, error: dsErr } = await supabaseAdmin
-    .from('datasets')
-    .select('label')
-    .order('created_at', { ascending: true });
-
-  if (dsErr) console.warn('⚠️ Failed to fetch dataset list:', dsErr);
-  datasets = ['All-Time', ...(datasetRows?.map((d) => d.label) ?? [])];
+  console.log(`📊 API: fetching leaderboard for ${label}`);
 
   try {
+    let players: any[] = [];
+
     if (label === 'All-Time') {
-      // Load the aggregated all-time stats view
+      // Use the aggregated all-time view
       const { data, error } = await supabaseAdmin
         .from('v_player_stats_alltime')
         .select('*')
         .order('acs', { ascending: false });
+
       if (error) throw error;
       players = data ?? [];
     } else {
-      // Load stats for a specific week
+      // Load rows for a specific dataset/week
       const { data, error } = await supabaseAdmin
         .from('player_stats')
         .select(`
@@ -70,19 +62,19 @@ export const load = async ({ url }) => {
         `)
         .eq('datasets.label', label)
         .order('acs', { ascending: false });
+
       if (error) throw error;
 
-      players = (data ?? []).map((r: any) => ({
-        ...r,
-        player: r.players?.name ?? '(Unknown Player)',
-        dataset: r.datasets?.label ?? '(Unknown Dataset)'
+      players = (data ?? []).map((row: any) => ({
+        ...row,
+        player: row.players?.name ?? '(Unknown Player)',
+        dataset: row.datasets?.label ?? '(Unknown Dataset)'
       }));
     }
 
-    console.log(`✅ Loaded ${players.length} player rows`);
-    return { players, datasets, selectedLabel: label };
+    return json({ ok: true, players });
   } catch (err: any) {
-    console.error('❌ Failed to load leaderboard:', err);
-    return { players: [], datasets, selectedLabel: label, error: err.message ?? String(err) };
+    console.error('❌ Failed to fetch leaderboard:', err);
+    return json({ ok: false, error: err.message ?? String(err) }, { status: 500 });
   }
-};
+}
