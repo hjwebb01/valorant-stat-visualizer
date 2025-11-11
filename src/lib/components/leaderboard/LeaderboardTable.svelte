@@ -39,6 +39,24 @@
 					? new Date(r[c.key] as string).toLocaleString()
 					: String(r[c.key] ?? '');
 
+	const resolveKey = (row: Player & Record<string, any>): string => {
+		const base =
+			(row as any).id ??
+			(row as any).player_id ??
+			`${row.player ?? ''}-${(row as any).dataset_id ?? ''}`;
+		return base?.toString?.() ?? '';
+	};
+
+	const rowKey = (row: Player & Record<string, any>, index: number): string => {
+		const key = resolveKey(row);
+		return key || `${index}`;
+	};
+
+	const isSelected = (row: Player & Record<string, any>): boolean => {
+		if (!selectedPlayer) return false;
+		return resolveKey(row) === resolveKey(selectedPlayer as Player & Record<string, any>);
+	};
+
 	$: sorted = [...players].sort((a, b) => {
 		const va: any = a[sortKey],
 			vb: any = b[sortKey];
@@ -101,7 +119,7 @@
 
 					<TableHeader class="leaderboard-header border-b">
 						<TableRow
-							class="bg-background/95 supports-[backdrop-filter]:bg-background/75 sticky top-0 z-10 shadow-sm backdrop-blur"
+							class="bg-background/95 supports-backdrop-filter:bg-background/75 sticky top-0 z-10 shadow-sm backdrop-blur"
 						>
 							<TableHead class="w-12 border-r text-right">#</TableHead>
 							{#each visibleCols as c}
@@ -127,17 +145,17 @@
 					</TableHeader>
 
 					<TableBody>
-						{#each sorted as p, i (p.id)}
+						{#each sorted as p, i (rowKey(p, i))}
 							<TableRow
-								class={`leaderboard-row cursor-pointer transition-all duration-150 odd:bg-[color:var(--leaderboard-row-odd)] even:bg-[color:var(--leaderboard-row-even)] hover:bg-[color:var(--leaderboard-row-hover)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--leaderboard-row-hover)] ${
-									selectedPlayer?.id === p.id ? 'bg-primary/10 selected-row' : ''
+								class={`leaderboard-row cursor-pointer transition-all duration-150 odd:bg-(--leaderboard-row-odd) even:bg-(--leaderboard-row-even) hover:bg-(--leaderboard-row-hover) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--leaderboard-row-hover) ${
+									isSelected(p) ? 'bg-primary/10 selected-row' : ''
 								}`}
 								tabindex={0}
 								aria-selected={selectedPlayer?.id === p.id}
 								onclick={() => dispatch('select', { player: p })}
 							>
 								<TableCell
-									class={`border-r text-right font-mono ${selectedPlayer?.id === p.id ? 'text-primary' : ''}`}
+									class={`border-r text-right font-mono ${isSelected(p) ? 'text-primary' : ''}`}
 									>{i + 1}</TableCell
 								>
 								{#each visibleCols as c}

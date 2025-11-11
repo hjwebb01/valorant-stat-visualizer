@@ -9,8 +9,22 @@
 	import profilePicture from '$lib/assets/fatpig.jpg';
 
 	export let data: { players: Player[] };
-	let players = data.players ?? [];
+	let players: Player[] = [];
+	$: players = data.players ?? [];
+
+	const playerKey = (p: (Player & Record<string, any>) | Player | null | undefined) => {
+		if (!p) return '';
+		return (
+			(p as any).id ??
+			(p as any).player_id ??
+			`${p.player ?? ''}-${(p as any).dataset_id ?? ''}`
+		).toString();
+	};
+
 	let selectedPlayer: Player | null = null;
+	$: if (selectedPlayer && !players.some((p) => playerKey(p) === playerKey(selectedPlayer))) {
+		selectedPlayer = null;
+	}
 
 	const cols: Col[] = [
 		{
@@ -238,7 +252,7 @@
 						<CardHeader class="shrink-0 pb-6">
 							<div class="flex items-center justify-between">
 								<CardTitle
-									class="font-heading flex-1 text-center text-2xl font-semibold text-[#111827]"
+									class="font-heading flex-1 text-center text-2xl font-semibold text-[#f1f2f3]"
 								>
 									{selectedPlayer.player ?? '(Unknown Player)'}
 								</CardTitle>
