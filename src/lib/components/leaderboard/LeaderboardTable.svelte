@@ -1,14 +1,5 @@
 <script lang="ts">
-	import { Card, CardHeader, CardTitle, CardContent } from '$lib/components/ui/card';
-	import {
-		Table,
-		TableHeader,
-		TableRow,
-		TableHead,
-		TableBody,
-		TableCell,
-		TableCaption
-	} from '$lib/components/ui/table';
+	import { Card, CardHeader, CardTitle } from '$lib/components/ui/card';
 	import type { Col, Key, Player } from '$lib/types';
 	import { createEventDispatcher } from 'svelte';
 
@@ -40,10 +31,7 @@
 					: String(r[c.key] ?? '');
 
 	const resolveKey = (row: Player & Record<string, any>): string => {
-		const base =
-			(row as any).id ??
-			(row as any).player_id ??
-			`${row.player ?? ''}-${(row as any).dataset_id ?? ''}`;
+		const base = (row as any).id ?? (row as any).player_id ?? `${row.player ?? ''}-${(row as any).dataset_id ?? ''}`;
 		return base?.toString?.() ?? '';
 	};
 
@@ -62,10 +50,9 @@
 			vb: any = b[sortKey];
 		const na = typeof va === 'number' ? va : NaN,
 			nb = typeof vb === 'number' ? vb : NaN;
-		const cmp =
-			Number.isNaN(na) || Number.isNaN(nb)
-				? String(va ?? '').localeCompare(String(vb ?? ''), undefined, { numeric: true })
-				: na - nb;
+		const cmp = Number.isNaN(na) || Number.isNaN(nb)
+			? String(va ?? '').localeCompare(String(vb ?? ''), undefined, { numeric: true })
+			: na - nb;
 		return sortAsc ? cmp : -cmp;
 	});
 
@@ -77,13 +64,12 @@
 
 	const iconsByName: Record<string, string> = {};
 	for (const [path, url] of Object.entries(iconModules)) {
-		const m = path.match(/\/([^\/]+)_icon\.png$/);
+		const m = path.match(/\/([^/]+)_icon\.png$/);
 		if (m) iconsByName[m[1].toLowerCase()] = url as unknown as string;
 	}
 
 	function normKey(name: string): string {
 		let k = name.toLowerCase();
-		// Normalize special cases and strip punctuation that doesn't exist in filenames
 		k = k.replace(/\//g, ''); // e.g., KAY/O -> KAYO
 		if (k === 'harbour') k = 'harbor';
 		return k;
@@ -92,13 +78,10 @@
 	function agentListToIcons(list: unknown): Array<{ name: string; url?: string }> {
 		const s = String(list ?? '').trim();
 		if (!s) return [];
-		return s
-			.split(/\s+/)
-			.filter(Boolean)
-			.map((name) => {
-				const key = normKey(name);
-				return { name, url: iconsByName[key] };
-			});
+		return s.split(/\s+/).filter(Boolean).map((name) => {
+			const key = normKey(name);
+			return { name, url: iconsByName[key] };
+		});
 	}
 </script>
 
@@ -108,120 +91,104 @@
 			<CardTitle class="text-center text-3xl">Leaderboard</CardTitle>
 		</CardHeader>
 
-		<CardContent class="min-h-0 flex-1 overflow-hidden">
-			<div
-				class="h-full w-full overflow-x-scroll overflow-y-auto pb-4"
-				style="scrollbar-gutter: stable both-edges;"
-			>
-				<Table class="leaderboard-table w-full overflow-hidden rounded-xl border">
-					<TableCaption>{sorted.length} players. Scroll inside this card to view more.</TableCaption
-					>
-
-					<TableHeader class="leaderboard-header border-b">
-						<TableRow
-							class="bg-background/95 supports-backdrop-filter:bg-background/75 sticky top-0 z-10 shadow-sm backdrop-blur"
-						>
-							<TableHead class="w-12 border-r text-right">#</TableHead>
-							{#each visibleCols as c}
-								<TableHead
-									class={`select-none ${c.align === 'right' ? 'text-right' : 'text-left'} ${c.widthClass ?? ''} border-r last:border-r-0`}
-									title={`Sort by ${c.label}`}
-								>
-									<button
-										type="button"
-										class={`inline-flex w-full cursor-pointer items-center gap-1 ${c.align === 'right' ? 'justify-end' : 'justify-start'}`}
-										on:click={() => dispatch('sort', { key: c.key })}
-									>
-										<span class="inline-flex items-center gap-1">
-											{c.label}
-											{#if sortKey === c.key}
-												<span class="font-mono text-xs">{sortAsc ? '▲' : '▼'}</span>
-											{/if}
-										</span>
-									</button>
-								</TableHead>
-							{/each}
-						</TableRow>
-					</TableHeader>
-
-					<TableBody>
-						{#each sorted as p, i (rowKey(p, i))}
-							<TableRow
-								class={`leaderboard-row cursor-pointer transition-all duration-150 odd:bg-(--leaderboard-row-odd) even:bg-(--leaderboard-row-even) hover:bg-(--leaderboard-row-hover) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--leaderboard-row-hover) ${
-									isSelected(p) ? 'bg-primary/10 selected-row' : ''
-								}`}
-								tabindex={0}
-								aria-selected={selectedPlayer?.id === p.id}
-								onclick={() => dispatch('select', { player: p })}
+		<div class="leaderboard-wrapper h-full w-full overflow-auto">
+			<table class="leaderboard-table w-full border-collapse">
+				<thead class="leaderboard-header border-b sticky top-0 z-20 bg-slate-800/95 supports-backdrop-filter:bg-slate-800/80 backdrop-blur-sm shadow-md">
+					<tr class="bg-background/95 supports-backdrop-filter:bg-background/75 top-0 z-10 shadow-sm backdrop-blur">
+						<th class="w-12 border-r text-right px-3 py-3 font-semibold text-sm">#</th>
+						{#each visibleCols as c}
+							<th
+								class={`select-none ${c.align === 'right' ? 'text-right' : 'text-left'} ${c.widthClass ?? ''} border-r last:border-r-0 px-3 py-3 font-semibold text-sm`}
+								title={`Sort by ${c.label}`}
 							>
-								<TableCell
-									class={`border-r text-right font-mono ${isSelected(p) ? 'text-primary' : ''}`}
-									>{i + 1}</TableCell
+								<button
+									type="button"
+									class={`inline-flex w-full cursor-pointer items-center gap-1 ${c.align === 'right' ? 'justify-end' : 'justify-start'}`}
+									onclick={() => dispatch('sort', { key: c.key })}
 								>
-								{#each visibleCols as c}
-									<TableCell
-										class={`${c.align === 'right' ? 'text-right' : 'text-left'} ${c.widthClass ?? ''} border-r last:border-r-0`}
-									>
-										{#if c.key === 'agents'}
-											<div class="flex min-w-50 flex-wrap items-center gap-1 whitespace-nowrap">
-												{#each agentListToIcons(p.agents) as a}
-													{#if a.url}
-														<img
-															src={a.url}
-															alt={a.name}
-															class="h-7 w-7 shrink-0 rounded"
-															loading="lazy"
-														/>
-													{:else}
-														<span class="text-muted-foreground max-w-full truncate text-xs"
-															>{a.name}</span
-														>
-													{/if}
-												{/each}
-											</div>
-										{:else}
-											{fmt(c, p)}
+									<span class="inline-flex items-center gap-1">
+										{c.label}
+										{#if sortKey === c.key}
+											<span class="font-mono text-xs">{sortAsc ? '▲' : '▼'}</span>
 										{/if}
-									</TableCell>
-								{/each}
-							</TableRow>
+									</span>
+								</button>
+							</th>
 						{/each}
-					</TableBody>
-				</Table>
-			</div>
-		</CardContent>
+					</tr>
+				</thead>
+
+				<tbody>
+					{#each sorted as p, i (rowKey(p, i))}
+						<tr
+							class={`leaderboard-row cursor-pointer transition-all duration-150 odd:bg-(--leaderboard-row-odd) even:bg-(--leaderboard-row-even) hover:bg-(--leaderboard-row-hover) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--leaderboard-row-hover) ${
+								isSelected(p) ? 'bg-primary/10 selected-row' : ''
+							}`}
+							tabindex={0}
+							aria-selected={selectedPlayer?.id === p.id}
+							onclick={() => dispatch('select', { player: p })}
+						>
+							<td class={`border-r text-right font-mono px-3 py-3 text-sm ${isSelected(p) ? 'text-primary' : ''}`}>
+								{i + 1}
+							</td>
+							{#each visibleCols as c}
+								<td class={`${c.align === 'right' ? 'text-right' : 'text-left'} ${c.widthClass ?? ''} border-r last:border-r-0 px-3 py-3 text-sm`}>
+									{#if c.key === 'agents'}
+										<div class="flex min-w-50 flex-wrap items-center gap-1 whitespace-nowrap">
+											{#each agentListToIcons(p.agents) as a}
+												{#if a.url}
+													<img
+														src={a.url}
+														alt={a.name}
+														class="h-7 w-7 shrink-0 rounded"
+														loading="lazy"
+													/>
+												{:else}
+													<span class="text-muted-foreground max-w-full truncate text-xs">{a.name}</span>
+												{/if}
+											{/each}
+										</div>
+									{:else}
+										{fmt(c, p)}
+									{/if}
+								</td>
+							{/each}
+						</tr>
+					{/each}
+				</tbody>
+			</table>
+		</div>
 	</Card>
 </section>
 
 <style>
-	:global(.leaderboard-table) {
+	.leaderboard-wrapper {
+		scrollbar-gutter: stable both-edges;
+	}
+
+	.leaderboard-table {
 		border-color: var(--leaderboard-border);
 		background: var(--background);
 	}
 
-	:global(.leaderboard-header) {
+	.leaderboard-header {
 		border-color: var(--leaderboard-border);
 		background-color: var(--leaderboard-row-odd);
 	}
 
-	:global(.leaderboard-row) {
+	.leaderboard-row {
 		border-bottom: 1px solid var(--leaderboard-border);
 	}
 
-	:global(.leaderboard-row:last-child) {
+	.leaderboard-row:last-child {
 		border-bottom: none;
 	}
 
-	:global(tr[data-slot='table-row']:not(.leaderboard-row)) {
-		border-bottom: none;
-		border: none;
-	}
-
-	:global(.selected-row) {
+	.selected-row {
 		position: relative;
 	}
 
-	:global(.selected-row::after) {
+	.selected-row::after {
 		content: '';
 		position: absolute;
 		inset: 2px;
