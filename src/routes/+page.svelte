@@ -1,6 +1,10 @@
 <script lang="ts">
+	import { page } from '$app/stores';
+	import { enhance } from '$app/forms';
+
 	// UI components
 	import { Card, CardHeader, CardTitle, CardContent } from '$lib/components/ui/card';
+	import { Button } from '$lib/components/ui/button';
 	import {
 		Table,
 		TableHeader,
@@ -14,10 +18,24 @@
 	// Server-provided data
 	export let data: {
 		players?: Array<Record<string, any>>;
+		period?: 'week1' | 'week2' | 'alltime';
 	} = {};
+
 	let allPlayers: Array<Record<string, any>> = data.players ?? [];
 	let renderedPlayers: Array<Record<string, any>> = allPlayers.slice(0, 20);
 	let selected: Record<string, any> | null = null;
+	let selectedPeriod = $page.url.searchParams.get('period') || 'alltime';
+
+	// Update data when period changes
+	$: if (data.period) {
+		selectedPeriod = data.period;
+		allPlayers = data.players ?? [];
+		renderedPlayers = allPlayers.slice(0, 20);
+		// Reset selected player when period changes
+		if (selected) {
+			selected = allPlayers.find(p => p.player === selected?.player) || null;
+		}
+	}
 
 	const cols: Array<{
 		key: 'player' | 'acs' | 'kd' | 'adr';
@@ -111,9 +129,31 @@
 			class="minimal-shadow minimal-shadow-hover border-border bg-card w-full rounded-xl border"
 		>
 			<CardHeader class="pb-1">
-				<CardTitle class="font-heading text-foreground text-center text-2xl font-semibold"
-					>Top 20 Players</CardTitle
-				>
+				<div class="flex items-center justify-between w-full">
+					<CardTitle class="font-heading text-foreground text-2xl font-semibold"
+						>Top 20 Players</CardTitle
+					>
+					<div class="flex space-x-2">
+						<a
+							href="?period=week1"
+							class="px-3 py-1 text-sm rounded-md transition-colors ${selectedPeriod === 'week1' ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100'}"
+						>
+							Week 1
+						</a>
+						<a
+							href="?period=week2"
+							class="px-3 py-1 text-sm rounded-md transition-colors ${selectedPeriod === 'week2' ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100'}"
+						>
+							Week 2
+						</a>
+						<a
+							href="?period=alltime"
+							class="px-3 py-1 text-sm rounded-md transition-colors ${selectedPeriod === 'alltime' ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100'}"
+						>
+							All Time
+						</a>
+					</div>
+				</div>
 			</CardHeader>
 			<CardContent>
 				<Table class="w-full border-separate border-spacing-x-0 border-spacing-y-2">
