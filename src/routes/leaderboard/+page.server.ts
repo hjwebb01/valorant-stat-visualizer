@@ -1,9 +1,25 @@
 // src/routes/leaderboard/+page.server.ts
 import { supabaseAdmin } from '$lib/server/supabaseAdmin';
+import type { Player } from '$lib/types';
+
+type TimePeriod = 'week1' | 'week2' | 'alltime';
+
+const getViewName = (period: TimePeriod): string => {
+  switch (period) {
+    case 'week1':
+      return 'v_player_stats_week1';
+    case 'week2':
+      return 'v_player_stats_week2';
+    case 'alltime':
+    default:
+      return 'v_player_stats_alltime';
+  }
+};
 
 export const load = async ({ url }) => {
+  const period = (url.searchParams.get('period') as TimePeriod) || 'alltime';
   const label = url.searchParams.get('label') ?? 'All-Time';
-  console.log(`📥 Loading leaderboard data for ${label}...`);
+  console.log(`📥 Loading leaderboard data for period: ${period}, label: ${label}...`);
 
   let players: any[] = [];
   let datasets: string[] = [];
@@ -18,71 +34,21 @@ export const load = async ({ url }) => {
   datasets = ['All-Time', ...(datasetRows?.map((d) => d.label) ?? [])];
 
   try {
-    if (label === 'All-Time') {
-      // Load the aggregated all-time stats view
-      const { data, error } = await supabaseAdmin
-        .from('v_player_stats_alltime')
-        .select('*')
-        .order('acs', { ascending: false });
-      if (error) throw error;
-      players = data ?? [];
-    } else {
-      // Load stats for a specific week
-      const { data, error } = await supabaseAdmin
-        .from('player_stats')
-        .select(`
-          id,
-          dataset_id,
-          player_id,
-          team_id,
-          acs,
-          kd,
-          adr,
-          kast_pct,
-          kills,
-          deaths,
-          assists,
-          fk,
-          fd,
-          hs_pct,
-          econ_rating,
-          games,
-          games_won,
-          games_lost,
-          rounds,
-          rounds_won,
-          rounds_lost,
-          kpg,
-          kpr,
-          dpg,
-          dpr,
-          apg,
-          apr,
-          fkpg,
-          fdpg,
-          plants,
-          plants_per_game,
-          defuses,
-          defuses_per_game,
-          agents,
-          players!player_stats_player_id_fkey(name),
-          datasets!player_stats_dataset_id_fkey(label)
-        `)
-        .eq('datasets.label', label)
-        .order('acs', { ascending: false });
-      if (error) throw error;
+    // Use the new period-based system
+    const viewName = getViewName(period);
+    const { data, error } = await supabaseAdmin
+      .from(viewName)
+      .select('*')
+      .order('acs', { ascending: false });
+    
+    if (error) throw error;
+    players = (data ?? []) as Player[];
 
-      players = (data ?? []).map((r: any) => ({
-        ...r,
-        player: r.players?.name ?? '(Unknown Player)',
-        dataset: r.datasets?.label ?? '(Unknown Dataset)'
-      }));
-    }
-
-    console.log(`✅ Loaded ${players.length} player rows`);
-    return { players, datasets, selectedLabel: label };
-  } catch (err: any) {
+    console.log(`✅ Loaded ${players.length} player rows from ${viewName}`);
+    return { players, datasets, selectedLabel: label, period };
+  } catch (err: unknown) {
+    const errorMessage = err instanceof Error ? err.message : String(err);
     console.error('❌ Failed to load leaderboard:', err);
-    return { players: [], datasets, selectedLabel: label, error: err.message ?? String(err) };
+    return { players: [], datasets, selectedLabel: label, period, error: errorMessage };
   }
 };

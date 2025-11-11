@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Card, CardHeader, CardTitle } from '$lib/components/ui/card';
 	import type { Col, Key, Player } from '$lib/types';
+	import { Button } from '$lib/components/ui/button';
 	import { createEventDispatcher } from 'svelte';
 
 	export let players: Player[] = [];
@@ -8,6 +9,7 @@
 	export let sortKey: Key;
 	export let sortAsc: boolean;
 	export let selectedPlayer: Player | null = null;
+	export let selectedPeriod: string = 'alltime';
 
 	const dispatch = createEventDispatcher<{ sort: { key: Key }; select: { player: Player } }>();
 
@@ -88,7 +90,35 @@
 <section class="h-full min-h-0">
 	<Card class="flex h-full min-h-0 flex-col">
 		<CardHeader class="shrink-0">
-			<CardTitle class="text-center text-3xl">Leaderboard</CardTitle>
+			<div class="flex items-center justify-center gap-3">
+				<CardTitle class="text-center text-3xl">Leaderboard</CardTitle>
+				<div class="week-toggle-group">
+					<Button
+						variant="toggle"
+						size="sm"
+						href="?period=week1"
+						data-state={selectedPeriod === 'week1' ? 'active' : 'inactive'}
+					>
+						Week 1
+					</Button>
+					<Button
+						variant="toggle"
+						size="sm"
+						href="?period=week2"
+						data-state={selectedPeriod === 'week2' ? 'active' : 'inactive'}
+					>
+						Week 2
+					</Button>
+					<Button
+						variant="toggle"
+						size="sm"
+						href="?period=alltime"
+						data-state={selectedPeriod === 'alltime' ? 'active' : 'inactive'}
+					>
+						All Time
+					</Button>
+				</div>
+			</div>
 		</CardHeader>
 
 		<div class="leaderboard-wrapper h-full w-full overflow-auto">

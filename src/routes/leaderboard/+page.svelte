@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { page } from '$app/stores';
 	import ColumnsFilter from '$lib/components/leaderboard/ColumnsFilter.svelte';
 	import LeaderboardTable from '$lib/components/leaderboard/LeaderboardTable.svelte';
 	import { Card, CardHeader, CardTitle, CardContent } from '$lib/components/ui/card';
@@ -7,10 +8,21 @@
 	import { onMount } from 'svelte';
 	import { percentileRank, toPercent } from '$lib/utils';
 	import profilePicture from '$lib/assets/fatpig.jpg';
+	import './+page.css';
 
-	export let data: { players: Player[] };
+	export let data: { players: Player[]; period?: 'week1' | 'week2' | 'alltime' };
 	let players: Player[] = [];
 	$: players = data.players ?? [];
+	let selectedPeriod = $page.url.searchParams.get('period') || 'alltime';
+
+	// Update period when data changes
+	$: if (data.period) {
+		selectedPeriod = data.period;
+		// Reset selected player when period changes
+		if (selectedPlayer) {
+			selectedPlayer = players.find(p => p.player === selectedPlayer?.player) || null;
+		}
+	}
 
 	const playerKey = (p: (Player & Record<string, any>) | Player | null | undefined) => {
 		if (!p) return '';
@@ -234,12 +246,14 @@
 				/>
 			</div>
 			<div class="h-full min-h-0">
+				
 				<LeaderboardTable
 					{players}
 					{visibleCols}
 					{sortKey}
 					{sortAsc}
 					{selectedPlayer}
+					{selectedPeriod}
 					on:sort={(e) => sortBy(e.detail.key)}
 					on:select={handleSelect}
 				/>
@@ -250,7 +264,7 @@
 						class="minimal-shadow minimal-shadow-hover border-border flex h-full w-full flex-col rounded-xl border"
 					>
 						<CardHeader class="shrink-0 pb-6">
-							<div class="flex items-center justify-between">
+							<div class="flex items-center justify-center gap-3 player-header {selectedPlayer ? 'player-header-enter' : ''}">
 								<CardTitle
 									class="font-heading flex-1 text-center text-2xl font-semibold text-[#f1f2f3]"
 								>
@@ -260,13 +274,13 @@
 									variant="ghost"
 									size="icon"
 									onclick={clearSelection}
-									class="ml-2 shrink-0"
-									aria-label="Close player stats"
+									class="ml-2 shrink-0 h-8 w-8 rounded-full hover:bg-destructive/10 hover:text-destructive deselect-button"
+									aria-label="Deselect player"
 								>
 									<svg
 										xmlns="http://www.w3.org/2000/svg"
-										width="24"
-										height="24"
+										width="16"
+										height="16"
 										viewBox="0 0 24 24"
 										fill="none"
 										stroke="currentColor"

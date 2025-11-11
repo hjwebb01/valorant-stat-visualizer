@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { enhance } from '$app/forms';
+	import './+page.css';
 
 	// UI components
 	import { Card, CardHeader, CardTitle, CardContent } from '$lib/components/ui/card';
@@ -133,29 +134,35 @@
 					<CardTitle class="font-heading text-foreground text-2xl font-semibold"
 						>Top 20 Players</CardTitle
 					>
-					<div class="flex space-x-2">
-						<a
+					<div class="week-toggle-group">
+						<Button
+							variant="toggle"
+							size="sm"
 							href="?period=week1"
-							class="px-3 py-1 text-sm rounded-md transition-colors ${selectedPeriod === 'week1' ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100'}"
+							data-state={selectedPeriod === 'week1' ? 'active' : 'inactive'}
 						>
 							Week 1
-						</a>
-						<a
+						</Button>
+						<Button
+							variant="toggle"
+							size="sm"
 							href="?period=week2"
-							class="px-3 py-1 text-sm rounded-md transition-colors ${selectedPeriod === 'week2' ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100'}"
+							data-state={selectedPeriod === 'week2' ? 'active' : 'inactive'}
 						>
 							Week 2
-						</a>
-						<a
+						</Button>
+						<Button
+							variant="toggle"
+							size="sm"
 							href="?period=alltime"
-							class="px-3 py-1 text-sm rounded-md transition-colors ${selectedPeriod === 'alltime' ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100'}"
+							data-state={selectedPeriod === 'alltime' ? 'active' : 'inactive'}
 						>
 							All Time
-						</a>
+						</Button>
 					</div>
 				</div>
 			</CardHeader>
-			<CardContent>
+			<CardContent class="period-transition">
 				<Table class="w-full border-separate border-spacing-x-0 border-spacing-y-2">
 					<TableCaption>{allPlayers.length} players (ordered by ACS)</TableCaption>
 					<TableHeader>
@@ -218,13 +225,28 @@
 			class="minimal-shadow minimal-shadow-hover border-border bg-card w-full rounded-xl border"
 		>
 			<CardHeader class="pb-6">
-				<CardTitle class="font-heading text-foreground text-center text-2xl font-semibold">
+				<div class="flex items-center justify-center gap-3 player-header {selected ? 'player-header-enter' : ''}">
+					<CardTitle class="font-heading text-foreground text-center text-2xl font-semibold">
+						{#if selected}
+							{selected.player ?? '(Unknown Player)'}
+						{:else}
+							Player Stats & Rankings
+						{/if}
+					</CardTitle>
 					{#if selected}
-						{selected.player ?? '(Unknown Player)'}
-					{:else}
-						Player Stats & Rankings
+						<Button
+							variant="ghost"
+							size="icon"
+							class="h-8 w-8 rounded-full hover:bg-destructive/10 hover:text-destructive deselect-button"
+							onclick={() => (selected = null)}
+							aria-label="Deselect player"
+						>
+							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+								<path d="M18 6L6 18M6 6l12 12"/>
+							</svg>
+						</Button>
 					{/if}
-				</CardTitle>
+				</div>
 			</CardHeader>
 			<CardContent>
 				{#if selected && Object.keys(selectedPercentiles).length > 0}
