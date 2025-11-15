@@ -83,12 +83,16 @@
 					<!-- Example right-aligned action -->
 					<NavigationMenuItem class="ml-2">
 						{#if $isLoggedIn}
-							<Button variant="secondary" class="flex items-center gap-2 px-3" onclick={handleSignOut}>
+							<Button
+								variant="secondary"
+								class="flex items-center gap-2 px-3"
+								onclick={handleSignOut}
+							>
 								<LogOut size={18} />
 								<span>Sign out</span>
 							</Button>
 						{:else}
-							<Button variant="secondary" class="flex items-center gap-2 px-3" onclick={handleSignIn}>
+							<Button variant="secondary" class="flex items-center gap-2 px-3">
 								<LogIn size={18} />
 								<span>Sign in</span>
 							</Button>
@@ -139,12 +143,16 @@
 							</li>
 							<li class="pt-2">
 								{#if $isLoggedIn}
-									<Button variant="secondary" class="flex w-full items-center justify-center gap-2" onclick={handleSignOut}>
+									<Button
+										variant="secondary"
+										class="flex w-full items-center justify-center gap-2"
+										onclick={handleSignOut}
+									>
 										<LogOut size={18} />
 										<span>Sign out</span>
 									</Button>
 								{:else}
-									<Button variant="secondary" class="flex w-full items-center justify-center gap-2" onclick={handleSignIn}>
+									<Button variant="secondary" class="flex w-full items-center justify-center gap-2">
 										<LogIn size={18} />
 										<span>Sign in</span>
 									</Button>
