@@ -51,7 +51,7 @@
 			align: 'left',
 			widthClass: 'min-w-0 whitespace-nowrap'
 		},
-		{ key: 'games', label: 'G', align: 'right', digits: 0 },
+		{ key: 'games', label: 'Maps', align: 'right', digits: 0 },
 		{ key: 'games_won', label: 'W', align: 'right', digits: 0 },
 		{ key: 'games_lost', label: 'L', align: 'right', digits: 0 },
 		{ key: 'rounds', label: 'Rnds', align: 'right', digits: 0, hidden: true },
