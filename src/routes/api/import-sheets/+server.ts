@@ -246,7 +246,7 @@ export async function POST() {
       console.log(`📘 Processing stats tab: "${tab}"`);
       const res = await sheets.spreadsheets.values.get({
         spreadsheetId: STATS_SHEET_ID,
-        range: `'${tab}'!A1:Z`
+        range: `'${tab}'!A1:ZZ`
       });
 
       const rawRows = res.data.values ?? [];
