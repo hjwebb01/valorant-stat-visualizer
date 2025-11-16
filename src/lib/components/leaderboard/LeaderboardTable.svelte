@@ -80,10 +80,25 @@
 	function agentListToIcons(list: unknown): Array<{ name: string; url?: string }> {
 		const s = String(list ?? '').trim();
 		if (!s) return [];
-		return s.split(/\s+/).filter(Boolean).map((name) => {
-			const key = normKey(name);
-			return { name, url: iconsByName[key] };
-		});
+
+		const seen = new Set<string>();
+		const agents: Array<{ name: string; url?: string }> = [];
+
+		for (const rawName of s.split(/\s+/)) {
+			const cleanName = rawName.trim();
+			if (!cleanName) continue;
+
+			const key = normKey(cleanName);
+			if (seen.has(key)) continue;
+			seen.add(key);
+
+			agents.push({
+				name: cleanName,
+				url: iconsByName[key]
+			});
+		}
+
+		return agents;
 	}
 </script>
 
