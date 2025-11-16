@@ -1,5 +1,5 @@
 {
-  "id": "d69639aa-cfab-43e4-bb0a-66e884f0503a",
+  "id": "0bee20de-4b36-45b9-9cd4-e20afd85fd8d",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -15,6 +15,12 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
+        "event_id": {
+          "name": "event_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
         "label": {
           "name": "label",
           "type": "text",
@@ -29,15 +35,81 @@
         },
         "period_start": {
           "name": "period_start",
-          "type": "text",
+          "type": "date",
           "primaryKey": false,
           "notNull": true
         },
         "period_end": {
           "name": "period_end",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "datasets_event_id_events_id_fk": {
+          "name": "datasets_event_id_events_id_fk",
+          "tableFrom": "datasets",
+          "tableTo": "events",
+          "columnsFrom": [
+            "event_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.events": {
+      "name": "events",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
           "type": "text",
           "primaryKey": false,
           "notNull": true
+        },
+        "start_date": {
+          "name": "start_date",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "end_date": {
+          "name": "end_date",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "type": {
+          "name": "type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'other'"
         },
         "season": {
           "name": "season",
@@ -77,68 +149,26 @@
           "primaryKey": false,
           "notNull": true
         },
-        "player": {
-          "name": "player",
-          "type": "text",
+        "player_id": {
+          "name": "player_id",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
-        "agents": {
-          "name": "agents",
-          "type": "text",
+        "team_id": {
+          "name": "team_id",
+          "type": "uuid",
           "primaryKey": false,
-          "notNull": true
-        },
-        "games": {
-          "name": "games",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "games_won": {
-          "name": "games_won",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "games_lost": {
-          "name": "games_lost",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "rounds": {
-          "name": "rounds",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "rounds_won": {
-          "name": "rounds_won",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "rounds_lost": {
-          "name": "rounds_lost",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "acs": {
           "name": "acs",
           "type": "double precision",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "kd": {
           "name": "kd",
-          "type": "double precision",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "kast_pct": {
-          "name": "kast_pct",
           "type": "double precision",
           "primaryKey": false,
           "notNull": false
@@ -147,121 +177,55 @@
           "name": "adr",
           "type": "double precision",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
+        },
+        "kast_pct": {
+          "name": "kast_pct",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
         },
         "kills": {
           "name": "kills",
           "type": "integer",
           "primaryKey": false,
-          "notNull": true
-        },
-        "kpg": {
-          "name": "kpg",
-          "type": "double precision",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "kpr": {
-          "name": "kpr",
-          "type": "double precision",
-          "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "deaths": {
           "name": "deaths",
           "type": "integer",
           "primaryKey": false,
-          "notNull": true
-        },
-        "dpg": {
-          "name": "dpg",
-          "type": "double precision",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "dpr": {
-          "name": "dpr",
-          "type": "double precision",
-          "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "assists": {
           "name": "assists",
           "type": "integer",
           "primaryKey": false,
-          "notNull": true
-        },
-        "apg": {
-          "name": "apg",
-          "type": "double precision",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "apr": {
-          "name": "apr",
-          "type": "double precision",
-          "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "fk": {
           "name": "fk",
           "type": "integer",
           "primaryKey": false,
-          "notNull": true
-        },
-        "fkpg": {
-          "name": "fkpg",
-          "type": "double precision",
-          "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "fd": {
           "name": "fd",
           "type": "integer",
           "primaryKey": false,
-          "notNull": true
-        },
-        "fdpg": {
-          "name": "fdpg",
-          "type": "double precision",
-          "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "hs_pct": {
           "name": "hs_pct",
           "type": "double precision",
           "primaryKey": false,
-          "notNull": true
-        },
-        "plants": {
-          "name": "plants",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "plants_per_game": {
-          "name": "plants_per_game",
-          "type": "double precision",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "defuses": {
-          "name": "defuses",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "defuses_per_game": {
-          "name": "defuses_per_game",
-          "type": "double precision",
-          "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "econ_rating": {
           "name": "econ_rating",
           "type": "double precision",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "created_at": {
           "name": "created_at",
@@ -271,32 +235,233 @@
           "default": "now()"
         }
       },
-      "indexes": {
-        "player_stats_dataset_player_uniq": {
-          "name": "player_stats_dataset_player_uniq",
-          "columns": [
-            {
-              "expression": "dataset_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "player",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
+      "indexes": {},
+      "foreignKeys": {
+        "player_stats_dataset_id_datasets_id_fk": {
+          "name": "player_stats_dataset_id_datasets_id_fk",
+          "tableFrom": "player_stats",
+          "tableTo": "datasets",
+          "columnsFrom": [
+            "dataset_id"
           ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "player_stats_player_id_players_id_fk": {
+          "name": "player_stats_player_id_players_id_fk",
+          "tableFrom": "player_stats",
+          "tableTo": "players",
+          "columnsFrom": [
+            "player_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "player_stats_team_id_teams_id_fk": {
+          "name": "player_stats_team_id_teams_id_fk",
+          "tableFrom": "player_stats",
+          "tableTo": "teams",
+          "columnsFrom": [
+            "team_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
-      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.players": {
+      "name": "players",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ign": {
+          "name": "ign",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "region": {
+          "name": "region",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "country": {
+          "name": "country",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "players_name_unique": {
+          "name": "players_name_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "name"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.team_memberships": {
+      "name": "team_memberships",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "player_id": {
+          "name": "player_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "team_id": {
+          "name": "team_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "joined_at": {
+          "name": "joined_at",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "left_at": {
+          "name": "left_at",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "team_memberships_player_id_players_id_fk": {
+          "name": "team_memberships_player_id_players_id_fk",
+          "tableFrom": "team_memberships",
+          "tableTo": "players",
+          "columnsFrom": [
+            "player_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "team_memberships_team_id_teams_id_fk": {
+          "name": "team_memberships_team_id_teams_id_fk",
+          "tableFrom": "team_memberships",
+          "tableTo": "teams",
+          "columnsFrom": [
+            "team_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.teams": {
+      "name": "teams",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tag": {
+          "name": "tag",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "org": {
+          "name": "org",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "teams_name_unique": {
+          "name": "teams_name_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "name"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
