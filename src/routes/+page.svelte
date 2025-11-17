@@ -34,7 +34,7 @@
 		renderedPlayers = allPlayers.slice(0, 20);
 		// Reset selected player when period changes
 		if (selected) {
-			selected = allPlayers.find(p => p.player === selected?.player) || null;
+			selected = allPlayers.find((p) => p.player === selected?.player) || null;
 		}
 	}
 
@@ -130,7 +130,7 @@
 			class="minimal-shadow minimal-shadow-hover border-border bg-card w-full rounded-xl border"
 		>
 			<CardHeader class="pb-1">
-				<div class="flex items-center justify-between w-full">
+				<div class="flex w-full items-center justify-between">
 					<CardTitle class="font-heading text-foreground text-2xl font-semibold"
 						>Top 20 Players</CardTitle
 					>
@@ -233,7 +233,11 @@
 			class="minimal-shadow minimal-shadow-hover border-border bg-card w-full rounded-xl border"
 		>
 			<CardHeader class="pb-6">
-				<div class="flex items-center justify-center gap-3 player-header {selected ? 'player-header-enter' : ''}">
+				<div
+					class="player-header flex items-center justify-center gap-3 {selected
+						? 'player-header-enter'
+						: ''}"
+				>
 					<CardTitle class="font-heading text-foreground text-center text-2xl font-semibold">
 						{#if selected}
 							{selected.player ?? '(Unknown Player)'}
@@ -245,12 +249,22 @@
 						<Button
 							variant="ghost"
 							size="icon"
-							class="h-8 w-8 rounded-full hover:bg-destructive/10 hover:text-destructive deselect-button"
+							class="hover:bg-destructive/10 hover:text-destructive deselect-button h-8 w-8 rounded-full"
 							onclick={() => (selected = null)}
 							aria-label="Deselect player"
 						>
-							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-								<path d="M18 6L6 18M6 6l12 12"/>
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								width="16"
+								height="16"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								stroke-width="2"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+							>
+								<path d="M18 6L6 18M6 6l12 12" />
 							</svg>
 						</Button>
 					{/if}

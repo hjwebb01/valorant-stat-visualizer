@@ -20,7 +20,7 @@
 		selectedPeriod = data.period;
 		// Reset selected player when period changes
 		if (selectedPlayer) {
-			selectedPlayer = players.find(p => p.player === selectedPlayer?.player) || null;
+			selectedPlayer = players.find((p) => p.player === selectedPlayer?.player) || null;
 		}
 	}
 
@@ -246,7 +246,6 @@
 				/>
 			</div>
 			<div class="h-full min-h-0">
-				
 				<LeaderboardTable
 					{players}
 					{visibleCols}
@@ -264,7 +263,11 @@
 						class="minimal-shadow minimal-shadow-hover border-border flex h-full w-full flex-col rounded-xl border"
 					>
 						<CardHeader class="shrink-0 pb-6">
-							<div class="flex items-center justify-center gap-3 player-header {selectedPlayer ? 'player-header-enter' : ''}">
+							<div
+								class="player-header flex items-center justify-center gap-3 {selectedPlayer
+									? 'player-header-enter'
+									: ''}"
+							>
 								<CardTitle
 									class="font-heading flex-1 text-center text-2xl font-semibold text-[#f1f2f3]"
 								>
@@ -274,7 +277,7 @@
 									variant="ghost"
 									size="icon"
 									onclick={clearSelection}
-									class="ml-2 shrink-0 h-8 w-8 rounded-full hover:bg-destructive/10 hover:text-destructive deselect-button"
+									class="hover:bg-destructive/10 hover:text-destructive deselect-button ml-2 h-8 w-8 shrink-0 rounded-full"
 									aria-label="Deselect player"
 								>
 									<svg

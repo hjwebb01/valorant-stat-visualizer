@@ -33,7 +33,10 @@
 					: String(r[c.key] ?? '');
 
 	const resolveKey = (row: Player & Record<string, any>): string => {
-		const base = (row as any).id ?? (row as any).player_id ?? `${row.player ?? ''}-${(row as any).dataset_id ?? ''}`;
+		const base =
+			(row as any).id ??
+			(row as any).player_id ??
+			`${row.player ?? ''}-${(row as any).dataset_id ?? ''}`;
 		return base?.toString?.() ?? '';
 	};
 
@@ -52,9 +55,10 @@
 			vb: any = b[sortKey];
 		const na = typeof va === 'number' ? va : NaN,
 			nb = typeof vb === 'number' ? vb : NaN;
-		const cmp = Number.isNaN(na) || Number.isNaN(nb)
-			? String(va ?? '').localeCompare(String(vb ?? ''), undefined, { numeric: true })
-			: na - nb;
+		const cmp =
+			Number.isNaN(na) || Number.isNaN(nb)
+				? String(va ?? '').localeCompare(String(vb ?? ''), undefined, { numeric: true })
+				: na - nb;
 		return sortAsc ? cmp : -cmp;
 	});
 
@@ -146,12 +150,16 @@
 
 		<div class="leaderboard-wrapper h-full w-full overflow-auto">
 			<table class="leaderboard-table w-full border-collapse">
-				<thead class="leaderboard-header border-b sticky top-0 z-20 bg-slate-800/95 supports-backdrop-filter:bg-slate-800/80 backdrop-blur-sm shadow-md">
-					<tr class="bg-background/95 supports-backdrop-filter:bg-background/75 top-0 z-10 shadow-sm backdrop-blur">
-						<th class="w-12 border-r text-right px-3 py-3 font-semibold text-sm">#</th>
+				<thead
+					class="leaderboard-header sticky top-0 z-20 border-b bg-slate-800/95 shadow-md backdrop-blur-sm supports-backdrop-filter:bg-slate-800/80"
+				>
+					<tr
+						class="bg-background/95 supports-backdrop-filter:bg-background/75 top-0 z-10 shadow-sm backdrop-blur"
+					>
+						<th class="w-12 border-r px-3 py-3 text-right text-sm font-semibold">#</th>
 						{#each visibleCols as c}
 							<th
-								class={`select-none ${c.align === 'right' ? 'text-right' : 'text-left'} ${c.widthClass ?? ''} border-r last:border-r-0 px-3 py-3 font-semibold text-sm`}
+								class={`select-none ${c.align === 'right' ? 'text-right' : 'text-left'} ${c.widthClass ?? ''} border-r px-3 py-3 text-sm font-semibold last:border-r-0`}
 								title={`Sort by ${c.label}`}
 							>
 								<button
@@ -181,11 +189,15 @@
 							aria-selected={selectedPlayer?.id === p.id}
 							onclick={() => dispatch('select', { player: p })}
 						>
-							<td class={`border-r text-right font-mono px-3 py-3 text-sm ${isSelected(p) ? 'text-primary' : ''}`}>
+							<td
+								class={`border-r px-3 py-3 text-right font-mono text-sm ${isSelected(p) ? 'text-primary' : ''}`}
+							>
 								{i + 1}
 							</td>
 							{#each visibleCols as c}
-								<td class={`${c.align === 'right' ? 'text-right' : 'text-left'} ${c.widthClass ?? ''} border-r last:border-r-0 px-3 py-3 text-sm`}>
+								<td
+									class={`${c.align === 'right' ? 'text-right' : 'text-left'} ${c.widthClass ?? ''} border-r px-3 py-3 text-sm last:border-r-0`}
+								>
 									{#if c.key === 'agents'}
 										<div class="flex min-w-50 flex-wrap items-center gap-1 whitespace-nowrap">
 											{#each agentListToIcons(p.agents) as a}
@@ -197,7 +209,9 @@
 														loading="lazy"
 													/>
 												{:else}
-													<span class="text-muted-foreground max-w-full truncate text-xs">{a.name}</span>
+													<span class="text-muted-foreground max-w-full truncate text-xs"
+														>{a.name}</span
+													>
 												{/if}
 											{/each}
 										</div>

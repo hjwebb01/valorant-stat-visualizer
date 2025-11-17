@@ -61,7 +61,7 @@ export async function login() {
 	}
 
 	let client = get(auth0Client);
-	
+
 	// If client is not initialized yet, initialize it first
 	if (!client) {
 		console.log('Auth0 client not initialized, initializing...');
