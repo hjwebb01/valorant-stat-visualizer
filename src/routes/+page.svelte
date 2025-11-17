@@ -154,6 +154,14 @@
 						<Button
 							variant="toggle"
 							size="sm"
+							href="?period=week3"
+							data-state={selectedPeriod === 'week3' ? 'active' : 'inactive'}
+						>
+							Week 3
+						</Button>
+						<Button
+							variant="toggle"
+							size="sm"
 							href="?period=alltime"
 							data-state={selectedPeriod === 'alltime' ? 'active' : 'inactive'}
 						>

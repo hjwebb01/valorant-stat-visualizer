@@ -76,3 +76,6 @@ npm run dev
 
 ✅ **That’s it!**  
 Your database is migrated, data imported, and the SvelteKit app is ready to run.
+
+Run API:
+curl -X POST http://localhost:5173/api/import-sheets
