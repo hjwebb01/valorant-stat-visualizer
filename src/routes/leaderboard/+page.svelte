@@ -292,7 +292,7 @@
 									: ''}"
 							>
 								<CardTitle
-									class="font-heading flex-1 text-center text-2xl font-semibold text-[#f1f2f3]"
+									class="font-heading flex-1 text-center text-2xl font-semibold text-[#171717 dark:#f1f2f3]"
 								>
 									{selectedPlayer.player ?? '(Unknown Player)'}
 								</CardTitle>
