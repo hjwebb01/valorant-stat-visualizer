@@ -50,17 +50,8 @@
 		return resolveKey(row) === resolveKey(selectedPlayer as Player & Record<string, any>);
 	};
 
-	$: sorted = [...players].sort((a, b) => {
-		const va: any = a[sortKey],
-			vb: any = b[sortKey];
-		const na = typeof va === 'number' ? va : NaN,
-			nb = typeof vb === 'number' ? vb : NaN;
-		const cmp =
-			Number.isNaN(na) || Number.isNaN(nb)
-				? String(va ?? '').localeCompare(String(vb ?? ''), undefined, { numeric: true })
-				: na - nb;
-		return sortAsc ? cmp : -cmp;
-	});
+	// Sorting is now handled by parent
+	$: sorted = players;
 
 	// Preload all agent icons and index by agent name (case-insensitive)
 	const iconModules = import.meta.glob('../../assets/agents/*_icon.png', {
@@ -180,20 +171,27 @@
 				</thead>
 
 				<tbody>
-					{#each sorted as p, i (rowKey(p, i))}
-						<tr
-							class={`leaderboard-row cursor-pointer transition-all duration-150 odd:bg-(--leaderboard-row-odd) even:bg-(--leaderboard-row-even) hover:bg-(--leaderboard-row-hover) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--leaderboard-row-hover) ${
-								isSelected(p) ? 'bg-primary/10 selected-row' : ''
-							}`}
-							tabindex={0}
-							aria-selected={selectedPlayer?.id === p.id}
-							onclick={() => dispatch('select', { player: p })}
-						>
-							<td
-								class={`border-r px-3 py-3 text-right font-mono text-sm ${isSelected(p) ? 'text-primary' : ''}`}
-							>
-								{i + 1}
+					{#if sorted.length === 0}
+						<tr>
+							<td colspan={visibleCols.length + 1} class="border-r px-3 py-8 text-center text-muted-foreground">
+								No players found
 							</td>
+						</tr>
+					{:else}
+						{#each sorted as p, i (rowKey(p, i))}
+							<tr
+								class={`leaderboard-row cursor-pointer transition-all duration-150 odd:bg-(--leaderboard-row-odd) even:bg-(--leaderboard-row-even) hover:bg-(--leaderboard-row-hover) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--leaderboard-row-hover) ${
+									isSelected(p) ? 'bg-primary/10 selected-row' : ''
+								}`}
+								tabindex={0}
+								aria-selected={selectedPlayer?.id === p.id}
+								onclick={() => dispatch('select', { player: p })}
+							>
+								<td
+									class={`border-r px-3 py-3 text-right font-mono text-sm ${isSelected(p) ? 'text-primary' : ''}`}
+								>
+									{(p as any).rank ?? i + 1}
+								</td>
 							{#each visibleCols as c}
 								<td
 									class={`${c.align === 'right' ? 'text-right' : 'text-left'} ${c.widthClass ?? ''} border-r px-3 py-3 text-sm last:border-r-0`}
@@ -222,6 +220,7 @@
 							{/each}
 						</tr>
 					{/each}
+					{/if}
 				</tbody>
 			</table>
 		</div>
