@@ -4,6 +4,7 @@
 	import LeaderboardTable from '$lib/components/leaderboard/LeaderboardTable.svelte';
 	import { Card, CardHeader, CardTitle, CardContent } from '$lib/components/ui/card';
 	import { Button } from '$lib/components/ui/button';
+	import { Input } from '$lib/components/ui/input';
 	import type { Col, Key, Player } from '$lib/types';
 	import { onMount } from 'svelte';
 	import { percentileRank, toPercent } from '$lib/utils';
@@ -14,6 +15,21 @@
 	let players: Player[] = [];
 	$: players = data.players ?? [];
 	let selectedPeriod = $page.url.searchParams.get('period') || 'alltime';
+	let searchQuery = '';
+
+	// Add rank to players based on their original order
+	$: playersWithRank = players.map((player, index) => ({ ...player, rank: index + 1 }));
+
+	// Filter players based on search query
+	$: filteredPlayers = (() => {
+		if (!searchQuery.trim()) {
+			return playersWithRank;
+		}
+		const normalizedQuery = searchQuery.toLowerCase().trim();
+		return playersWithRank.filter((player) =>
+			player.player?.toLowerCase().trim().includes(normalizedQuery)
+		);
+	})();
 
 	// Update period when data changes
 	$: if (data.period) {
@@ -114,7 +130,7 @@
 	}
 
 	// Percentile helpers
-	const percentileExclude = new Set(['id', 'player', 'agents', 'created_at', 'dataset_id']);
+	const percentileExclude = new Set(['id', 'player', 'agents', 'created_at', 'dataset_id', 'rank']);
 	function computeSelectedPercentiles(sel: Player, arr: Player[]): Record<string, number> {
 		const out: Record<string, number> = {};
 		for (const [k, v] of Object.entries(sel)) {
@@ -137,7 +153,7 @@
 
 	let selectedPercentiles: Record<string, number> = {};
 	$: selectedPercentiles = selectedPlayer
-		? computeSelectedPercentiles(selectedPlayer, players)
+		? computeSelectedPercentiles(selectedPlayer, filteredPlayers)
 		: {};
 
 	// Top stats to display with equal emphasis
@@ -236,6 +252,13 @@
 				: 'md:grid-cols-[clamp(160px,22vw,220px)_minmax(0,1fr)] lg:grid-cols-[clamp(200px,18vw,260px)_minmax(0,1fr)] xl:grid-cols-[280px_minmax(0,1fr)]'}"
 		>
 			<div class="h-full min-h-0 overflow-auto md:overflow-visible">
+				<Input
+					type="search"
+					placeholder="Search players..."
+					bind:value={searchQuery}
+					class="mb-4"
+					aria-label="Search players"
+				/>
 				<ColumnsFilter
 					{cols}
 					{visibleSet}
@@ -247,7 +270,7 @@
 			</div>
 			<div class="h-full min-h-0">
 				<LeaderboardTable
-					{players}
+					players={filteredPlayers}
 					{visibleCols}
 					{sortKey}
 					{sortAsc}
@@ -269,7 +292,7 @@
 									: ''}"
 							>
 								<CardTitle
-									class="font-heading flex-1 text-center text-2xl font-semibold text-[#f1f2f3]"
+									class="font-heading flex-1 text-center text-2xl font-semibold text-[#171717 dark:#f1f2f3]"
 								>
 									{selectedPlayer.player ?? '(Unknown Player)'}
 								</CardTitle>
