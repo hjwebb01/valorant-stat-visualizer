@@ -224,16 +224,17 @@ export async function POST() {
 			}
 		}
 
-		// ==========================================================
-		// 2️⃣ PLAYER STATS IMPORT
-		// ==========================================================
-		const STATS_SHEET_ID = SHEET_ID_STATS;
-		const meta = await sheets.spreadsheets.get({ spreadsheetId: STATS_SHEET_ID });
-		const sheetTabs =
-			meta.data.sheets
-				?.filter((s) => !s.properties?.hidden)
-				.map((s) => s.properties?.title)
-				.filter((t): t is string => !!t && /^w\d+\s*stats$/i.test(t.trim())) ?? [];
+    // ==========================================================
+    // 2️⃣ WEEKLY PLAYER STATS IMPORT
+    // ==========================================================
+    const STATS_SHEET_ID = SHEET_ID_STATS;
+    const meta = await sheets.spreadsheets.get({ spreadsheetId: STATS_SHEET_ID });
+    const sheetTabs =
+      meta.data.sheets
+        ?.filter((s) => !s.properties?.hidden)
+        .map((s) => s.properties?.title)
+        .filter((t): t is string => !!t && /^w\d+\s*stats$/i.test(t.trim()))
+        ?? [];
 
 		console.log('📊 Found stat tabs:', sheetTabs);
 
@@ -266,19 +267,20 @@ export async function POST() {
 			console.log(`📈 ${tab}: ${normalizedRecords.length} parsed rows`);
 			const { start, end } = inferPeriodFromLabel(tab);
 
-			const { data: dataset, error: datasetErr } = await supabaseAdmin
-				.from('datasets')
-				.upsert(
-					{ label: tab, type: 'week', period_start: start, period_end: end },
-					{ onConflict: 'label' }
-				)
-				.select('id')
-				.single();
-			if (datasetErr) throw { context: 'datasets', details: datasetErr };
-			if (!dataset) {
-				console.warn(`⚠️ No dataset returned for tab "${tab}", skipping`);
-				continue;
-			}
+      const { data: dataset, error: datasetErr } = await supabaseAdmin
+        .from('datasets')
+        .upsert(
+          { label: tab, type: 'week', period_start: start, period_end: end },
+          { onConflict: 'label' }
+        )
+        .select('id')
+        .single();
+
+      if (datasetErr) throw { context: 'datasets', details: datasetErr };
+      if (!dataset) {
+        console.warn(`⚠️ No dataset returned for tab "${tab}", skipping`);
+        continue;
+      }
 
 			for (const rec of normalizedRecords) {
 				const playerName = rec.player;
@@ -287,8 +289,7 @@ export async function POST() {
 				const player = await getOrCreatePlayer(playerName);
 				const team_id = await resolvePlayerTeamId(player.id);
 
-				// 🧹 remove non-schema fields before upsert
-				const { player: _ignore, ...statFields } = rec;
+        const { player: _ignore, ...statFields } = rec;
 
 				const payload = {
 					dataset_id: dataset.id,
@@ -297,13 +298,95 @@ export async function POST() {
 					...statFields
 				};
 
-				console.log(`🟢 [player_stats] Upserting stats for "${playerName}"`);
-				const { error: psErr } = await supabaseAdmin
-					.from('player_stats')
-					.upsert(payload, { onConflict: 'dataset_id,player_id' });
-				if (psErr) throw { context: 'player_stats', details: psErr };
-			}
-		}
+        console.log(`🟢 [player_stats] Upserting stats for "${playerName}"`);
+
+        const { error: psErr } = await supabaseAdmin
+          .from('player_stats')
+          .upsert(payload, { onConflict: 'dataset_id,player_id' });
+
+        if (psErr) throw { context: 'player_stats', details: psErr };
+      }
+    }
+
+    // ==========================================================
+    // 3️⃣ ALL-TIME (all-weeks) STATS IMPORT
+    // ==========================================================
+    console.log("📚 Processing all-time stats from 'all-weeks' sheet");
+
+    try {
+      const ALL_TAB = "all-weeks";
+
+      const allRes = await sheets.spreadsheets.values.get({
+        spreadsheetId: STATS_SHEET_ID,
+        range: `'${ALL_TAB}'!A1:ZZ`
+      });
+
+      const raw = allRes.data.values ?? [];
+      const headers = raw.shift();
+      if (!headers || headers.length === 0) {
+        console.warn(`⚠️ No headers in "${ALL_TAB}", skipping all-time import`);
+        throw new Error("Missing all-weeks headers");
+      }
+
+      const normalizedRecords = raw.map((r) => {
+        const obj: Record<string, any> = {};
+        headers.forEach((h, i) => {
+          const keyRaw = String(h ?? "").trim().toLowerCase();
+          const key = STATS_HEADER_MAP[keyRaw] ?? keyRaw;
+          obj[key] = r[i];
+        });
+        return normalizeStatsRecord(obj);
+      });
+
+      console.log(`📘 ${ALL_TAB}: ${normalizedRecords.length} parsed all-time rows`);
+
+      // Create ALL-TIME dataset entry (label = 'all-time')
+      const { data: dataset, error: dsErr } = await supabaseAdmin
+        .from("datasets")
+        .upsert(
+          {
+            label: "all-time",
+            type: "alltime",
+            period_start: new Date("2025-10-25T00:00:00Z"),
+            period_end:   new Date("2025-12-21T23:59:59Z")
+          },
+          { onConflict: "label" }
+        )
+        .select("id")
+        .single();
+
+      if (dsErr) throw { context: "datasets_alltime", details: dsErr };
+
+      // Insert each all-time stats entry
+      for (const rec of normalizedRecords) {
+        const playerName = rec.player;
+        if (!playerName) continue;
+
+        const player = await getOrCreatePlayer(playerName);
+        const team_id = await resolvePlayerTeamId(player.id);
+
+        const { player: _ignore, ...statFields } = rec;
+
+        const payload = {
+          dataset_id: dataset.id,
+          player_id: player.id,
+          team_id,
+          ...statFields
+        };
+
+        console.log(`🟣 [alltime_stats] Upserting all-time stats for "${playerName}"`);
+
+        const { error: psErr } = await supabaseAdmin
+          .from("player_stats")
+          .upsert(payload, { onConflict: "dataset_id,player_id" });
+
+        if (psErr) throw { context: "player_stats_alltime", details: psErr };
+      }
+
+      console.log("✅ All-time stats import complete!");
+    } catch (err) {
+      console.error("❌ Failed importing all-weeks → all-time:", err);
+    }
 
 		console.log('✅ Import complete!');
 		return json({ ok: true, message: 'All data imported successfully' });
