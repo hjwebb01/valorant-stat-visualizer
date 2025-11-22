@@ -1,3 +1,19 @@
+<script lang="ts" module>
+	// Allow listening to DOM events (e.g., `on:click`) on the TableRow component
+	export interface TableRowEvents {
+		click: MouseEvent;
+	}
+
+	export interface TableRowSlots {
+		default: {};
+	}
+
+	// Generic name some tools expect
+	export interface Events {
+		click: MouseEvent;
+	}
+</script>
+
 <script lang="ts">
 	import { cn, type WithElementRef } from '$lib/utils.js';
 	import type { HTMLAttributes } from 'svelte/elements';

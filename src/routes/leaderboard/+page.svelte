@@ -17,6 +17,9 @@
 	let selectedPeriod = $page.url.searchParams.get('period') || 'alltime';
 	let searchQuery = '';
 
+	// Toggle grouping by rank (Radiant + Immortal combined)
+	let groupByRank = false;
+
 	// Add rank to players based on their original order
 	$: playersWithRank = players.map((player, index) => ({ ...player, rank: index + 1 }));
 
@@ -39,6 +42,134 @@
 			selectedPlayer = players.find((p) => p.player === selectedPlayer?.player) || null;
 		}
 	}
+
+	// Sorting: parent handles sorting of the filtered list before passing to table
+	$: sortedPlayers = (() => {
+		const arr = (filteredPlayers ?? []).slice();
+		const k = sortKey;
+		if (!k) return arr;
+
+		// If grouping is disabled, perform the original flat sort
+		if (!groupByRank) {
+			arr.sort((a, b) => {
+				const va = (a as any)[k];
+				const vb = (b as any)[k];
+				const na = typeof va === 'number' ? va : Number(va);
+				const nb = typeof vb === 'number' ? vb : Number(vb);
+				const direction = sortAsc ? 1 : -1;
+
+				// If one value is numeric and the other is not, prefer the numeric value first
+				if (Number.isFinite(na) && !Number.isFinite(nb)) return -1;
+				if (!Number.isFinite(na) && Number.isFinite(nb)) return 1;
+
+				if (Number.isFinite(na) && Number.isFinite(nb)) {
+					return (na - nb) * direction;
+				}
+
+				const sa = String(va ?? '').toLowerCase();
+				const sb = String(vb ?? '').toLowerCase();
+				// push empty/unknown values to the end consistently
+				if (sa === '' && sb !== '') return 1;
+				if (sb === '' && sa !== '') return -1;
+				if (sa < sb) return -1 * direction;
+				if (sa > sb) return 1 * direction;
+				return 0;
+			});
+			return arr;
+		}
+
+		// If user is explicitly sorting by rank_value while grouping, do a global sort by rank_value
+		if (k === 'rank_value') {
+			const direction = sortAsc ? 1 : -1;
+			arr.sort((a, b) => {
+				const na = typeof a.rank_value === 'number' ? a.rank_value : Number(a.rank_value);
+				const nb = typeof b.rank_value === 'number' ? b.rank_value : Number(b.rank_value);
+				if (Number.isFinite(na) && Number.isFinite(nb)) return (na - nb) * direction;
+				return 0;
+			});
+			return arr;
+		}
+
+		// Group players by rank_label (combine Radiant + Immortal)
+		const groupName = (p: any) => {
+			const raw = (p.rank_label ?? 'Unranked').toString().trim();
+			if (!raw) return 'Unranked';
+			const lower = raw.toLowerCase();
+
+			// Combine Radiant and Immortal into one group
+			if (lower.startsWith('radiant') || lower.startsWith('immortal')) return 'Radiant / Immortal';
+
+			// Strip division numbers and RR markers so we group by base tier only
+			// Examples: 'Silver 1' -> 'Silver', 'Bronze 3' -> 'Bronze', 'Immortal 200 RR' handled above
+			const m = lower.match(/([a-z]+)/);
+			const base = m ? m[1] : lower;
+			// Capitalize first letter for nicer labels
+			return base.charAt(0).toUpperCase() + base.slice(1);
+		};
+
+		// Build groups
+		const groups = new Map<string, any[]>();
+		for (const p of arr) {
+			const g = groupName(p);
+			const a = groups.get(g) ?? [];
+			a.push(p);
+			groups.set(g, a);
+		}
+
+		// Determine ordering of groups: use rank_value (max) so ranks remain ordered top->bottom
+		const groupOrder = [...groups.entries()]
+			.map(([name, items]) => {
+				const maxRank = items.reduce((acc, it: any) => {
+					const v = typeof it.rank_value === 'number' ? it.rank_value : Number(it.rank_value);
+					return Number.isFinite(v) ? Math.max(acc, v) : acc;
+				}, -Infinity);
+				return { name, items, maxRank: Number.isFinite(maxRank) ? maxRank : -Infinity };
+			})
+			.sort((a, b) => b.maxRank - a.maxRank)
+			.map((g) => g.name);
+
+		// Comparator for within-group sorting by selected key
+		const comparator = (xa: any, xb: any) => {
+			const va = xa[k];
+			const vb = xb[k];
+			const na = typeof va === 'number' ? va : Number(va);
+			const nb = typeof vb === 'number' ? vb : Number(vb);
+			const direction = sortAsc ? 1 : -1;
+
+			// If one value is numeric and the other is not, show the numeric value first
+			if (Number.isFinite(na) && !Number.isFinite(nb)) return -1;
+			if (!Number.isFinite(na) && Number.isFinite(nb)) return 1;
+
+			if (Number.isFinite(na) && Number.isFinite(nb)) {
+				const primary = (na - nb) * direction;
+				if (primary !== 0) return primary;
+			} else {
+				const sa = String(va ?? '').toLowerCase();
+				const sb = String(vb ?? '').toLowerCase();
+				if (sa === '' && sb !== '') return 1;
+				if (sb === '' && sa !== '') return -1;
+				if (sa < sb) return -1 * direction;
+				if (sa > sb) return 1 * direction;
+			}
+
+			// If primary comparison is equal, break ties by rank_value (desc) so higher sub-ranks appear first within group
+			const ra = typeof xa.rank_value === 'number' ? xa.rank_value : Number(xa.rank_value);
+			const rb = typeof xb.rank_value === 'number' ? xb.rank_value : Number(xb.rank_value);
+			if (Number.isFinite(ra) && Number.isFinite(rb)) return rb - ra;
+
+			return 0;
+		};
+
+		// Compose final array by concatenating groups in order and sorting each group internally
+		const out: any[] = [];
+		for (const gName of groupOrder) {
+			const items = groups.get(gName) ?? [];
+			items.sort(comparator);
+			out.push(...items);
+		}
+
+		return out;
+	})();
 
 	const playerKey = (p: (Player & Record<string, any>) | Player | null | undefined) => {
 		if (!p) return '';
@@ -267,17 +398,29 @@
 					on:hideAll={hideAll}
 					on:reset={resetDefaults}
 				/>
+
 			</div>
 			<div class="h-full min-h-0">
 				<LeaderboardTable
-					players={filteredPlayers}
+					players={sortedPlayers}
 					{visibleCols}
 					{sortKey}
 					{sortAsc}
+					{groupByRank}
 					{selectedPlayer}
 					{selectedPeriod}
 					on:sort={(e) => sortBy(e.detail.key)}
 					on:select={handleSelect}
+					on:toggleGroupByRank={(e) => {
+						// Parent receives explicit payload { value: boolean }
+						const v = e.detail?.value ?? !groupByRank;
+						groupByRank = !!v;
+						// When enabling grouping, call sortBy so the initial direction follows the app's
+						// preference (sortBy sets sortAsc based on preferred defaults).
+						if (groupByRank) {
+							sortBy('rank_value');
+						}
+					}}
 				/>
 			</div>
 			{#if selectedPlayer}
