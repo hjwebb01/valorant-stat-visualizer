@@ -17,6 +17,9 @@
 	let selectedPeriod = $page.url.searchParams.get('period') || 'alltime';
 	let searchQuery = '';
 
+	// Toggle grouping by rank (Radiant + Immortal combined)
+	let groupByRank = false;
+
 	// Add rank to players based on their original order
 	$: playersWithRank = players.map((player, index) => ({ ...player, rank: index + 1 }));
 
@@ -31,6 +34,35 @@
 		);
 	})();
 
+// Helper used by sorting logic to compare values consistently.
+function compareSortValues(aVal: unknown, bVal: unknown, ascending: boolean): number {
+	const direction = ascending ? 1 : -1;
+
+	if (aVal == null && bVal == null) return 0;
+	if (aVal == null) return ascending ? -1 : 1;
+	if (bVal == null) return ascending ? 1 : -1;
+
+	const aNum = typeof aVal === 'number' ? aVal : Number(aVal);
+	const bNum = typeof bVal === 'number' ? bVal : Number(bVal);
+	const aFinite = Number.isFinite(aNum);
+	const bFinite = Number.isFinite(bNum);
+
+	if (aFinite && !bFinite) return -1;
+	if (!aFinite && bFinite) return 1;
+
+	if (aFinite && bFinite) {
+		return (aNum - bNum) * direction;
+	}
+
+	const aStr = String(aVal ?? '').toLowerCase();
+	const bStr = String(bVal ?? '').toLowerCase();
+	if (aStr === '' && bStr !== '') return 1;
+	if (bStr === '' && aStr !== '') return -1;
+	if (aStr < bStr) return -1 * direction;
+	if (aStr > bStr) return direction;
+	return 0;
+}
+
 	// Update period when data changes
 	$: if (data.period) {
 		selectedPeriod = data.period;
@@ -39,6 +71,88 @@
 			selectedPlayer = players.find((p) => p.player === selectedPlayer?.player) || null;
 		}
 	}
+
+// Sorting: parent handles sorting of the filtered list before passing to table
+$: sortedPlayers = (() => {
+	const arr = (filteredPlayers ?? []).slice();
+	const k = sortKey;
+	if (!k) return arr;
+
+	// If grouping is disabled, perform the original flat sort
+	if (!groupByRank) {
+		arr.sort((a, b) => compareSortValues((a as any)[k], (b as any)[k], sortAsc));
+		return arr;
+	}
+
+	const direction = sortAsc ? 1 : -1;
+
+	// Group players by rank_label (combine Radiant + Immortal)
+	const groupName = (p: any) => {
+		const raw = (p.rank_label ?? 'Unranked').toString().trim();
+		if (!raw) return 'Unranked';
+		const lower = raw.toLowerCase();
+
+		// Combine Radiant and Immortal into one group
+		if (lower.startsWith('radiant') || lower.startsWith('immortal')) return 'Radiant / Immortal';
+
+		// Strip division numbers and RR markers so we group by base tier only
+		// Examples: 'Silver 1' -> 'Silver', 'Bronze 3' -> 'Bronze', 'Immortal 200 RR' handled above
+		const m = lower.match(/([a-z]+)/);
+		const base = m ? m[1] : lower;
+		// Capitalize first letter for nicer labels
+		return base.charAt(0).toUpperCase() + base.slice(1);
+	};
+
+	// Build groups
+	const groups = new Map<string, any[]>();
+	for (const p of arr) {
+		const g = groupName(p);
+		const a = groups.get(g) ?? [];
+		a.push(p);
+		groups.set(g, a);
+	}
+
+	// Determine ordering of groups: use rank_value (max) so ranks remain ordered top->bottom
+	// When sorting by rank_value, respect sortAsc direction
+	const groupOrder = [...groups.entries()]
+		.map(([name, items]) => {
+			const maxRank = items.reduce((acc, it: any) => {
+				const v = typeof it.rank_value === 'number' ? it.rank_value : Number(it.rank_value);
+				return Number.isFinite(v) ? Math.max(acc, v) : acc;
+			}, -Infinity);
+			return { name, items, maxRank: Number.isFinite(maxRank) ? maxRank : -Infinity };
+		})
+		.sort((a, b) => {
+			if (k === 'rank_value') {
+				return (b.maxRank - a.maxRank);
+			}
+			return b.maxRank - a.maxRank;
+		})
+		.map((g) => g.name);
+
+	// Comparator for within-group sorting by selected key
+	const comparator = (xa: any, xb: any) => {
+		const primary = compareSortValues(xa[k], xb[k], sortAsc);
+		if (primary !== 0) return primary;
+
+		// If primary comparison is equal, break ties by rank_value (desc) so higher sub-ranks appear first within group
+		const ra = typeof xa.rank_value === 'number' ? xa.rank_value : Number(xa.rank_value);
+		const rb = typeof xb.rank_value === 'number' ? xb.rank_value : Number(xb.rank_value);
+		if (Number.isFinite(ra) && Number.isFinite(rb)) return rb - ra;
+
+		return 0;
+	};
+
+	// Compose final array by concatenating groups in order and sorting each group internally
+	const out: any[] = [];
+	for (const gName of groupOrder) {
+		const items = groups.get(gName) ?? [];
+		items.sort(comparator);
+		out.push(...items);
+	}
+
+	return out;
+})();
 
 	const playerKey = (p: (Player & Record<string, any>) | Player | null | undefined) => {
 		if (!p) return '';
@@ -153,7 +267,7 @@
 
 	let selectedPercentiles: Record<string, number> = {};
 	$: selectedPercentiles = selectedPlayer
-		? computeSelectedPercentiles(selectedPlayer, filteredPlayers)
+	? computeSelectedPercentiles(selectedPlayer, sortedPlayers)
 		: {};
 
 	// Top stats to display with equal emphasis
@@ -193,8 +307,10 @@
 	}
 
 	// Sorting
-	let sortKey: Key = 'acs',
-		sortAsc = false;
+	let sortKey: Key = 'acs';
+	let sortAsc = false;
+	let previousSortKey: Key | null = null;
+	let previousSortAsc: boolean | null = null;
 	function sortBy(k: Key) {
 		if (sortKey === k) sortAsc = !sortAsc;
 		else {
@@ -218,6 +334,7 @@
 				'fd',
 				'fdpg',
 				'hs_pct',
+				'rank_value',
 				'econ_rating',
 				'games',
 				'games_won',
@@ -240,6 +357,26 @@
 
 	function clearSelection() {
 		selectedPlayer = null;
+	}
+
+	function handleToggleGroupByRank(event: CustomEvent) {
+		const v = event.detail?.value ?? !groupByRank;
+		const nextGroupByRank = !!v;
+		if (nextGroupByRank !== groupByRank) {
+			if (nextGroupByRank) {
+				previousSortKey = sortKey;
+				previousSortAsc = sortAsc;
+				sortBy('rank_value');
+			} else {
+				if (previousSortKey !== null) {
+					sortKey = previousSortKey;
+					sortAsc = previousSortAsc ?? false;
+					previousSortKey = null;
+					previousSortAsc = null;
+				}
+			}
+		}
+		groupByRank = nextGroupByRank;
 	}
 </script>
 
@@ -267,17 +404,20 @@
 					on:hideAll={hideAll}
 					on:reset={resetDefaults}
 				/>
+
 			</div>
 			<div class="h-full min-h-0">
 				<LeaderboardTable
-					players={filteredPlayers}
+					players={sortedPlayers}
 					{visibleCols}
 					{sortKey}
 					{sortAsc}
+					{groupByRank}
 					{selectedPlayer}
 					{selectedPeriod}
 					on:sort={(e) => sortBy(e.detail.key)}
 					on:select={handleSelect}
+					on:toggleGroupByRank={handleToggleGroupByRank}
 				/>
 			</div>
 			{#if selectedPlayer}

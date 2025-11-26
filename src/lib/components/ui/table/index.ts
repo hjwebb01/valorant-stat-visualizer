@@ -26,3 +26,7 @@ export {
 	Header as TableHeader,
 	Row as TableRow
 };
+
+// Re-export component event types for TypeScript consumers
+export type TableRowEvents = import('./table-row.svelte').TableRowEvents;
+export type TableRowSlots = import('./table-row.svelte').TableRowSlots;
