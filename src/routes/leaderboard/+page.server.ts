@@ -46,6 +46,41 @@ export const load = async ({ url }) => {
 		if (error) throw error;
 		players = (data ?? []) as Player[];
 
+		// Merge rank metadata from the `players` table (rank_label, rank_color, rank_value)
+		// The v_player_stats_* views may not include these columns, so fetch them and merge by player name.
+		try {
+			const { data: playerMeta, error: pmErr } = await supabaseAdmin
+				.from('players')
+				.select('name, rank_label, rank_color, rank_value');
+
+			if (!pmErr && Array.isArray(playerMeta)) {
+				const metaMap = new Map<string, any>();
+				for (const m of playerMeta) {
+					if (m?.name) metaMap.set(String(m.name).toLowerCase().trim(), m);
+				}
+
+				players = players.map((p: any) => {
+					try {
+						const key = String(p.player ?? '').toLowerCase().trim();
+						const meta = metaMap.get(key);
+						if (meta) {
+							return {
+								...p,
+								rank_label: p.rank_label ?? meta.rank_label ?? null,
+								rank_color: p.rank_color ?? meta.rank_color ?? null,
+								rank_value: p.rank_value ?? meta.rank_value ?? null
+							};
+						}
+					} catch (e) {
+						// ignore per-row merge errors
+					}
+					return p;
+				});
+			}
+		} catch (e) {
+			console.warn('⚠️ Failed to merge player rank metadata:', e);
+		}
+
 		console.log(`✅ Loaded ${players.length} player rows from ${viewName}`);
 		return { players, datasets, selectedLabel: label, period };
 	} catch (err: unknown) {

@@ -3,9 +3,43 @@ import { google } from 'googleapis';
 import { supabaseAdmin } from '$lib/server/supabaseAdmin';
 import { SHEET_ID_TEAMS, SHEET_ID_STATS, GOOGLE_SERVICE_KEY_PATH } from '$env/static/private';
 
-// ==========================================================
-// Header normalization map
-// ==========================================================
+/* ==========================================================
+   RANK MAP (color → tier)
+   ========================================================== */
+const RANK_COLOR_MAP: Record<string, string> = {
+	'#f6b26b': 'Bronze 1',
+	'#e69138': 'Bronze 2',
+	'#b45f06': 'Bronze 3',
+	'#d9d9d9': 'Silver 1',
+	'#b7b7b7': 'Silver 2',
+	'#999999': 'Silver 3',
+	'#ffe599': 'Gold 1',
+	'#ffd966': 'Gold 2',
+	'#f1c232': 'Gold 3',
+	'#a2c4c9': 'Platinum 1',
+	'#76a5af': 'Platinum 2',
+	'#45818e': 'Platinum 3',
+	'#ffa2e4': 'Diamond 1',
+	'#eaa0ff': 'Diamond 2',
+	'#e175ff': 'Diamond 3',
+	'#b6d7a8': 'Ascendant 1',
+	'#93c47d': 'Ascendant 2',
+	'#6aa84f': 'Ascendant 3',
+	'#f4cccc': 'Immortal 0RR',
+	'#ea9999': 'Immortal 100RR',
+	'#e06666': 'Immortal 200RR',
+	'#cc0000': 'Immortal 300RR',
+	'#434343': 'Radiant 450RR'
+};
+
+// sort order
+const RANK_ORDER: Record<string, number> = Object.fromEntries(
+	Object.values(RANK_COLOR_MAP).map((label, i) => [label, i + 1])
+);
+
+/* ==========================================================
+   HEADER NORMALIZATION
+   ========================================================== */
 const STATS_HEADER_MAP: Record<string, string> = {
 	player: 'player',
 	agent: 'agents',
@@ -46,27 +80,51 @@ const STATS_HEADER_MAP: Record<string, string> = {
 	'defuses / game': 'defuses_per_game'
 };
 
-// ==========================================================
-// Utility functions
-// ==========================================================
+/* ==========================================================
+   UTILITIES
+   ========================================================== */
 const toNumber = (v: unknown, fallback = 0): number => {
 	const n = typeof v === 'string' ? Number(v.replace(/[%\s,]+/g, '')) : Number(v);
 	return Number.isFinite(n) ? n : fallback;
 };
+
+/**
+ * Robust bg-color extractor:
+ * supports effectiveFormat + userEnteredFormat + backgroundColorStyle.rgbColor
+ */
+function extractBackgroundColor(cell: any) {
+	return (
+		cell?.effectiveFormat?.backgroundColor ??
+		cell?.userEnteredFormat?.backgroundColor ??
+		cell?.effectiveFormat?.backgroundColorStyle?.rgbColor ??
+		cell?.userEnteredFormat?.backgroundColorStyle?.rgbColor ??
+		null
+	);
+}
+
+function rgbToHex(c?: { red?: number | null; green?: number | null; blue?: number | null }) {
+	if (!c) return null;
+	const r = Math.round((c.red ?? 1) * 255);
+	const g = Math.round((c.green ?? 1) * 255);
+	const b = Math.round((c.blue ?? 1) * 255);
+	return `#${r.toString(16).padStart(2, '0')}${g
+		.toString(16)
+		.padStart(2, '0')}${b.toString(16).padStart(2, '0')}`.toLowerCase();
+}
 
 function parsePlayerCell(raw: string | undefined) {
 	if (!raw) return '';
 	return raw.replace(/\(.*?\)/g, '').trim();
 }
 
-// ==========================================================
-// Database helpers
-// ==========================================================
+/* ==========================================================
+   DATABASE HELPERS
+   ========================================================== */
 async function getOrCreatePlayer(name: string) {
-	console.log(`🟩 [players] Upserting player: "${name}"`);
+	const clean = parsePlayerCell(name);
 	const { data, error } = await supabaseAdmin
 		.from('players')
-		.upsert({ name }, { onConflict: 'name' })
+		.upsert({ name: clean }, { onConflict: 'name' })
 		.select('id')
 		.single();
 	if (error) throw { context: 'players', details: error };
@@ -74,9 +132,9 @@ async function getOrCreatePlayer(name: string) {
 }
 
 async function getOrCreateTeam(opts: { name: string; status?: string }) {
-	console.log(`🟦 [teams] Upserting team: "${opts.name}" (${opts.status ?? 'active'})`);
 	const payload: Record<string, unknown> = { name: opts.name };
 	if (opts.status) payload.status = opts.status;
+
 	const { data, error } = await supabaseAdmin
 		.from('teams')
 		.upsert(payload, { onConflict: 'name' })
@@ -87,7 +145,6 @@ async function getOrCreateTeam(opts: { name: string; status?: string }) {
 }
 
 async function upsertMembership(player_id: string, team_id: string) {
-	console.log(`🟨 [team_memberships] Linking player_id=${player_id} → team_id=${team_id}`);
 	const { error } = await supabaseAdmin
 		.from('team_memberships')
 		.upsert({ player_id, team_id }, { onConflict: 'player_id,team_id' });
@@ -104,12 +161,13 @@ async function resolvePlayerTeamId(player_id: string): Promise<string | null> {
 	return data?.[0]?.team_id ?? null;
 }
 
-// ==========================================================
-// Record normalization
-// ==========================================================
+/* ==========================================================
+   NORMALIZERS
+   ========================================================== */
 function normalizeStatsRecord(raw: Record<string, any>) {
 	return {
 		player: String(raw.player ?? '').trim(),
+		player_color: raw.player_color ?? null,
 		agents: String(raw.agents ?? '').trim(),
 		acs: toNumber(raw.acs),
 		kd: toNumber(raw.kd),
@@ -143,6 +201,9 @@ function normalizeStatsRecord(raw: Record<string, any>) {
 	};
 }
 
+/* ==========================================================
+   WEEK LABEL → DATES
+   ========================================================== */
 function inferPeriodFromLabel(label: string) {
 	const m = label.match(/w(\d+)/i);
 	if (!m) {
@@ -156,9 +217,9 @@ function inferPeriodFromLabel(label: string) {
 	return { start, end };
 }
 
-// ==========================================================
-// Main Route
-// ==========================================================
+/* ==========================================================
+   MAIN ROUTE
+   ========================================================== */
 export async function POST() {
 	console.log('🟢 Import route triggered');
 
@@ -169,9 +230,9 @@ export async function POST() {
 		});
 		const sheets = google.sheets({ version: 'v4', auth });
 
-		// ==========================================================
-		// 1️⃣ TEAM IMPORT
-		// ==========================================================
+		/* ==========================================================
+		   1️⃣ TEAM IMPORT
+		   ========================================================== */
 		const TEAMS_SHEET_ID = SHEET_ID_TEAMS;
 
 		let teamStatusMap = new Map<string, string>();
@@ -192,15 +253,15 @@ export async function POST() {
 			);
 			console.log('📘 Loaded team legend entries:', teamStatusMap.size);
 		} catch {
-			console.log('ℹ️ Legend tab not found, defaulting all teams to "active".');
+			console.log('ℹ️ Legend tab not found—defaulting teams to active.');
 		}
 
 		const teamsRes = await sheets.spreadsheets.values.get({
 			spreadsheetId: TEAMS_SHEET_ID,
 			range: `A1:Z`
 		});
+
 		const teamRows = (teamsRes.data.values ?? []).filter((r) => r?.[0] && r?.[1]);
-		console.log(`✅ Parsed ${teamRows.length} team rows`);
 
 		for (const row of teamRows) {
 			const [abbrRaw, fullNameRaw, ...memberCells] = row;
@@ -209,189 +270,221 @@ export async function POST() {
 			if (!tag || !fullName) continue;
 
 			const status = teamStatusMap.get(tag) ?? 'active';
-			if (status === 'disbanded') {
-				console.log(`⚪ Skipping disbanded team: ${fullName} (${tag})`);
-				continue;
-			}
+			if (status === 'disbanded') continue;
 
 			const team = await getOrCreateTeam({ name: fullName, status });
+
 			for (const cell of memberCells) {
 				if (!cell) continue;
-				const name = parsePlayerCell(String(cell));
-				if (!name) continue;
-				const player = await getOrCreatePlayer(name);
+
+				const playerName = parsePlayerCell(String(cell));
+				if (!playerName) continue;
+
+				const player = await getOrCreatePlayer(playerName);
 				await upsertMembership(player.id, team.id);
 			}
 		}
 
-    // ==========================================================
-    // 2️⃣ WEEKLY PLAYER STATS IMPORT
-    // ==========================================================
-    const STATS_SHEET_ID = SHEET_ID_STATS;
-    const meta = await sheets.spreadsheets.get({ spreadsheetId: STATS_SHEET_ID });
-    const sheetTabs =
-      meta.data.sheets
-        ?.filter((s) => !s.properties?.hidden)
-        .map((s) => s.properties?.title)
-        .filter((t): t is string => !!t && /^w\d+\s*stats$/i.test(t.trim()))
-        ?? [];
+		/* ==========================================================
+		   2️⃣ WEEKLY STATS IMPORT (NO RANKS HERE)
+		   ========================================================== */
+		const STATS_SHEET_ID = SHEET_ID_STATS;
+		const meta = await sheets.spreadsheets.get({ spreadsheetId: STATS_SHEET_ID });
 
-		console.log('📊 Found stat tabs:', sheetTabs);
+		const sheetTabs =
+			meta.data.sheets
+				?.map((s) => s.properties?.title)
+				.filter((t): t is string => !!t && /^w\d+\s*stats$/i.test(t.trim()))
+			?? [];
 
 		for (const tab of sheetTabs) {
-			console.log(`📘 Processing stats tab: "${tab}"`);
 			const res = await sheets.spreadsheets.values.get({
 				spreadsheetId: STATS_SHEET_ID,
 				range: `'${tab}'!A1:ZZ`
 			});
 
-			const rawRows = res.data.values ?? [];
-			const headers = rawRows.shift();
-			if (!headers || headers.length === 0) {
-				console.warn(`⚠️ No headers in tab "${tab}", skipping`);
-				continue;
-			}
+			const rows = res.data.values ?? [];
+			const headers = rows.shift();
+			if (!headers) continue;
 
-			const normalizedRecords = rawRows.map((r) => {
+			const normalizedRecords = rows.map((r) => {
 				const obj: Record<string, any> = {};
 				headers.forEach((h, i) => {
-					const keyRaw = String(h ?? '')
-						.trim()
-						.toLowerCase();
-					const key = STATS_HEADER_MAP[keyRaw] ?? keyRaw;
-					obj[key] = r[i];
+					const key = STATS_HEADER_MAP[String(h).trim().toLowerCase()] ?? h;
+					// IMPORTANT: normalize player names here too
+					if (key === 'player') obj[key] = parsePlayerCell(r[i] ? String(r[i]) : '');
+					else obj[key] = r[i];
 				});
 				return normalizeStatsRecord(obj);
 			});
 
-			console.log(`📈 ${tab}: ${normalizedRecords.length} parsed rows`);
 			const { start, end } = inferPeriodFromLabel(tab);
 
-      const { data: dataset, error: datasetErr } = await supabaseAdmin
-        .from('datasets')
-        .upsert(
-          { label: tab, type: 'week', period_start: start, period_end: end },
-          { onConflict: 'label' }
-        )
-        .select('id')
-        .single();
+			const { data: dataset } = await supabaseAdmin
+				.from('datasets')
+				.upsert(
+					{ label: tab, type: 'week', period_start: start, period_end: end },
+					{ onConflict: 'label' }
+				)
+				.select('id')
+				.single();
 
-      if (datasetErr) throw { context: 'datasets', details: datasetErr };
-      if (!dataset) {
-        console.warn(`⚠️ No dataset returned for tab "${tab}", skipping`);
-        continue;
-      }
+			const datasetId = dataset?.id;
+			if (!datasetId) throw new Error(`Failed to upsert dataset for tab: ${tab}`);
 
 			for (const rec of normalizedRecords) {
 				const playerName = rec.player;
 				if (!playerName) continue;
 
 				const player = await getOrCreatePlayer(playerName);
+
 				const team_id = await resolvePlayerTeamId(player.id);
+				const { player: _ignore, ...statFields } = rec;
 
-        const { player: _ignore, ...statFields } = rec;
+				await supabaseAdmin
+					.from('player_stats')
+					.upsert(
+						{
+							dataset_id: datasetId,
+							player_id: player.id,
+							team_id,
+							...statFields
+						},
+						{ onConflict: 'dataset_id,player_id' }
+					);
+			}
+		}
 
-				const payload = {
-					dataset_id: dataset.id,
-					player_id: player.id,
-					team_id,
-					...statFields
-				};
+		/* ==========================================================
+		   3️⃣ ALL-TIME IMPORT (✓ RANKS HERE)
+		   ========================================================== */
+		console.log('📚 Processing all-time stats (rank source of truth)');
 
-        console.log(`🟢 [player_stats] Upserting stats for "${playerName}"`);
+		const ALL_TAB = 'all-weeks';
 
-        const { error: psErr } = await supabaseAdmin
-          .from('player_stats')
-          .upsert(payload, { onConflict: 'dataset_id,player_id' });
+		// Fetch formatting + values
+		const allRes = await sheets.spreadsheets.get({
+			spreadsheetId: STATS_SHEET_ID,
+			ranges: [`'${ALL_TAB}'!A1:ZZ`],
+			includeGridData: true
+		});
 
-        if (psErr) throw { context: 'player_stats', details: psErr };
-      }
-    }
+		const grid = allRes.data.sheets?.[0]?.data?.[0]?.rowData ?? [];
+		if (grid.length === 0) throw new Error('all-weeks sheet empty');
 
-    // ==========================================================
-    // 3️⃣ ALL-TIME (all-weeks) STATS IMPORT
-    // ==========================================================
-    console.log("📚 Processing all-time stats from 'all-weeks' sheet");
+		const headerRow = grid[0]?.values ?? [];
+		const headers = headerRow.map((c) => (c.effectiveValue?.stringValue ?? c.formattedValue ?? '').trim());
 
-    try {
-      const ALL_TAB = "all-weeks";
+		// Find the real column index that maps to "player"
+		let playerColIdx = headers.findIndex((h) => {
+			const keyRaw = h.toLowerCase();
+			return (STATS_HEADER_MAP[keyRaw] ?? keyRaw) === 'player';
+		});
+		if (playerColIdx < 0) playerColIdx = 0; // fallback to col A
 
-      const allRes = await sheets.spreadsheets.values.get({
-        spreadsheetId: STATS_SHEET_ID,
-        range: `'${ALL_TAB}'!A1:ZZ`
-      });
+		console.log('🧭 all-weeks playerColIdx =', playerColIdx, 'header =', headers[playerColIdx]);
 
-      const raw = allRes.data.values ?? [];
-      const headers = raw.shift();
-      if (!headers || headers.length === 0) {
-        console.warn(`⚠️ No headers in "${ALL_TAB}", skipping all-time import`);
-        throw new Error("Missing all-weeks headers");
-      }
+		const normalizedRecords = grid.slice(1).map((row, rowIdx) => {
+			const cells = row.values ?? [];
+			const obj: Record<string, any> = {};
 
-      const normalizedRecords = raw.map((r) => {
-        const obj: Record<string, any> = {};
-        headers.forEach((h, i) => {
-          const keyRaw = String(h ?? "").trim().toLowerCase();
-          const key = STATS_HEADER_MAP[keyRaw] ?? keyRaw;
-          obj[key] = r[i];
-        });
-        return normalizeStatsRecord(obj);
-      });
+			headers.forEach((h, i) => {
+				const keyRaw = h.toLowerCase();
+				const key = STATS_HEADER_MAP[keyRaw] ?? keyRaw;
 
-      console.log(`📘 ${ALL_TAB}: ${normalizedRecords.length} parsed all-time rows`);
+				const cell = cells[i];
+				const value = cell?.effectiveValue?.stringValue ?? cell?.formattedValue ?? '';
 
-      // Create ALL-TIME dataset entry (label = 'all-time')
-      const { data: dataset, error: dsErr } = await supabaseAdmin
-        .from("datasets")
-        .upsert(
-          {
-            label: "all-time",
-            type: "alltime",
-            period_start: new Date("2025-10-25T00:00:00Z"),
-            period_end:   new Date("2025-12-21T23:59:59Z")
-          },
-          { onConflict: "label" }
-        )
-        .select("id")
-        .single();
+				obj[key] = value;
+			});
 
-      if (dsErr) throw { context: "datasets_alltime", details: dsErr };
+			// Extract rank color ONLY from the true "player" column
+			const playerCell = cells[playerColIdx];
+			const bg = extractBackgroundColor(playerCell);
+			obj.player_color = rgbToHex(bg ?? undefined);
 
-      // Insert each all-time stats entry
-      for (const rec of normalizedRecords) {
-        const playerName = rec.player;
-        if (!playerName) continue;
+			// Normalize player name
+			obj.player = parsePlayerCell(String(obj.player ?? ''));
 
-        const player = await getOrCreatePlayer(playerName);
-        const team_id = await resolvePlayerTeamId(player.id);
+			// Debug missing colors
+			if (!obj.player_color) {
+				const name = obj.player;
+				console.log(`⚠️ Missing color for all-weeks row ${rowIdx + 2}: ${name}`);
+			}
 
-        const { player: _ignore, ...statFields } = rec;
+			return normalizeStatsRecord(obj);
+		});
 
-        const payload = {
-          dataset_id: dataset.id,
-          player_id: player.id,
-          team_id,
-          ...statFields
-        };
+		// Create all-time dataset entry
+		const { data: allTimeDataset } = await supabaseAdmin
+			.from('datasets')
+			.upsert(
+				{
+					label: 'all-time',
+					type: 'alltime',
+					period_start: new Date('2025-10-25T00:00:00Z'),
+					period_end: new Date('2025-12-21T23:59:59Z')
+				},
+				{ onConflict: 'label' }
+			)
+			.select('id')
+			.single();
 
-        console.log(`🟣 [alltime_stats] Upserting all-time stats for "${playerName}"`);
+		if (!allTimeDataset || !allTimeDataset.id) {
+			throw new Error('Failed to upsert dataset for all-time');
+		}
+		const allTimeDatasetId = allTimeDataset.id;
 
-        const { error: psErr } = await supabaseAdmin
-          .from("player_stats")
-          .upsert(payload, { onConflict: "dataset_id,player_id" });
+		for (const rec of normalizedRecords) {
+			const playerName = rec.player;
+			if (!playerName) continue;
 
-        if (psErr) throw { context: "player_stats_alltime", details: psErr };
-      }
+			const player = await getOrCreatePlayer(playerName);
+			const team_id = await resolvePlayerTeamId(player.id);
 
-      console.log("✅ All-time stats import complete!");
-    } catch (err) {
-      console.error("❌ Failed importing all-weeks → all-time:", err);
-    }
+			/* ==========================================================
+			   🔥 GLOBAL RANK UPDATE — FROM ALL-TIME ONLY
+			   ========================================================== */
+			if (rec.player_color) {
+				const rankLabel = RANK_COLOR_MAP[rec.player_color] ?? null;
+				const rankValue = rankLabel ? RANK_ORDER[rankLabel] : null;
 
-		console.log('✅ Import complete!');
-		return json({ ok: true, message: 'All data imported successfully' });
+				if (!rankLabel) {
+					console.log(`⚠️ Unmapped rank color ${rec.player_color} for ${playerName}`);
+				}
+
+				if (rankLabel) {
+					await supabaseAdmin
+						.from('players')
+						.update({
+							rank_label: rankLabel,
+							rank_color: rec.player_color,
+							rank_value: rankValue
+						})
+						.eq('id', player.id);
+				}
+			}
+
+			const { player: _ignore, player_color: _ignore2, ...statFields } = rec;
+
+			await supabaseAdmin
+				.from('player_stats')
+				.upsert(
+					{
+						dataset_id: allTimeDatasetId,
+						player_id: player.id,
+						team_id,
+						...statFields
+					},
+					{ onConflict: 'dataset_id,player_id' }
+				);
+		}
+
+		console.log('✅ Import (with ranks) completed successfully');
+		return json({ ok: true });
+
 	} catch (e: any) {
-		console.error('🔥 Fatal Import Failure:', JSON.stringify(e, null, 2));
+		console.error('🔥 Fatal Import Failure:', e);
 		return json({ ok: false, error: e.message || e }, { status: 500 });
 	}
 }

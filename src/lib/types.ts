@@ -5,6 +5,12 @@ export type Player = {
 	dataset_id: string;
 	player: string;
 	agents: string;
+
+	// ⭐ RANK FIELDS ADDED
+	rank_label: string | null;
+	rank_color: string | null;
+	rank_value: number | null;
+
 	games: number;
 	games_won: number;
 	games_lost: number;
@@ -42,6 +48,11 @@ export type Key =
 	| 'dataset_id'
 	| 'player'
 	| 'agents'
+	// ⭐ ADD THIS
+	| 'rank_value'
+	// ⭐ Optional if you want to sort/filter by them
+	// | 'rank_label'
+	// | 'rank_color'
 	| 'games'
 	| 'games_won'
 	| 'games_lost'
@@ -72,6 +83,7 @@ export type Key =
 	| 'defuses_per_game'
 	| 'econ_rating'
 	| 'created_at';
+
 
 export type Col = {
 	key: Key;

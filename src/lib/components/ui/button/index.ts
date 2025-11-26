@@ -15,3 +15,7 @@ export {
 	type ButtonSize,
 	type ButtonVariant
 };
+
+// Re-export event/slot types for TypeScript consumers
+export type ButtonEvents = import('./button.svelte').ButtonEvents;
+export type ButtonSlots = import('./button.svelte').ButtonSlots;

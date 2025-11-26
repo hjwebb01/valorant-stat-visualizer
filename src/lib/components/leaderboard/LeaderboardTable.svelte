@@ -8,10 +8,15 @@
 	export let visibleCols: Col[] = [];
 	export let sortKey: Key;
 	export let sortAsc: boolean;
+	export let groupByRank: boolean = false;
 	export let selectedPlayer: Player | null = null;
 	export let selectedPeriod: string = 'alltime';
 
-	const dispatch = createEventDispatcher<{ sort: { key: Key }; select: { player: Player } }>();
+	const dispatch = createEventDispatcher<{
+		sort: { key: Key };
+		select: { player: Player };
+		toggleGroupByRank: { value: boolean };
+	}>();
 
 	const fmtNum = (v: unknown, d = 2) =>
 		typeof v === 'number' && Number.isFinite(v)
@@ -95,12 +100,96 @@
 
 		return agents;
 	}
+
+		const rankIconModules = import.meta.glob('../../assets/ranks/*_Rank.png', {
+			eager: true,
+			import: 'default'
+		}) as Record<string, string>;
+
+
+
+	function resolveRankIcon(rank: string | null | undefined): string | undefined {
+		if (!rank) return;
+
+		const lower = rank.toLowerCase().trim();
+
+		// ---------------------------------------
+		// 1. Radiant (single icon)
+		// ---------------------------------------
+		if (lower.startsWith("radiant")) {
+			for (const [path, url] of Object.entries(rankIconModules)) {
+				if (path.toLowerCase().includes("radiant_rank")) return url;
+			}
+			return;
+		}
+
+		// ---------------------------------------
+		// 2. IMMORTAL (tier is based on RR number)
+		// ---------------------------------------
+		if (lower.startsWith("immortal")) {
+			// Extract any number (0,100,200,250,300,300+, etc.)
+			const match = lower.match(/(\d+)/);
+			const rr = match ? parseInt(match[1], 10) : 0;
+
+			let tier = 1;
+			if (rr >= 300) tier = 3;
+			else if (rr >= 100) tier = 2;
+
+			const target = `immortal_${tier}_rank`;
+
+			for (const [path, url] of Object.entries(rankIconModules)) {
+				if (path.toLowerCase().includes(target)) return url;
+			}
+			return;
+		}
+
+		// ---------------------------------------
+		// 3. Standard tiers (Bronze, Silver, Gold, Plat, Diamond, Ascendant)
+		//    Example: "Silver 1" → "silver_1_rank"
+		// ---------------------------------------
+		const normalized = lower
+			.replace(/rr/g, "")        // remove "RR"
+			.replace(/[^a-z0-9]+/g, "_") // spaces/punctuation → underscores
+			.replace(/_+$/, "");         // trim trailing underscores
+
+		// Look for something like "bronze_1", "diamond_3", etc.
+		for (const [path, url] of Object.entries(rankIconModules)) {
+			if (path.toLowerCase().includes(normalized)) return url;
+		}
+
+		return undefined;
+	}
+
 </script>
 
 <section class="h-full min-h-0">
 	<Card class="flex h-full min-h-0 flex-col">
 		<CardHeader class="shrink-0">
 			<div class="flex items-center justify-center gap-3">
+				<div
+					role="button"
+					tabindex={0}
+					class="inline-block"
+					on:click={() => {
+						const next = !groupByRank;
+						dispatch('toggleGroupByRank', { value: next });
+					}}
+					on:keydown={(e: KeyboardEvent) => {
+						if (e.key === 'Enter' || e.key === ' ') {
+							e.preventDefault();
+							const next = !groupByRank;
+							dispatch('toggleGroupByRank', { value: next });
+						}
+					}}
+				>
+					<Button
+						variant="toggle"
+						size="sm"
+						data-state={groupByRank ? 'active' : 'inactive'}
+					>
+						Group by Rank
+					</Button>
+				</div>
 				<CardTitle class="text-center text-3xl">Leaderboard</CardTitle>
 				<div class="week-toggle-group">
 					<Button
@@ -156,7 +245,7 @@
 								<button
 									type="button"
 									class={`inline-flex w-full cursor-pointer items-center gap-1 ${c.align === 'right' ? 'justify-end' : 'justify-start'}`}
-									onclick={() => dispatch('sort', { key: c.key })}
+									on:click={() => dispatch('sort', { key: c.key })}
 								>
 									<span class="inline-flex items-center gap-1">
 										{c.label}
@@ -185,7 +274,7 @@
 								}`}
 								tabindex={0}
 								aria-selected={selectedPlayer?.id === p.id}
-								onclick={() => dispatch('select', { player: p })}
+								on:click={() => dispatch('select', { player: p })}
 							>
 								<td
 									class={`border-r px-3 py-3 text-right font-mono text-sm ${isSelected(p) ? 'text-primary' : ''}`}
@@ -196,28 +285,36 @@
 								<td
 									class={`${c.align === 'right' ? 'text-right' : 'text-left'} ${c.widthClass ?? ''} border-r px-3 py-3 text-sm last:border-r-0`}
 								>
-									{#if c.key === 'agents'}
+									{#if c.key === 'player'}
+										<div class="flex items-center gap-2">
+											{#if resolveRankIcon(p.rank_label)}
+												<img
+													src={resolveRankIcon(p.rank_label)}
+													alt={p.rank_label}
+													class="h-6 w-6 shrink-0"
+													loading="lazy"
+												/>
+											{/if}
+											<span>{p.player}</span>
+										</div>
+
+									{:else if c.key === 'agents'}
 										<div class="flex min-w-50 flex-wrap items-center gap-1 whitespace-nowrap">
 											{#each agentListToIcons(p.agents) as a}
 												{#if a.url}
-													<img
-														src={a.url}
-														alt={a.name}
-														class="h-7 w-7 shrink-0 rounded"
-														loading="lazy"
-													/>
+													<img src={a.url} alt={a.name} class="h-7 w-7 shrink-0 rounded" loading="lazy" />
 												{:else}
-													<span class="text-muted-foreground max-w-full truncate text-xs"
-														>{a.name}</span
-													>
+													<span class="text-muted-foreground max-w-full truncate text-xs">{a.name}</span>
 												{/if}
 											{/each}
 										</div>
+
 									{:else}
 										{fmt(c, p)}
 									{/if}
 								</td>
 							{/each}
+
 						</tr>
 					{/each}
 					{/if}
