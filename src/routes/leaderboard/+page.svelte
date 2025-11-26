@@ -31,6 +31,38 @@
 		);
 	})();
 
+	// Sort filtered players based on sortKey and sortAsc
+	$: sortedPlayers = (() => {
+		const players = [...filteredPlayers];
+		players.sort((a, b) => {
+			const aVal = (a as any)[sortKey];
+			const bVal = (b as any)[sortKey];
+
+			// Handle null/undefined values
+			if (aVal == null && bVal == null) return 0;
+			if (aVal == null) return sortAsc ? -1 : 1;
+			if (bVal == null) return sortAsc ? 1 : -1;
+
+			// Convert to numbers if possible, otherwise compare as strings
+			const aNum = typeof aVal === 'number' ? aVal : parseFloat(String(aVal));
+			const bNum = typeof bVal === 'number' ? bVal : parseFloat(String(bVal));
+
+			if (!isNaN(aNum) && !isNaN(bNum)) {
+				return sortAsc ? aNum - bNum : bNum - aNum;
+			}
+
+			// String comparison as fallback
+			const aStr = String(aVal).toLowerCase();
+			const bStr = String(bVal).toLowerCase();
+			if (sortAsc) {
+				return aStr.localeCompare(bStr);
+			} else {
+				return bStr.localeCompare(aStr);
+			}
+		});
+		return players;
+	})();
+
 	// Update period when data changes
 	$: if (data.period) {
 		selectedPeriod = data.period;
@@ -153,7 +185,7 @@
 
 	let selectedPercentiles: Record<string, number> = {};
 	$: selectedPercentiles = selectedPlayer
-		? computeSelectedPercentiles(selectedPlayer, filteredPlayers)
+		? computeSelectedPercentiles(selectedPlayer, players)
 		: {};
 
 	// Top stats to display with equal emphasis
@@ -193,8 +225,8 @@
 	}
 
 	// Sorting
-	let sortKey: Key = 'acs',
-		sortAsc = false;
+	let sortKey: Key = 'acs';
+	let sortAsc = false;
 	function sortBy(k: Key) {
 		if (sortKey === k) sortAsc = !sortAsc;
 		else {
@@ -270,7 +302,7 @@
 			</div>
 			<div class="h-full min-h-0">
 				<LeaderboardTable
-					players={filteredPlayers}
+					players={sortedPlayers}
 					{visibleCols}
 					{sortKey}
 					{sortAsc}
