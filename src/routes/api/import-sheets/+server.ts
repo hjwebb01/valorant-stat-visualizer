@@ -332,6 +332,18 @@ export async function POST() {
 			const datasetId = dataset?.id;
 			if (!datasetId) throw new Error(`Failed to upsert dataset for tab: ${tab}`);
 
+			console.log(`📚 Processing weekly tab: ${tab} — datasetId=${datasetId} rows=${normalizedRecords.length}`);
+
+			// Quick diagnostics: how many records have no player after normalization?
+			const totalRows = normalizedRecords.length;
+			const missingPlayers = normalizedRecords.filter((r) => !r.player).length;
+			const samplePlayers = normalizedRecords.slice(0, 10).map((r) => r.player || '(empty)');
+			console.log(
+				`🔎 Weekly tab diagnostics for ${tab}: total=${totalRows} missing_players=${missingPlayers} sample_first_10=${JSON.stringify(samplePlayers)}`
+			);
+
+			let upsertedCount = 0;
+
 			for (const rec of normalizedRecords) {
 				const playerName = rec.player;
 				if (!playerName) continue;
@@ -341,7 +353,7 @@ export async function POST() {
 				const team_id = await resolvePlayerTeamId(player.id);
 				const { player: _ignore, ...statFields } = rec;
 
-				await supabaseAdmin
+				const { error: psError } = await supabaseAdmin
 					.from('player_stats')
 					.upsert(
 						{
@@ -352,7 +364,15 @@ export async function POST() {
 						},
 						{ onConflict: 'dataset_id,player_id' }
 					);
+
+				if (psError) {
+					console.error(`⚠️ Weekly upsert error for ${playerName} in ${tab}:`, psError);
+				} else {
+					upsertedCount++;
+				}
 			}
+
+			console.log(`✅ Weekly tab ${tab} upsert complete — upserted ${upsertedCount}/${normalizedRecords.length} rows`);
 		}
 
 		/* ==========================================================
