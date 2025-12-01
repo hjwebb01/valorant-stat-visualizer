@@ -351,7 +351,7 @@ export async function POST() {
 				const player = await getOrCreatePlayer(playerName);
 
 				const team_id = await resolvePlayerTeamId(player.id);
-				const { player: _ignore, ...statFields } = rec;
+				const { player: _ignore, player_color: _ignore2, ...statFields } = rec;
 
 				const { error: psError } = await supabaseAdmin
 					.from('player_stats')
