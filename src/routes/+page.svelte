@@ -20,7 +20,7 @@
 	// Server-provided data
 	export let data: {
 		players?: Array<Record<string, any>>;
-		period?: 'week1' | 'week2' | 'week3' | 'week4' | 'alltime';
+		period?: 'week1' | 'week2' | 'week3' | 'week4' | 'week5' | 'alltime';
 	} = {};
 
 	let allPlayers: Array<Record<string, any>> = data.players ?? [];
@@ -149,6 +149,7 @@
 								<option value="week2">Week 2</option>
 								<option value="week3">Week 3</option>
 								<option value="week4">Week 4</option>
+								<option value="week5">Week 5</option>
 								<option value="alltime">All Time</option>
 							</select>
 

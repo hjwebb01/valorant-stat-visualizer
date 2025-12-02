@@ -2,7 +2,7 @@
 import { supabaseAdmin } from '$lib/server/supabaseAdmin';
 import type { Player } from '$lib/types';
 
-type TimePeriod = 'week1' | 'week2' | 'week3' | 'week4' | 'alltime';
+type TimePeriod = 'week1' | 'week2' | 'week3' | 'week4' | 'week5' | 'alltime';
 
 const getViewName = (period: TimePeriod): string => {
 	switch (period) {
@@ -14,6 +14,8 @@ const getViewName = (period: TimePeriod): string => {
 			return 'v_player_stats_week3';
 		case 'week4':
 			return 'v_player_stats_week4';
+		case 'week5':
+			return 'v_player_stats_week5';
 		case 'alltime':
 		default:
 			return 'v_player_stats_alltime';
