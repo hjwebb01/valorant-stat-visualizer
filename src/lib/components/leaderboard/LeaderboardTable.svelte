@@ -2,6 +2,7 @@
 	import { Card, CardHeader, CardTitle } from '$lib/components/ui/card';
 	import type { Col, Key, Player } from '$lib/types';
 	import { Button } from '$lib/components/ui/button';
+	import { goto } from '$app/navigation';
 	import { createEventDispatcher } from 'svelte';
 
 	export let players: Player[] = [];
@@ -192,38 +193,32 @@
 				</div>
 				<CardTitle class="text-center text-3xl">Leaderboard</CardTitle>
 				<div class="week-toggle-group">
-					<Button
-						variant="toggle"
-						size="sm"
-						href="?period=week1"
-						data-state={selectedPeriod === 'week1' ? 'active' : 'inactive'}
-					>
-						Week 1
-					</Button>
-					<Button
-						variant="toggle"
-						size="sm"
-						href="?period=week2"
-						data-state={selectedPeriod === 'week2' ? 'active' : 'inactive'}
-					>
-						Week 2
-					</Button>
-					<Button
-						variant="toggle"
-						size="sm"
-						href="?period=week3"
-						data-state={selectedPeriod === 'week3' ? 'active' : 'inactive'}
-					>
-						Week 3
-					</Button>
-					<Button
-						variant="toggle"
-						size="sm"
-						href="?period=alltime"
-						data-state={selectedPeriod === 'alltime' ? 'active' : 'inactive'}
-					>
-						All Time
-					</Button>
+					<label for="period-select" class="sr-only">Select period</label>
+					<div class="relative inline-block">
+						<select
+							id="period-select"
+							class="appearance-none rounded-md border border-border bg-card px-3 py-1 text-sm text-foreground shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary pr-8"
+							value={selectedPeriod}
+							on:change={(e) => goto(`?period=${(e.currentTarget as HTMLSelectElement).value}`)}
+							aria-label="Select period"
+						>
+							<option value="week1">Week 1</option>
+							<option value="week2">Week 2</option>
+							<option value="week3">Week 3</option>
+							<option value="week4">Week 4</option>
+							<option value="alltime">All Time</option>
+						</select>
+
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							viewBox="0 0 20 20"
+							fill="currentColor"
+							class="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"
+							aria-hidden="true"
+						>
+							<path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clip-rule="evenodd" />
+						</svg>
+					</div>
 				</div>
 			</div>
 		</CardHeader>
