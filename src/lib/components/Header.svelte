@@ -17,6 +17,7 @@
 
 	// Icons from lucide
 	import { Home, Trophy, LogIn, LogOut, Menu } from '@lucide/svelte';
+	import { Users } from '@lucide/svelte';
 	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
 	import { login, logout, isLoggedIn } from '$lib/stores/auth';
 
@@ -80,6 +81,15 @@
 							<span>Leaderboard</span>
 						</NavigationMenuLink>
 					</NavigationMenuItem>
+					<NavigationMenuItem>
+						<NavigationMenuLink
+							href="/compare"
+							class="flex items-center gap-2 rounded-md px-3 py-2 transition-colors"
+						>
+							<Users size={18} />
+							<span>Compare</span>
+						</NavigationMenuLink>
+					</NavigationMenuItem>
 					<!-- Example right-aligned action -->
 					<NavigationMenuItem class="ml-2">
 						{#if $isLoggedIn}
@@ -139,6 +149,15 @@
 								>
 									<Trophy size={18} />
 									<span>Leaderboard</span>
+								</a>
+							</li>
+							<li>
+								<a
+									href="/compare"
+									class="hover:bg-accent hover:text-accent-foreground flex items-center gap-2 rounded-md px-3 py-2"
+								>
+									<Users size={18} />
+									<span>Compare</span>
 								</a>
 							</li>
 							<li class="pt-2">
