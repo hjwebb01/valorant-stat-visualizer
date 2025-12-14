@@ -20,18 +20,33 @@
 	// Toggle grouping by rank (Radiant + Immortal combined)
 	let groupByRank = false;
 
+	// Minimum maps played filter
+	let minMaps = 1;
+
+	// Compute maxMaps from players data (games field = maps played)
+	$: maxMaps = players.length > 0 
+		? Math.max(...players.map((p) => p.games ?? 0), 1)
+		: 1;
+
 	// Add rank to players based on their original order
 	$: playersWithRank = players.map((player, index) => ({ ...player, rank: index + 1 }));
 
-	// Filter players based on search query
+	// Filter players based on search query and minimum maps played
 	$: filteredPlayers = (() => {
-		if (!searchQuery.trim()) {
-			return playersWithRank;
+		let filtered = playersWithRank;
+		
+		// Filter by search query
+		if (searchQuery.trim()) {
+			const normalizedQuery = searchQuery.toLowerCase().trim();
+			filtered = filtered.filter((player) =>
+				player.player?.toLowerCase().trim().includes(normalizedQuery)
+			);
 		}
-		const normalizedQuery = searchQuery.toLowerCase().trim();
-		return playersWithRank.filter((player) =>
-			player.player?.toLowerCase().trim().includes(normalizedQuery)
-		);
+		
+		// Filter by minimum maps played
+		filtered = filtered.filter((player) => (player.games ?? 0) >= minMaps);
+		
+		return filtered;
 	})();
 
 // Helper used by sorting logic to compare values consistently.
@@ -399,12 +414,13 @@ $: sortedPlayers = (() => {
 				<ColumnsFilter
 					{cols}
 					{visibleSet}
-					on:toggle={(e) => toggleColumn(e.detail.key)}
-					on:showAll={showAll}
-					on:hideAll={hideAll}
-					on:reset={resetDefaults}
+					{maxMaps}
+					bind:minMaps
+					onToggle={(key) => toggleColumn(key)}
+					onShowAll={showAll}
+					onHideAll={hideAll}
+					onReset={resetDefaults}
 				/>
-
 			</div>
 			<div class="h-full min-h-0">
 				<LeaderboardTable
@@ -432,7 +448,7 @@ $: sortedPlayers = (() => {
 									: ''}"
 							>
 								<CardTitle
-									class="font-heading flex-1 text-center text-2xl font-semibold text-[#171717 dark:#f1f2f3]"
+									class="font-heading text-[#171717 dark:#f1f2f3] flex-1 text-center text-2xl font-semibold"
 								>
 									{selectedPlayer.player ?? '(Unknown Player)'}
 								</CardTitle>
