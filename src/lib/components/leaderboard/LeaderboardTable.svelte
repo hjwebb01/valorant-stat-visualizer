@@ -208,6 +208,7 @@
 							<option value="week4">Week 4</option>
 							<option value="week5">Week 5</option>
 							<option value="week6">Week 6</option>
+							<option value="week7">Week 7</option>
 							<option value="alltime">All Time</option>
 						</select>
 
