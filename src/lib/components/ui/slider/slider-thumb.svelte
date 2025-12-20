@@ -15,7 +15,5 @@
 		className
 	)}
 	{...restProps}
->
-	{@render restProps.children?.()}
-</SliderPrimitive.Thumb>
+/>
 

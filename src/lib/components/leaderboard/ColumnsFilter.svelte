@@ -29,38 +29,33 @@
 		onMinMapsChange
 	}: Props = $props();
 
+	let sliderValue = $state(minMaps);
+	let isSliding = $state(false);
+
+	function startSliding() {
+		isSliding = true;
+	}
+
+	function stopSliding() {
+		if (!isSliding) return;
+		isSliding = false;
+		minMaps = sliderValue;
+		onMinMapsChange?.(minMaps);
+	}
+
+	$effect(() => {
+		if (!isSliding) sliderValue = minMaps; // Sync when user inputs directly
+	});
 	const STORAGE_KEY = 'leaderboard.visibleCols.v1';
 
 	// String value for the input (HTML number inputs bind to strings)
-	// Use $derived for better performance - it's just a transformation, no side effects
-	let inputValue = $derived(String(minMaps));
+	// Use sliderValue so the input shows live updates during sliding
+	let inputValue = $derived(String(sliderValue));
 
 	// Clamp minMaps between 1 and maxMaps (only when it goes out of bounds)
 	$effect(() => {
 		if (minMaps < 1) minMaps = 1;
 		if (minMaps > maxMaps) minMaps = maxMaps;
-	});
-
-	// Debounce the callback to reduce expensive operations during rapid slider movement
-	let changeTimeout: ReturnType<typeof setTimeout> | null = null;
-	
-	$effect(() => {
-		// Clear any pending timeout
-		if (changeTimeout) {
-			clearTimeout(changeTimeout);
-		}
-		
-		// Debounce the callback - slider value updates immediately for visual feedback,
-		// but expensive operations are delayed
-		changeTimeout = setTimeout(() => {
-			onMinMapsChange?.(minMaps);
-		}, 150); // 150ms debounce - reduces filtering calls during rapid dragging
-		
-		return () => {
-			if (changeTimeout) {
-				clearTimeout(changeTimeout);
-			}
-		};
 	});
 
 	function handleInputChange(e: Event) {
@@ -86,9 +81,9 @@
 			}
 		} catch {}
 	});
-
 </script>
 
+<svelte:window onpointerup={stopSliding} />
 <aside class="h-full min-h-0">
 	<Card class="flex h-full min-h-0 flex-col">
 		<CardHeader class="shrink-0">
@@ -102,7 +97,14 @@
 						>Minimum Maps Played</label
 					>
 					<div class="flex items-center gap-3">
-						<Slider bind:value={minMaps} min={1} max={maxMaps} step={1} class="flex-1" />
+						<Slider
+							bind:value={sliderValue}
+							min={1}
+							max={maxMaps}
+							step={1}
+							class="flex-1"
+							onpointerdown={startSliding}
+						/>
 						<Input
 							id="min-maps-input"
 							type="number"
