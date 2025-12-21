@@ -11,7 +11,6 @@
 		step?: number;
 		disabled?: boolean;
 		orientation?: 'horizontal' | 'vertical';
-		onValueChange?: (value: number) => void;
 	} & Record<string, any>;
 
 	let { class: className, value = $bindable(0), ...restProps }: Props = $props();

@@ -14,7 +14,6 @@
 		onShowAll?: () => void;
 		onHideAll?: () => void;
 		onReset?: () => void;
-		onMinMapsChange?: (value: number) => void;
 	};
 
 	let {
@@ -25,8 +24,7 @@
 		onToggle,
 		onShowAll,
 		onHideAll,
-		onReset,
-		onMinMapsChange
+		onReset
 	}: Props = $props();
 
 	let sliderValue = $state(minMaps);
@@ -40,7 +38,6 @@
 		if (!isSliding) return;
 		isSliding = false;
 		minMaps = sliderValue;
-		onMinMapsChange?.(minMaps);
 	}
 
 	$effect(() => {
@@ -50,7 +47,7 @@
 
 	// String value for the input (HTML number inputs bind to strings)
 	// Use sliderValue so the input shows live updates during sliding
-	let inputValue = $derived(String(sliderValue));
+	let displayValue = $derived(String(sliderValue));
 
 	// Clamp minMaps between 1 and maxMaps (only when it goes out of bounds)
 	$effect(() => {
@@ -110,7 +107,7 @@
 							type="number"
 							min={1}
 							max={maxMaps}
-							bind:value={inputValue}
+							value={displayValue}
 							oninput={handleInputChange}
 							class="w-16 text-center"
 							aria-label="Minimum maps played"
