@@ -233,6 +233,7 @@ export async function POST() {
 		/* ==========================================================
 		   1️⃣ TEAM IMPORT
 		   ========================================================== */
+		/*
 		const TEAMS_SHEET_ID = SHEET_ID_TEAMS;
 
 		let teamStatusMap = new Map<string, string>();
@@ -284,7 +285,7 @@ export async function POST() {
 				await upsertMembership(player.id, team.id);
 			}
 		}
-
+		*/
 		/* ==========================================================
 		   2️⃣ WEEKLY STATS IMPORT (NO RANKS HERE)
 		   ========================================================== */
@@ -294,8 +295,7 @@ export async function POST() {
 		const sheetTabs =
 			meta.data.sheets
 				?.map((s) => s.properties?.title)
-				.filter((t): t is string => !!t && /^w\d+\s*stats$/i.test(t.trim()))
-			?? [];
+				.filter((t): t is string => !!t && /^w\d+\s*stats$/i.test(t.trim())) ?? [];
 
 		for (const tab of sheetTabs) {
 			const res = await sheets.spreadsheets.values.get({
@@ -332,7 +332,9 @@ export async function POST() {
 			const datasetId = dataset?.id;
 			if (!datasetId) throw new Error(`Failed to upsert dataset for tab: ${tab}`);
 
-			console.log(`📚 Processing weekly tab: ${tab} — datasetId=${datasetId} rows=${normalizedRecords.length}`);
+			console.log(
+				`📚 Processing weekly tab: ${tab} — datasetId=${datasetId} rows=${normalizedRecords.length}`
+			);
 
 			// Quick diagnostics: how many records have no player after normalization?
 			const totalRows = normalizedRecords.length;
@@ -372,7 +374,9 @@ export async function POST() {
 				}
 			}
 
-			console.log(`✅ Weekly tab ${tab} upsert complete — upserted ${upsertedCount}/${normalizedRecords.length} rows`);
+			console.log(
+				`✅ Weekly tab ${tab} upsert complete — upserted ${upsertedCount}/${normalizedRecords.length} rows`
+			);
 		}
 
 		/* ==========================================================
@@ -393,7 +397,9 @@ export async function POST() {
 		if (grid.length === 0) throw new Error('all-weeks sheet empty');
 
 		const headerRow = grid[0]?.values ?? [];
-		const headers = headerRow.map((c) => (c.effectiveValue?.stringValue ?? c.formattedValue ?? '').trim());
+		const headers = headerRow.map((c) =>
+			(c.effectiveValue?.stringValue ?? c.formattedValue ?? '').trim()
+		);
 
 		// Find the real column index that maps to "player"
 		let playerColIdx = headers.findIndex((h) => {
@@ -487,22 +493,19 @@ export async function POST() {
 
 			const { player: _ignore, player_color: _ignore2, ...statFields } = rec;
 
-			await supabaseAdmin
-				.from('player_stats')
-				.upsert(
-					{
-						dataset_id: allTimeDatasetId,
-						player_id: player.id,
-						team_id,
-						...statFields
-					},
-					{ onConflict: 'dataset_id,player_id' }
-				);
+			await supabaseAdmin.from('player_stats').upsert(
+				{
+					dataset_id: allTimeDatasetId,
+					player_id: player.id,
+					team_id,
+					...statFields
+				},
+				{ onConflict: 'dataset_id,player_id' }
+			);
 		}
 
 		console.log('✅ Import (with ranks) completed successfully');
 		return json({ ok: true });
-
 	} catch (e: any) {
 		console.error('🔥 Fatal Import Failure:', e);
 		return json({ ok: false, error: e.message || e }, { status: 500 });

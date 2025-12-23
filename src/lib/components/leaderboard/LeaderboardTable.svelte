@@ -102,12 +102,10 @@
 		return agents;
 	}
 
-		const rankIconModules = import.meta.glob('../../assets/ranks/*_Rank.png', {
-			eager: true,
-			import: 'default'
-		}) as Record<string, string>;
-
-
+	const rankIconModules = import.meta.glob('../../assets/ranks/*_Rank.png', {
+		eager: true,
+		import: 'default'
+	}) as Record<string, string>;
 
 	function resolveRankIcon(rank: string | null | undefined): string | undefined {
 		if (!rank) return;
@@ -117,9 +115,9 @@
 		// ---------------------------------------
 		// 1. Radiant (single icon)
 		// ---------------------------------------
-		if (lower.startsWith("radiant")) {
+		if (lower.startsWith('radiant')) {
 			for (const [path, url] of Object.entries(rankIconModules)) {
-				if (path.toLowerCase().includes("radiant_rank")) return url;
+				if (path.toLowerCase().includes('radiant_rank')) return url;
 			}
 			return;
 		}
@@ -127,7 +125,7 @@
 		// ---------------------------------------
 		// 2. IMMORTAL (tier is based on RR number)
 		// ---------------------------------------
-		if (lower.startsWith("immortal")) {
+		if (lower.startsWith('immortal')) {
 			// Extract any number (0,100,200,250,300,300+, etc.)
 			const match = lower.match(/(\d+)/);
 			const rr = match ? parseInt(match[1], 10) : 0;
@@ -149,9 +147,9 @@
 		//    Example: "Silver 1" → "silver_1_rank"
 		// ---------------------------------------
 		const normalized = lower
-			.replace(/rr/g, "")        // remove "RR"
-			.replace(/[^a-z0-9]+/g, "_") // spaces/punctuation → underscores
-			.replace(/_+$/, "");         // trim trailing underscores
+			.replace(/rr/g, '') // remove "RR"
+			.replace(/[^a-z0-9]+/g, '_') // spaces/punctuation → underscores
+			.replace(/_+$/, ''); // trim trailing underscores
 
 		// Look for something like "bronze_1", "diamond_3", etc.
 		for (const [path, url] of Object.entries(rankIconModules)) {
@@ -160,7 +158,6 @@
 
 		return undefined;
 	}
-
 </script>
 
 <section class="h-full min-h-0">
@@ -183,11 +180,7 @@
 						}
 					}}
 				>
-					<Button
-						variant="toggle"
-						size="sm"
-						data-state={groupByRank ? 'active' : 'inactive'}
-					>
+					<Button variant="toggle" size="sm" data-state={groupByRank ? 'active' : 'inactive'}>
 						Group by Rank
 					</Button>
 				</div>
@@ -197,7 +190,7 @@
 					<div class="relative inline-block">
 						<select
 							id="period-select"
-							class="appearance-none rounded-md border border-border bg-card px-3 py-1 text-sm text-foreground shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary pr-8"
+							class="border-border bg-card text-foreground focus:ring-primary focus:border-primary appearance-none rounded-md border px-3 py-1 pr-8 text-sm shadow-sm focus:ring-2 focus:outline-none"
 							value={selectedPeriod}
 							on:change={(e) => goto(`?period=${(e.currentTarget as HTMLSelectElement).value}`)}
 							aria-label="Select period"
@@ -209,6 +202,7 @@
 							<option value="week5">Week 5</option>
 							<option value="week6">Week 6</option>
 							<option value="week7">Week 7</option>
+							<option value="week8">Week 8</option>
 							<option value="alltime">All Time</option>
 						</select>
 
@@ -216,10 +210,14 @@
 							xmlns="http://www.w3.org/2000/svg"
 							viewBox="0 0 20 20"
 							fill="currentColor"
-							class="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"
+							class="text-muted-foreground pointer-events-none absolute top-1/2 right-2 h-4 w-4 -translate-y-1/2"
 							aria-hidden="true"
 						>
-							<path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clip-rule="evenodd" />
+							<path
+								fill-rule="evenodd"
+								d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z"
+								clip-rule="evenodd"
+							/>
 						</svg>
 					</div>
 				</div>
@@ -260,7 +258,10 @@
 				<tbody>
 					{#if sorted.length === 0}
 						<tr>
-							<td colspan={visibleCols.length + 1} class="border-r px-3 py-8 text-center text-muted-foreground">
+							<td
+								colspan={visibleCols.length + 1}
+								class="text-muted-foreground border-r px-3 py-8 text-center"
+							>
 								No players found
 							</td>
 						</tr>
@@ -279,42 +280,46 @@
 								>
 									{(p as any).rank ?? i + 1}
 								</td>
-							{#each visibleCols as c}
-								<td
-									class={`${c.align === 'right' ? 'text-right' : 'text-left'} ${c.widthClass ?? ''} border-r px-3 py-3 text-sm last:border-r-0`}
-								>
-									{#if c.key === 'player'}
-										<div class="flex items-center gap-2">
-											{#if resolveRankIcon(p.rank_label)}
-												<img
-													src={resolveRankIcon(p.rank_label)}
-													alt={p.rank_label}
-													class="h-6 w-6 shrink-0"
-													loading="lazy"
-												/>
-											{/if}
-											<span>{p.player}</span>
-										</div>
-
-									{:else if c.key === 'agents'}
-										<div class="flex min-w-50 flex-wrap items-center gap-1 whitespace-nowrap">
-											{#each agentListToIcons(p.agents) as a}
-												{#if a.url}
-													<img src={a.url} alt={a.name} class="h-7 w-7 shrink-0 rounded" loading="lazy" />
-												{:else}
-													<span class="text-muted-foreground max-w-full truncate text-xs">{a.name}</span>
+								{#each visibleCols as c}
+									<td
+										class={`${c.align === 'right' ? 'text-right' : 'text-left'} ${c.widthClass ?? ''} border-r px-3 py-3 text-sm last:border-r-0`}
+									>
+										{#if c.key === 'player'}
+											<div class="flex items-center gap-2">
+												{#if resolveRankIcon(p.rank_label)}
+													<img
+														src={resolveRankIcon(p.rank_label)}
+														alt={p.rank_label}
+														class="h-6 w-6 shrink-0"
+														loading="lazy"
+													/>
 												{/if}
-											{/each}
-										</div>
-
-									{:else}
-										{fmt(c, p)}
-									{/if}
-								</td>
-							{/each}
-
-						</tr>
-					{/each}
+												<span>{p.player}</span>
+											</div>
+										{:else if c.key === 'agents'}
+											<div class="flex min-w-50 flex-wrap items-center gap-1 whitespace-nowrap">
+												{#each agentListToIcons(p.agents) as a}
+													{#if a.url}
+														<img
+															src={a.url}
+															alt={a.name}
+															class="h-7 w-7 shrink-0 rounded"
+															loading="lazy"
+														/>
+													{:else}
+														<span class="text-muted-foreground max-w-full truncate text-xs"
+															>{a.name}</span
+														>
+													{/if}
+												{/each}
+											</div>
+										{:else}
+											{fmt(c, p)}
+										{/if}
+									</td>
+								{/each}
+							</tr>
+						{/each}
 					{/if}
 				</tbody>
 			</table>
