@@ -16,7 +16,7 @@
 	import NavigationMenu from './ui/navigation-menu/navigation-menu.svelte';
 
 	// Icons from lucide
-	import { Home, Trophy, LogIn, LogOut, Menu } from '@lucide/svelte';
+	import { Home, Trophy, LogIn, LogOut, Menu, GitBranch } from '@lucide/svelte';
 	import { Users } from '@lucide/svelte';
 	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
 	import { login, logout, isLoggedIn } from '$lib/stores/auth';
@@ -90,6 +90,15 @@
 							<span>Compare</span>
 						</NavigationMenuLink>
 					</NavigationMenuItem>
+					<NavigationMenuItem>
+						<NavigationMenuLink
+							href="/bracket"
+							class="flex items-center gap-2 rounded-md px-3 py-2 transition-colors"
+						>
+							<GitBranch size={18} />
+							<span>Bracket</span>
+						</NavigationMenuLink>
+					</NavigationMenuItem>
 					<!-- Example right-aligned action -->
 					<NavigationMenuItem class="ml-2">
 						{#if $isLoggedIn}
@@ -158,6 +167,15 @@
 								>
 									<Users size={18} />
 									<span>Compare</span>
+								</a>
+							</li>
+							<li>
+								<a
+									href="/bracket"
+									class="hover:bg-accent hover:text-accent-foreground flex items-center gap-2 rounded-md px-3 py-2"
+								>
+									<GitBranch size={18} />
+									<span>Bracket</span>
 								</a>
 							</li>
 							<li class="pt-2">
