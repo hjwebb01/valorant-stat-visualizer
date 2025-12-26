@@ -30,49 +30,51 @@
 	{/if}
 
 	<div class="overflow-x-auto">
-		<div class="min-w-[1000px]">
-			<div class="mb-12">
-				<h2 class="text-muted-foreground mb-4 text-sm font-semibold uppercase">Upper Bracket</h2>
-				<div class="flex items-center gap-32">
-					<div class="flex flex-col gap-12">
-						<Match match={$matches['U1']} onSetWinner={setWinner} />
-						<Match match={$matches['U2']} onSetWinner={setWinner} />
-						<Match match={$matches['U3']} onSetWinner={setWinner} />
-						<Match match={$matches['U4']} onSetWinner={setWinner} />
+		<div class="grid min-w-[1200px] grid-cols-[4fr_1fr] gap-16">
+			<div class="flex flex-col gap-12">
+				<div>
+					<h2 class="text-muted-foreground mb-4 text-sm font-semibold uppercase">Upper Bracket</h2>
+					<div class="flex items-center gap-32">
+						<div class="flex flex-col gap-12">
+							<Match match={$matches['U1']} onSetWinner={setWinner} />
+							<Match match={$matches['U2']} onSetWinner={setWinner} />
+							<Match match={$matches['U3']} onSetWinner={setWinner} />
+							<Match match={$matches['U4']} onSetWinner={setWinner} />
+						</div>
+						<div class="flex flex-col gap-32">
+							<Match match={$matches['U5']} onSetWinner={setWinner} />
+							<Match match={$matches['U6']} onSetWinner={setWinner} />
+						</div>
+						<div class="flex flex-col justify-center">
+							<Match match={$matches['U7']} onSetWinner={setWinner} />
+						</div>
 					</div>
-					<div class="flex flex-col gap-32">
-						<Match match={$matches['U5']} onSetWinner={setWinner} />
-						<Match match={$matches['U6']} onSetWinner={setWinner} />
-					</div>
-					<div class="flex flex-col justify-center">
-						<Match match={$matches['U7']} onSetWinner={setWinner} />
+				</div>
+
+				<div>
+					<h2 class="text-muted-foreground mb-4 text-sm font-semibold uppercase">Lower Bracket</h2>
+					<div class="flex items-center gap-16">
+						<div class="flex flex-col gap-4">
+							<Match match={$matches['L1']} onSetWinner={setWinner} />
+							<Match match={$matches['L2']} onSetWinner={setWinner} />
+						</div>
+						<div class="-mt-16 flex flex-col gap-8">
+							<Match match={$matches['L3']} onSetWinner={setWinner} />
+							<Match match={$matches['L4']} onSetWinner={setWinner} />
+						</div>
+						<div class="-mt-20 flex flex-col justify-center">
+							<Match match={$matches['L5']} onSetWinner={setWinner} />
+						</div>
+						<div class="-mt-28 flex flex-col justify-center">
+							<Match match={$matches['L8']} onSetWinner={setWinner} />
+						</div>
 					</div>
 				</div>
 			</div>
 
-			<div class="mb-12">
-				<h2 class="text-muted-foreground mb-4 text-sm font-semibold uppercase">Lower Bracket</h2>
-				<div class="flex items-center gap-32">
-					<div class="flex flex-col gap-4">
-						<Match match={$matches['L1']} onSetWinner={setWinner} />
-						<Match match={$matches['L2']} onSetWinner={setWinner} />
-					</div>
-					<div class="flex flex-col gap-8 -mt-16">
-						<Match match={$matches['L3']} onSetWinner={setWinner} />
-						<Match match={$matches['L4']} onSetWinner={setWinner} />
-					</div>
-					<div class="flex flex-col justify-center -mt-16">
-						<Match match={$matches['L5']} onSetWinner={setWinner} />
-					</div>
-					<div class="flex flex-col justify-center -mt-20">
-						<Match match={$matches['L8']} onSetWinner={setWinner} />
-					</div>
-				</div>
-			</div>
-
-			<div class="mb-8">
-				<h2 class="text-muted-foreground mb-4 text-sm font-semibold uppercase">Grand Final</h2>
-				<div class="flex justify-center">
+			<div class="flex flex-col justify-center">
+				<div>
+					<h2 class="text-muted-foreground mb-4 text-sm font-semibold uppercase">Grand Final</h2>
 					<Match match={$matches['GF']} onSetWinner={setWinner} />
 				</div>
 			</div>
