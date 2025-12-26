@@ -58,7 +58,7 @@
 							<Match match={$matches['L1']} onSetWinner={setWinner} />
 							<Match match={$matches['L2']} onSetWinner={setWinner} />
 						</div>
-						<div class="-mt-16 flex flex-col gap-8">
+						<div class="-mt-16 flex flex-col gap-4">
 							<Match match={$matches['L3']} onSetWinner={setWinner} />
 							<Match match={$matches['L4']} onSetWinner={setWinner} />
 						</div>
