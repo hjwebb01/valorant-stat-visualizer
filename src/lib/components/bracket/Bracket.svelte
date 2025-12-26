@@ -31,71 +31,102 @@
 
 	<div class="overflow-x-auto">
 		<div class="min-w-[1000px]">
-			<div class="mb-8">
+			<div class="mb-12">
 				<h2 class="text-muted-foreground mb-4 text-sm font-semibold uppercase">Upper Bracket</h2>
-				<div class="relative flex gap-8">
-					<div class="flex gap-8">
-						<div class="space-y-16">
+				<div class="relative flex items-center gap-16">
+					<div class="flex flex-col gap-12">
+						<div class="space-y-0">
 							<Match match={$matches['U1']} onSetWinner={setWinner} />
+						</div>
+						<div class="space-y-0">
+							<Match match={$matches['U2']} onSetWinner={setWinner} />
+						</div>
+					</div>
+					<div class="flex flex-col gap-32">
+						<div class="space-y-0">
+							<Match match={$matches['U5']} onSetWinner={setWinner} />
+						</div>
+					</div>
+					<div class="flex flex-col gap-12">
+						<div class="space-y-0">
 							<Match match={$matches['U3']} onSetWinner={setWinner} />
 						</div>
-						<div class="space-y-48">
-							<Match match={$matches['U2']} onSetWinner={setWinner} />
+						<div class="space-y-0">
 							<Match match={$matches['U4']} onSetWinner={setWinner} />
 						</div>
 					</div>
-					<div class="flex gap-8">
-						<div class="space-y-64">
-							<Match match={$matches['U5']} onSetWinner={setWinner} />
-						</div>
-						<div class="space-y-64">
+					<div class="flex flex-col gap-32">
+						<div class="space-y-0">
 							<Match match={$matches['U6']} onSetWinner={setWinner} />
 						</div>
 					</div>
-					<div class="flex">
-						<div class="space-y-64">
-							<Match match={$matches['U7']} onSetWinner={setWinner} />
+					<div class="flex flex-col justify-center">
+						<Match match={$matches['U7']} onSetWinner={setWinner} />
+					</div>
+				</div>
+			</div>
+
+			<div class="mb-12">
+				<h2 class="text-muted-foreground mb-4 text-sm font-semibold uppercase">Lower Bracket</h2>
+				<div class="relative flex items-center gap-16">
+					<div class="flex flex-col gap-4">
+						<div class="space-y-0">
+							<Match match={$matches['L1']} onSetWinner={setWinner} />
 						</div>
+						<div class="space-y-0">
+							<Match match={$matches['L2']} onSetWinner={setWinner} />
+						</div>
+					</div>
+					<div class="flex flex-col gap-16">
+						<div class="space-y-0">
+							<Match match={$matches['L3']} onSetWinner={setWinner} />
+						</div>
+						<div class="space-y-0">
+							<Match match={$matches['L4']} onSetWinner={setWinner} />
+						</div>
+					</div>
+					<div class="flex flex-col gap-8">
+						<div class="space-y-0">
+							<Match match={$matches['L5']} onSetWinner={setWinner} />
+						</div>
+					</div>
+					<div class="flex flex-col justify-center">
+						<Match match={$matches['L8']} onSetWinner={setWinner} />
 					</div>
 				</div>
 			</div>
 
 			<div class="mb-8">
-				<h2 class="text-muted-foreground mb-4 text-sm font-semibold uppercase">Lower Bracket</h2>
-				<div class="relative flex gap-8">
-					<div class="flex gap-8">
-						<div class="space-y-4">
-							<Match match={$matches['L1']} onSetWinner={setWinner} />
-						</div>
-						<div class="space-y-4">
-							<Match match={$matches['L2']} onSetWinner={setWinner} />
-						</div>
-					</div>
-					<div class="flex gap-8">
-						<div class="space-y-16">
-							<Match match={$matches['L5']} onSetWinner={setWinner} />
-						</div>
-						<div class="space-y-16">
-							<Match match={$matches['L6']} onSetWinner={setWinner} />
-						</div>
-					</div>
-					<div class="flex gap-8">
-						<div class="space-y-32">
-							<Match match={$matches['L7']} onSetWinner={setWinner} />
-						</div>
-						<div class="space-y-32">
-							<Match match={$matches['L8']} onSetWinner={setWinner} />
-						</div>
-					</div>
-				</div>
-			</div>
-
-			<div>
 				<h2 class="text-muted-foreground mb-4 text-sm font-semibold uppercase">Grand Final</h2>
-				<div class="flex">
+				<div class="flex justify-center">
 					<Match match={$matches['GF']} onSetWinner={setWinner} />
 				</div>
 			</div>
 		</div>
 	</div>
 </div>
+
+<style>
+	:global(.bracket-connector) {
+		position: absolute;
+		right: -1.5rem;
+		width: 1.5rem;
+		border-right: 2px solid oklch(var(--border));
+	}
+
+	:global(.bracket-connector-top) {
+		top: 50%;
+		height: 50%;
+		border-top: 2px solid oklch(var(--border));
+		border-bottom: none;
+		border-top-right-radius: 8px;
+	}
+
+	:global(.bracket-connector-bottom) {
+		top: 50%;
+		height: 50%;
+		border-bottom: 2px solid oklch(var(--border));
+		border-top: none;
+		border-bottom-right-radius: 8px;
+	}
+</style>

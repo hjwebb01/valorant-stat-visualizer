@@ -91,7 +91,7 @@ const createInitialMatches = (): MatchState => {
 		winner: null,
 		nextMatchId: 'U7',
 		nextMatchSlot: 'team1',
-		loserNextMatchId: 'L5',
+		loserNextMatchId: 'L3',
 		loserNextMatchSlot: 'team2'
 	};
 
@@ -102,8 +102,8 @@ const createInitialMatches = (): MatchState => {
 		winner: null,
 		nextMatchId: 'U7',
 		nextMatchSlot: 'team2',
-		loserNextMatchId: 'L5',
-		loserNextMatchSlot: 'team1'
+		loserNextMatchId: 'L4',
+		loserNextMatchSlot: 'team2'
 	};
 
 	matchState['U7'] = {
@@ -122,7 +122,7 @@ const createInitialMatches = (): MatchState => {
 		team1: null,
 		team2: null,
 		winner: null,
-		nextMatchId: 'L5',
+		nextMatchId: 'L3',
 		nextMatchSlot: 'team1',
 		loserNextMatchId: null,
 		loserNextMatchSlot: null
@@ -133,8 +133,30 @@ const createInitialMatches = (): MatchState => {
 		team1: null,
 		team2: null,
 		winner: null,
-		nextMatchId: 'L6',
+		nextMatchId: 'L4',
 		nextMatchSlot: 'team1',
+		loserNextMatchId: null,
+		loserNextMatchSlot: null
+	};
+
+	matchState['L3'] = {
+		id: 'L3',
+		team1: null,
+		team2: null,
+		winner: null,
+		nextMatchId: 'L5',
+		nextMatchSlot: 'team1',
+		loserNextMatchId: null,
+		loserNextMatchSlot: null
+	};
+
+	matchState['L4'] = {
+		id: 'L4',
+		team1: null,
+		team2: null,
+		winner: null,
+		nextMatchId: 'L5',
+		nextMatchSlot: 'team2',
 		loserNextMatchId: null,
 		loserNextMatchSlot: null
 	};
@@ -144,30 +166,8 @@ const createInitialMatches = (): MatchState => {
 		team1: null,
 		team2: null,
 		winner: null,
-		nextMatchId: 'L7',
-		nextMatchSlot: 'team2',
-		loserNextMatchId: null,
-		loserNextMatchSlot: null
-	};
-
-	matchState['L6'] = {
-		id: 'L6',
-		team1: null,
-		team2: null,
-		winner: null,
-		nextMatchId: 'L7',
-		nextMatchSlot: 'team1',
-		loserNextMatchId: null,
-		loserNextMatchSlot: null
-	};
-
-	matchState['L7'] = {
-		id: 'L7',
-		team1: null,
-		team2: null,
-		winner: null,
 		nextMatchId: 'L8',
-		nextMatchSlot: 'team2',
+		nextMatchSlot: 'team1',
 		loserNextMatchId: null,
 		loserNextMatchSlot: null
 	};
