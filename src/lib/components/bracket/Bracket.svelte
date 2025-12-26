@@ -65,7 +65,7 @@
 						<div class="-mt-20 flex flex-col justify-center">
 							<Match match={$matches['L5']} onSetWinner={setWinner} />
 						</div>
-						<div class="-mt-28 -ml-8 flex flex-col justify-center">
+						<div class="-mt-28 ml-8 flex flex-col justify-center">
 							<Match match={$matches['L8']} onSetWinner={setWinner} />
 						</div>
 					</div>
