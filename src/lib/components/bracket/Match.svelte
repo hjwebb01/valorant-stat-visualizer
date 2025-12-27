@@ -19,10 +19,10 @@
 	}
 </script>
 
-<div class="bg-card border-border flex w-48 flex-col gap-2 rounded-lg border p-3">
+<div class="flex w-32 flex-col">
 	<button
 		type="button"
-		class="border-border bg-card flex w-full items-center justify-between gap-2 rounded-md border p-2 text-left {getTeamClass(
+		class="flex w-full items-center justify-between gap-2 px-3 py-2 text-left {getTeamClass(
 			match.team1
 		)}"
 		onclick={() => match.team1 && handleTeamClick(match.team1)}
@@ -37,7 +37,7 @@
 	</button>
 	<button
 		type="button"
-		class="border-border bg-card flex w-full items-center justify-between gap-2 rounded-md border p-2 text-left {getTeamClass(
+		class="flex w-full items-center justify-between gap-2 px-3 py-2 text-left {getTeamClass(
 			match.team2
 		)}"
 		onclick={() => match.team2 && handleTeamClick(match.team2)}

@@ -25,12 +25,12 @@
 			class="bg-primary text-primary-foreground mb-8 flex items-center justify-center gap-3 rounded-lg p-4 text-center"
 		>
 			<Trophy size={24} />
-			<span class="text-lg font-semibold">Champion: {championName}</span>
+			<span class="text-lg font-semibold">Your Rivals 3 Champion: {championName}</span>
 		</div>
 	{/if}
 
 	<div class="overflow-x-auto">
-		<div class="grid min-w-[1200px] grid-cols-[4fr_1fr] gap-16">
+		<div class="grid min-w-[1200px] grid-cols-[4fr_1fr]">
 			<div class="flex flex-col gap-12">
 				<div>
 					<h2 class="text-muted-foreground mb-4 text-sm font-semibold uppercase">Upper Bracket</h2>
