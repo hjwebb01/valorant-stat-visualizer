@@ -33,262 +33,164 @@ const teams: Team[] = [
 	{ name: 'LCQ Winners', tag: 'LCQW', seed: 8 }
 ];
 
-function getTeamBySeed(seed: number): Team | null {
-	return teams.find((t) => t.seed === seed) ?? null;
-}
+const getTeamBySeed = (seed: number): Team | null => teams.find((t) => t.seed === seed) ?? null;
 
-const createInitialMatches = (): MatchState => {
-	const matchState: MatchState = {};
+const createMatch = (
+	id: string,
+	team1: Team | null,
+	team2: Team | null,
+	nextMatchId: string | null = null,
+	nextMatchSlot: 'team1' | 'team2' | null = null,
+	loserNextMatchId: string | null = null,
+	loserNextMatchSlot: 'team1' | 'team2' | null = null
+): Match => ({
+	id,
+	team1,
+	team2,
+	winner: null,
+	nextMatchId,
+	nextMatchSlot,
+	loserNextMatchId,
+	loserNextMatchSlot
+});
 
-	matchState['U1'] = {
-		id: 'U1',
-		team1: getTeamBySeed(1),
-		team2: getTeamBySeed(8),
-		winner: null,
-		nextMatchId: 'U5',
-		nextMatchSlot: 'team1',
-		loserNextMatchId: 'L1',
-		loserNextMatchSlot: 'team1'
-	};
+const createInitialMatches = (): MatchState => ({
+	U1: createMatch('U1', getTeamBySeed(1), getTeamBySeed(8), 'U5', 'team1', 'L1', 'team1'),
+	U2: createMatch('U2', getTeamBySeed(4), getTeamBySeed(5), 'U5', 'team2', 'L1', 'team2'),
+	U3: createMatch('U3', getTeamBySeed(2), getTeamBySeed(7), 'U6', 'team1', 'L2', 'team1'),
+	U4: createMatch('U4', getTeamBySeed(3), getTeamBySeed(6), 'U6', 'team2', 'L2', 'team2'),
+	U5: createMatch('U5', null, null, 'U7', 'team1', 'L3', 'team2'),
+	U6: createMatch('U6', null, null, 'U7', 'team2', 'L4', 'team2'),
+	U7: createMatch('U7', null, null, 'GF', 'team1', 'L8', 'team1'),
+	L1: createMatch('L1', null, null, 'L3', 'team1', null, null),
+	L2: createMatch('L2', null, null, 'L4', 'team1', null, null),
+	L3: createMatch('L3', null, null, 'L5', 'team1', null, null),
+	L4: createMatch('L4', null, null, 'L5', 'team2', null, null),
+	L5: createMatch('L5', null, null, 'L8', 'team2', null, null),
+	L8: createMatch('L8', null, null, 'GF', 'team2', null, null),
+	GF: createMatch('GF', null, null, null, null, null, null)
+});
 
-	matchState['U2'] = {
-		id: 'U2',
-		team1: getTeamBySeed(4),
-		team2: getTeamBySeed(5),
-		winner: null,
-		nextMatchId: 'U5',
-		nextMatchSlot: 'team2',
-		loserNextMatchId: 'L1',
-		loserNextMatchSlot: 'team2'
-	};
-
-	matchState['U3'] = {
-		id: 'U3',
-		team1: getTeamBySeed(2),
-		team2: getTeamBySeed(7),
-		winner: null,
-		nextMatchId: 'U6',
-		nextMatchSlot: 'team1',
-		loserNextMatchId: 'L2',
-		loserNextMatchSlot: 'team1'
-	};
-
-	matchState['U4'] = {
-		id: 'U4',
-		team1: getTeamBySeed(3),
-		team2: getTeamBySeed(6),
-		winner: null,
-		nextMatchId: 'U6',
-		nextMatchSlot: 'team2',
-		loserNextMatchId: 'L2',
-		loserNextMatchSlot: 'team2'
-	};
-
-	matchState['U5'] = {
-		id: 'U5',
-		team1: null,
-		team2: null,
-		winner: null,
-		nextMatchId: 'U7',
-		nextMatchSlot: 'team1',
-		loserNextMatchId: 'L3',
-		loserNextMatchSlot: 'team2'
-	};
-
-	matchState['U6'] = {
-		id: 'U6',
-		team1: null,
-		team2: null,
-		winner: null,
-		nextMatchId: 'U7',
-		nextMatchSlot: 'team2',
-		loserNextMatchId: 'L4',
-		loserNextMatchSlot: 'team2'
-	};
-
-	matchState['U7'] = {
-		id: 'U7',
-		team1: null,
-		team2: null,
-		winner: null,
-		nextMatchId: 'GF',
-		nextMatchSlot: 'team1',
-		loserNextMatchId: 'L8',
-		loserNextMatchSlot: 'team1'
-	};
-
-	matchState['L1'] = {
-		id: 'L1',
-		team1: null,
-		team2: null,
-		winner: null,
-		nextMatchId: 'L3',
-		nextMatchSlot: 'team1',
-		loserNextMatchId: null,
-		loserNextMatchSlot: null
-	};
-
-	matchState['L2'] = {
-		id: 'L2',
-		team1: null,
-		team2: null,
-		winner: null,
-		nextMatchId: 'L4',
-		nextMatchSlot: 'team1',
-		loserNextMatchId: null,
-		loserNextMatchSlot: null
-	};
-
-	matchState['L3'] = {
-		id: 'L3',
-		team1: null,
-		team2: null,
-		winner: null,
-		nextMatchId: 'L5',
-		nextMatchSlot: 'team1',
-		loserNextMatchId: null,
-		loserNextMatchSlot: null
-	};
-
-	matchState['L4'] = {
-		id: 'L4',
-		team1: null,
-		team2: null,
-		winner: null,
-		nextMatchId: 'L5',
-		nextMatchSlot: 'team2',
-		loserNextMatchId: null,
-		loserNextMatchSlot: null
-	};
-
-	matchState['L5'] = {
-		id: 'L5',
-		team1: null,
-		team2: null,
-		winner: null,
-		nextMatchId: 'L8',
-		nextMatchSlot: 'team2',
-		loserNextMatchId: null,
-		loserNextMatchSlot: null
-	};
-
-	matchState['L8'] = {
-		id: 'L8',
-		team1: null,
-		team2: null,
-		winner: null,
-		nextMatchId: 'GF',
-		nextMatchSlot: 'team2',
-		loserNextMatchId: null,
-		loserNextMatchSlot: null
-	};
-
-	matchState['GF'] = {
-		id: 'GF',
-		team1: null,
-		team2: null,
-		winner: null,
-		nextMatchId: null,
-		nextMatchSlot: null,
-		loserNextMatchId: null,
-		loserNextMatchSlot: null
-	};
-
-	return matchState;
-};
-
-function loadFromStorage(): MatchState | null {
+const loadFromStorage = (): MatchState | null => {
 	if (!browser) return null;
 	try {
 		const stored = localStorage.getItem(STORAGE_KEY);
-		if (stored) {
-			const parsed = JSON.parse(stored) as MatchState;
-			if (parsed && typeof parsed === 'object') {
-				return parsed;
-			}
-		}
+		if (stored) return JSON.parse(stored) as MatchState;
 	} catch {}
 	return null;
-}
+};
 
-function saveToStorage(state: MatchState) {
-	if (!browser) return;
-	try {
-		localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-	} catch {}
-}
+const saveToStorage = (state: MatchState) => {
+	if (browser) localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+};
 
-const initialMatches = createInitialMatches();
-const storedMatches = loadFromStorage();
+const resetWinnerIfNeeded = (
+	match: Match,
+	newTeam: Team | null,
+	currentState: MatchState
+): Match => {
+	if (!match.winner) return match;
 
-export const matches = writable<MatchState>(storedMatches ?? initialMatches);
+	const winnerIsInMatch =
+		(match.team1 && match.team1.name === newTeam?.name) ||
+		(match.team2 && match.team2.name === newTeam?.name);
+
+	if (!winnerIsInMatch) {
+		const updated = { ...match, winner: null };
+		currentState[updated.id] = updated;
+	}
+	return match;
+};
+
+const getWinnerLoser = (match: Match, team: Team) => {
+	const isTeam1 = match.team1?.name === team.name;
+	return {
+		winner: isTeam1 ? match.team1 : match.team2,
+		loser: isTeam1 ? match.team2 : match.team1
+	};
+};
+
+const updateNextMatch = (
+	currentState: MatchState,
+	match: Match,
+	newTeam: Team,
+	nextMatchId: string | null,
+	nextMatchSlot: 'team1' | 'team2' | null
+) => {
+	if (!nextMatchId || !nextMatchSlot) return;
+
+	const nextMatch = { ...currentState[nextMatchId] };
+	nextMatch[nextMatchSlot] = newTeam;
+	currentState[nextMatch.id] = nextMatch;
+
+	resetWinnerIfNeeded(nextMatch, newTeam, currentState);
+};
+
+const clearTeamFromFuture = (
+	state: MatchState,
+	teamToClear: Team | null,
+	startMatchId: string,
+	visited: Set<string>
+): MatchState => {
+	if (!teamToClear || visited.has(startMatchId)) return state;
+
+	const match = state[startMatchId];
+	if (!match) return state;
+
+	visited.add(startMatchId);
+
+	const team1InMatch = match.team1?.name === teamToClear.name;
+	const team2InMatch = match.team2?.name === teamToClear.name;
+
+	if (!team1InMatch && !team2InMatch) return state;
+
+	const updatedMatch = {
+		...match,
+		...(team1InMatch && { team1: null }),
+		...(team2InMatch && { team2: null }),
+		...(match.winner?.name === teamToClear.name && { winner: null })
+	};
+
+	let updatedState = { ...state, [startMatchId]: updatedMatch };
+
+	if (match.nextMatchId) {
+		updatedState = clearTeamFromFuture(updatedState, teamToClear, match.nextMatchId, visited);
+	}
+	if (match.loserNextMatchId) {
+		updatedState = clearTeamFromFuture(updatedState, teamToClear, match.loserNextMatchId, visited);
+	}
+
+	return updatedState;
+};
+
+export const matches = writable<MatchState>(loadFromStorage() ?? createInitialMatches());
 
 export function setWinner(matchId: string, team: Team) {
 	matches.update((state) => {
 		const match = { ...state[matchId] };
-
 		if (!match.team1 || !match.team2) return state;
 
-		const winningTeam = match.team1.name === team.name ? match.team1 : match.team2;
-		const losingTeam = match.team1.name === team.name ? match.team2 : match.team1;
+		const oldWinner = match.winner;
+		const oldLoser =
+			match.loserNextMatchId && match.loserNextMatchSlot
+				? (state[match.loserNextMatchId]?.[match.loserNextMatchSlot] ?? null)
+				: null;
 
-		match.winner = winningTeam;
+		const { winner, loser } = getWinnerLoser(match, team);
+		if (!winner || !loser) return state;
 
-		const newState = { ...state, [matchId]: match };
+		match.winner = winner;
+		let newState = { ...state, [matchId]: match };
 
-		if (match.nextMatchId && match.nextMatchSlot) {
-			const nextMatch = { ...newState[match.nextMatchId] };
-			const slot = match.nextMatchSlot;
-			if (nextMatch[slot] !== winningTeam) {
-				nextMatch[slot] = winningTeam;
-				newState[nextMatch.id] = nextMatch;
-
-				if (
-					nextMatch.winner &&
-					(nextMatch.winner === nextMatch.team1 || nextMatch.winner === nextMatch.team2)
-				) {
-					if (nextMatch.team1 && nextMatch.team2) {
-						const currentWinner =
-							nextMatch.team1.name === nextMatch.winner.name ? nextMatch.team1 : nextMatch.team2;
-						if (winningTeam.name !== currentWinner.name) {
-							nextMatch.winner = null;
-							newState[nextMatch.id] = nextMatch;
-						}
-					} else {
-						nextMatch.winner = null;
-						newState[nextMatch.id] = nextMatch;
-					}
-				}
-			}
+		if (oldWinner && match.nextMatchId) {
+			newState = clearTeamFromFuture(newState, oldWinner, match.nextMatchId, new Set());
+		}
+		if (oldLoser && oldLoser.name !== loser.name && match.loserNextMatchId) {
+			newState = clearTeamFromFuture(newState, oldLoser, match.loserNextMatchId, new Set());
 		}
 
-		if (match.loserNextMatchId && match.loserNextMatchSlot) {
-			const loserMatch = { ...newState[match.loserNextMatchId] };
-			const slot = match.loserNextMatchSlot;
-			if (loserMatch[slot] !== losingTeam) {
-				loserMatch[slot] = losingTeam;
-				newState[loserMatch.id] = loserMatch;
-
-				if (
-					loserMatch.winner &&
-					(loserMatch.winner === loserMatch.team1 || loserMatch.winner === loserMatch.team2)
-				) {
-					if (loserMatch.team1 && loserMatch.team2) {
-						const currentWinner =
-							loserMatch.team1.name === loserMatch.winner.name
-								? loserMatch.team1
-								: loserMatch.team2;
-						if (losingTeam.name !== currentWinner.name) {
-							loserMatch.winner = null;
-							newState[loserMatch.id] = loserMatch;
-						}
-					} else {
-						loserMatch.winner = null;
-						newState[loserMatch.id] = loserMatch;
-					}
-				}
-			}
-		}
+		updateNextMatch(newState, match, winner, match.nextMatchId, match.nextMatchSlot);
+		updateNextMatch(newState, match, loser, match.loserNextMatchId, match.loserNextMatchSlot);
 
 		saveToStorage(newState);
 		return newState;
@@ -301,7 +203,4 @@ export function resetBracket() {
 	saveToStorage(newMatches);
 }
 
-export const champion = derived(matches, ($matches) => {
-	const grandFinal = $matches['GF'];
-	return grandFinal?.winner ?? null;
-});
+export const champion = derived(matches, ($matches) => $matches['GF']?.winner ?? null);
