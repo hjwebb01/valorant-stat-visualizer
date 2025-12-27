@@ -167,7 +167,7 @@ const createInitialMatches = (): MatchState => {
 		team2: null,
 		winner: null,
 		nextMatchId: 'L8',
-		nextMatchSlot: 'team1',
+		nextMatchSlot: 'team2',
 		loserNextMatchId: null,
 		loserNextMatchSlot: null
 	};
