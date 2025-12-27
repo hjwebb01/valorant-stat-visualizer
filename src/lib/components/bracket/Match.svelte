@@ -19,7 +19,7 @@
 	}
 </script>
 
-<div class="flex w-32 flex-col">
+<div class="bg-card border-border flex w-36 flex-col border">
 	<button
 		type="button"
 		class="flex w-full items-center justify-between gap-2 px-3 py-2 text-left {getTeamClass(
@@ -35,6 +35,7 @@
 			<span class="text-muted-foreground text-sm italic">TBD</span>
 		{/if}
 	</button>
+	<div class="h-px bg-border"></div>
 	<button
 		type="button"
 		class="flex w-full items-center justify-between gap-2 px-3 py-2 text-left {getTeamClass(
