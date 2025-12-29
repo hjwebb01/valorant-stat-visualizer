@@ -204,3 +204,124 @@ export function resetBracket() {
 }
 
 export const champion = derived(matches, ($matches) => $matches['GF']?.winner ?? null);
+
+// Match order for validation traversal (tournament progression order)
+const MATCH_ORDER = [
+	'U1',
+	'U2',
+	'U3',
+	'U4',
+	'L1',
+	'L2',
+	'U5',
+	'U6',
+	'L3',
+	'L4',
+	'L5',
+	'U7',
+	'L8',
+	'GF'
+];
+
+// Matches where losing means elimination (lower bracket matches)
+const ELIMINATION_MATCHES = new Set(['L1', 'L2', 'L3', 'L4', 'L5', 'L8', 'GF']);
+
+export interface BracketValidationResult {
+	valid: boolean;
+	errors: string[];
+}
+
+export interface BracketPicksExport {
+	picks: Record<string, string>;
+	champion: string;
+	timestamp: string;
+}
+
+export function validateBracket(): BracketValidationResult {
+	let currentState: MatchState | null = null;
+	matches.subscribe((state) => (currentState = state))();
+
+	if (!currentState) {
+		return { valid: false, errors: ['Unable to read bracket state'] };
+	}
+
+	const state = currentState as MatchState;
+	const errors: string[] = [];
+	const eliminatedTeams = new Set<string>();
+
+	for (const matchId of MATCH_ORDER) {
+		const match = state[matchId];
+
+		// Check if match has both teams
+		if (!match.team1 || !match.team2) {
+			errors.push(`Match ${matchId}: Missing teams (bracket incomplete)`);
+			continue;
+		}
+
+		// Check if match has a winner
+		if (!match.winner) {
+			errors.push(`Match ${matchId}: No winner selected`);
+			continue;
+		}
+
+		// Check if winner is one of the teams in this match
+		const winnerName = match.winner.name;
+		if (winnerName !== match.team1.name && winnerName !== match.team2.name) {
+			errors.push(`Match ${matchId}: Winner is not a participant in this match`);
+			continue;
+		}
+
+		// Check if winner was previously eliminated
+		if (eliminatedTeams.has(winnerName)) {
+			errors.push(`Match ${matchId}: Winner "${match.winner.tag}" was already eliminated`);
+		}
+
+		// Determine the loser and track elimination if this is an elimination match
+		const loser = match.winner.name === match.team1.name ? match.team2 : match.team1;
+		if (ELIMINATION_MATCHES.has(matchId) && loser) {
+			eliminatedTeams.add(loser.name);
+		}
+	}
+
+	return { valid: errors.length === 0, errors };
+}
+
+export function exportBracketPicks(): BracketPicksExport | null {
+	const validation = validateBracket();
+
+	if (!validation.valid) {
+		return null;
+	}
+
+	let currentState: MatchState | null = null;
+	matches.subscribe((state) => (currentState = state))();
+
+	if (!currentState) {
+		return null;
+	}
+
+	const state = currentState as MatchState;
+	const picks: Record<string, string> = {};
+
+	for (const matchId of MATCH_ORDER) {
+		const match = state[matchId];
+		if (match.winner) {
+			picks[matchId] = match.winner.tag;
+		}
+	}
+
+	const championTeam = state['GF']?.winner;
+	if (!championTeam) {
+		return null;
+	}
+
+	const exportData: BracketPicksExport = {
+		picks,
+		champion: championTeam.tag,
+		timestamp: new Date().toISOString()
+	};
+
+	console.log('Bracket Picks Export:', JSON.stringify(exportData, null, 2));
+
+	return exportData;
+}

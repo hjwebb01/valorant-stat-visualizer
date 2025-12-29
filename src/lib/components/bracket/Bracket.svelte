@@ -1,23 +1,50 @@
 <script lang="ts">
 	import Match from './Match.svelte';
-	import { matches, resetBracket, champion, setWinner } from '$lib/stores/bracketStore';
+	import {
+		matches,
+		resetBracket,
+		champion,
+		setWinner,
+		validateBracket,
+		exportBracketPicks
+	} from '$lib/stores/bracketStore';
 	import { Button } from '$lib/components/ui/button';
-	import { RefreshCw, Trophy } from '@lucide/svelte';
+	import { RefreshCw, Trophy, Send } from '@lucide/svelte';
 
 	let championName = $derived($champion?.name ?? null);
 
 	function handleResetBracket() {
 		resetBracket();
 	}
+
+	function handleSubmitBracket() {
+		const validation = validateBracket();
+
+		if (!validation.valid) {
+			alert('Bracket validation failed:\n\n' + validation.errors.join('\n'));
+			return;
+		}
+
+		const exportData = exportBracketPicks();
+		if (exportData) {
+			alert('Bracket submitted successfully! Check console for JSON output.');
+		}
+	}
 </script>
 
 <div class="mx-auto max-w-7xl p-6">
 	<div class="mb-6 flex items-center justify-between">
 		<h1 class="text-foreground text-2xl font-bold">Tournament Bracket</h1>
-		<Button variant="outline" onclick={handleResetBracket} class="gap-2">
-			<RefreshCw size={16} />
-			Reset Bracket
-		</Button>
+		<div class="flex gap-2">
+			<Button variant="outline" onclick={handleResetBracket} class="gap-2">
+				<RefreshCw size={16} />
+				Reset Bracket
+			</Button>
+			<Button variant="default" onclick={handleSubmitBracket} class="gap-2">
+				<Send size={16} />
+				Submit Bracket
+			</Button>
+		</div>
 	</div>
 
 	{#if championName}
@@ -48,9 +75,13 @@
 						<div class="flex flex-col justify-center">
 							<Match match={$matches['U7']} onSetWinner={setWinner} />
 						</div>
-						<div class="flex flex-col justify-center ml-8 relative">						
-							<h2 class="text-muted-foreground absolute -top-8 left-0 text-sm font-semibold uppercase">Grand Final</h2>
-							<Match match={$matches['GF']} onSetWinner={setWinner} />		
+						<div class="relative ml-8 flex flex-col justify-center">
+							<h2
+								class="text-muted-foreground absolute -top-8 left-0 text-sm font-semibold uppercase"
+							>
+								Grand Final
+							</h2>
+							<Match match={$matches['GF']} onSetWinner={setWinner} />
 						</div>
 					</div>
 				</div>
