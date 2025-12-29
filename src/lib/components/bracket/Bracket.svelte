@@ -11,7 +11,34 @@
 	import { Button } from '$lib/components/ui/button';
 	import { RefreshCw, Trophy, Send } from '@lucide/svelte';
 
+	// Import all team logos
+	import powLogo from '$lib/assets/teams/pokeballofwonders.png';
+	import horLogo from '$lib/assets/teams/hooters.png';
+	import ttrLogo from '$lib/assets/teams/terenceterencerence.png';
+	import tbbLogo from '$lib/assets/teams/thebigblack.png';
+	import jtrrLogo from '$lib/assets/teams/jtrebuildrebuild.png';
+	import ojsLogo from '$lib/assets/teams/ojenksimpsons.png';
+	import stdLogo from '$lib/assets/teams/tbc.png';
+	import tbcLogo from '$lib/assets/teams/tbc.png';
+
+	const teamLogos: Record<string, string> = {
+		'POW': powLogo,
+		'HOR': horLogo,
+		'TTR': ttrLogo,
+		'TBB': tbbLogo,
+		'JTRR': jtrrLogo,
+		'OJS': ojsLogo,
+		'STD': stdLogo,
+		'TBC': tbcLogo
+	};
+
 	let championName = $derived($champion?.name ?? null);
+	let championTag = $derived($champion?.tag ?? null);
+
+	function getChampionLogo(): string | null {
+		if (!championTag) return null;
+		return teamLogos[championTag] || null;
+	}
 
 	function handleResetBracket() {
 		resetBracket();
@@ -52,7 +79,17 @@
 			class="bg-primary text-primary-foreground mb-8 flex items-center justify-center gap-3 rounded-lg p-4 text-center"
 		>
 			<Trophy size={24} />
-			<span class="text-lg font-semibold">Your Rivals 3 Champion: {championName}</span>
+			<span class="text-lg font-semibold">Your Rivals 3 Champion:</span>
+			<div class="flex items-center gap-2">
+				{#if getChampionLogo()}
+					<img
+						src={getChampionLogo()}
+						alt={championName}
+						class="h-6 w-6 object-cover"
+					/>
+				{/if}
+				<span class="text-lg font-semibold">{championName}</span>
+			</div>
 		</div>
 	{/if}
 

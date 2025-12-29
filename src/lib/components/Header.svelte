@@ -111,7 +111,7 @@
 								<span>Sign out</span>
 							</Button>
 						{:else}
-							<Button variant="secondary" class="flex items-center gap-2 px-3">
+							<Button variant="secondary" class="flex w-full items-center justify-center gap-2" onclick={handleSignIn}>
 								<LogIn size={18} />
 								<span>Sign in</span>
 							</Button>
