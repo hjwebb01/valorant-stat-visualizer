@@ -30,7 +30,7 @@ const teams: Team[] = [
 	{ name: 'JT Rebuild Rebuild', tag: 'JTRR', seed: 5 },
 	{ name: 'O. Jenk Simpsons', tag: 'OJS', seed: 6 },
 	{ name: 'STranger Danger', tag: 'STD', seed: 7 },
-	{ name: 'LCQ Winners', tag: 'LCQW', seed: 8 }
+	{ name: 'The Bron Crusaders', tag: 'TBC', seed: 8 }
 ];
 
 const getTeamBySeed = (seed: number): Team | null => teams.find((t) => t.seed === seed) ?? null;
