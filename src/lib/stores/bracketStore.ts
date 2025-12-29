@@ -76,7 +76,9 @@ const loadFromStorage = (): MatchState | null => {
 	try {
 		const stored = localStorage.getItem(STORAGE_KEY);
 		if (stored) return JSON.parse(stored) as MatchState;
-	} catch {}
+	} catch (error) {
+		console.error('Failed to load bracket state from storage:', error);
+	}
 	return null;
 };
 
@@ -150,6 +152,10 @@ const clearTeamFromFuture = (
 		...(team2InMatch && { team2: null }),
 		...(match.winner?.name === teamToClear.name && { winner: null })
 	};
+
+	if (!updatedMatch.team1 || !updatedMatch.team2) {
+		updatedMatch.winner = null;
+	}
 
 	let updatedState = { ...state, [startMatchId]: updatedMatch };
 
