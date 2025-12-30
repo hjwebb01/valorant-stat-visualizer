@@ -18,7 +18,7 @@ declare module '$env/dynamic/private' {
 
 declare module '$env/static/public' {
 	// compile-time public env vars
-	export const SUPABASE_URL: string;
+	export const PUBLIC_SUPABASE_URL: string;
 	export const PUBLIC_SUPABASE_ANON_KEY: string;
 }
 

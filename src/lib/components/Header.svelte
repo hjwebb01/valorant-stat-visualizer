@@ -1,6 +1,6 @@
 <script lang="ts">
 	// shadcn-svelte UI components (paths match your project's prior imports)
-	import { Button } from '$lib/components/ui/button';
+
 	import {
 		Sheet,
 		SheetContent,
@@ -16,30 +16,12 @@
 	import NavigationMenu from './ui/navigation-menu/navigation-menu.svelte';
 
 	// Icons from lucide
-	import { Home, Trophy, LogIn, LogOut, Menu, GitBranch } from '@lucide/svelte';
+	import { Home, Trophy, Menu, GitBranch } from '@lucide/svelte';
 	import { Users } from '@lucide/svelte';
 	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
-	import { login, logout, isLoggedIn } from '$lib/stores/auth';
-
-	async function handleSignIn(event: MouseEvent) {
-		event.preventDefault();
-		event.stopPropagation();
-		try {
-			await login();
-		} catch (err) {
-			console.error('Sign in error:', err);
-		}
-	}
-
-	async function handleSignOut(event: MouseEvent) {
-		event.preventDefault();
-		event.stopPropagation();
-		try {
-			await logout();
-		} catch (err) {
-			console.error('Sign out error:', err);
-		}
-	}
+	import { isLoggedIn } from '$lib/stores/auth';
+	import LoginButton from '$lib/components/LoginButton.svelte';
+	import LogoutButton from '$lib/components/LogoutButton.svelte';
 </script>
 
 <header
@@ -102,19 +84,9 @@
 					<!-- Example right-aligned action -->
 					<NavigationMenuItem class="ml-2">
 						{#if $isLoggedIn}
-							<Button
-								variant="secondary"
-								class="flex items-center gap-2 px-3"
-								onclick={handleSignOut}
-							>
-								<LogOut size={18} />
-								<span>Sign out</span>
-							</Button>
+							<LogoutButton />
 						{:else}
-							<Button variant="secondary" class="flex w-full items-center justify-center gap-2" onclick={handleSignIn}>
-								<LogIn size={18} />
-								<span>Sign in</span>
-							</Button>
+							<LoginButton />
 						{/if}
 					</NavigationMenuItem>
 				</NavigationMenuList>
@@ -180,19 +152,9 @@
 							</li>
 							<li class="pt-2">
 								{#if $isLoggedIn}
-									<Button
-										variant="secondary"
-										class="flex w-full items-center justify-center gap-2"
-										onclick={handleSignOut}
-									>
-										<LogOut size={18} />
-										<span>Sign out</span>
-									</Button>
+									<LogoutButton />
 								{:else}
-									<Button variant="secondary" class="flex w-full items-center justify-center gap-2">
-										<LogIn size={18} />
-										<span>Sign in</span>
-									</Button>
+									<LoginButton />
 								{/if}
 							</li>
 						</ul>

@@ -6,10 +6,13 @@
 		champion,
 		setWinner,
 		validateBracket,
-		exportBracketPicks
+		hasSavedBracket,
+		deleteBracketFromDatabase,
+		saveBracketToDatabase
 	} from '$lib/stores/bracketStore';
+	import { get } from 'svelte/store';
 	import { Button } from '$lib/components/ui/button';
-	import { RefreshCw, Trophy, Send } from '@lucide/svelte';
+	import { RefreshCw, Trophy, Send, Trash2 } from '@lucide/svelte';
 
 	// Import all team logos
 	import powLogo from '$lib/assets/teams/pokeballofwonders.png';
@@ -18,18 +21,18 @@
 	import tbbLogo from '$lib/assets/teams/thebigblack.png';
 	import jtrrLogo from '$lib/assets/teams/jtrebuildrebuild.png';
 	import ojsLogo from '$lib/assets/teams/ojenksimpsons.png';
-	import stdLogo from '$lib/assets/teams/tbc.png';
+	import stdLogo from '$lib/assets/teams/std.png';
 	import tbcLogo from '$lib/assets/teams/tbc.png';
 
 	const teamLogos: Record<string, string> = {
-		'POW': powLogo,
-		'HOR': horLogo,
-		'TTR': ttrLogo,
-		'TBB': tbbLogo,
-		'JTRR': jtrrLogo,
-		'OJS': ojsLogo,
-		'STD': stdLogo,
-		'TBC': tbcLogo
+		POW: powLogo,
+		HOR: horLogo,
+		TTR: ttrLogo,
+		TBB: tbbLogo,
+		JTRR: jtrrLogo,
+		OJS: ojsLogo,
+		STD: stdLogo,
+		TBC: tbcLogo
 	};
 
 	let championName = $derived($champion?.name ?? null);
@@ -44,17 +47,25 @@
 		resetBracket();
 	}
 
-	function handleSubmitBracket() {
+	async function handleSubmitBracket() {
 		const validation = validateBracket();
 
 		if (!validation.valid) {
-			alert('Bracket validation failed:\n\n' + validation.errors.join('\n'));
+			alert('Bracket Invalid, Reset and Try again!');
 			return;
 		}
 
-		const exportData = exportBracketPicks();
-		if (exportData) {
-			alert('Bracket submitted successfully! Check console for JSON output.');
+		const currentState = get(matches);
+		const success = await saveBracketToDatabase(currentState, true);
+
+		if (success) {
+			alert('Bracket submitted successfully!');
+		}
+	}
+
+	async function handleDeleteBracket() {
+		if (confirm('Are you sure you want to delete your bracket? This cannot be undone.')) {
+			await deleteBracketFromDatabase();
 		}
 	}
 </script>
@@ -74,6 +85,15 @@
 		</div>
 	</div>
 
+	{#if $hasSavedBracket}
+		<div class="mb-6 flex justify-end">
+			<Button variant="destructive" onclick={handleDeleteBracket} class="gap-2">
+				<Trash2 size={16} />
+				Delete Submission
+			</Button>
+		</div>
+	{/if}
+
 	{#if championName}
 		<div
 			class="bg-primary text-primary-foreground mb-8 flex items-center justify-center gap-3 rounded-lg p-4 text-center"
@@ -82,11 +102,7 @@
 			<span class="text-lg font-semibold">Your Rivals 3 Champion:</span>
 			<div class="flex items-center gap-2">
 				{#if getChampionLogo()}
-					<img
-						src={getChampionLogo()}
-						alt={championName}
-						class="h-6 w-6 object-cover"
-					/>
+					<img src={getChampionLogo()} alt={championName} class="h-6 w-6 object-cover" />
 				{/if}
 				<span class="text-lg font-semibold">{championName}</span>
 			</div>

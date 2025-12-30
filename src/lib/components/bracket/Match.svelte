@@ -8,21 +8,21 @@
 	import tbbLogo from '$lib/assets/teams/thebigblack.png';
 	import jtrrLogo from '$lib/assets/teams/jtrebuildrebuild.png';
 	import ojsLogo from '$lib/assets/teams/ojenksimpsons.png';
-	import stdLogo from '$lib/assets/teams/tbc.png';
+	import stdLogo from '$lib/assets/teams/std.png';
 	import tbcLogo from '$lib/assets/teams/tbc.png';
 
 	let { match, onSetWinner }: { match: Match; onSetWinner: (matchId: string, team: Team) => void } =
 		$props();
 
 	const teamLogos: Record<string, string> = {
-		'POW': powLogo,
-		'HOR': horLogo,
-		'TTR': ttrLogo,
-		'TBB': tbbLogo,
-		'JTRR': jtrrLogo,
-		'OJS': ojsLogo,
-		'STD': stdLogo,
-		'TBC': tbcLogo
+		POW: powLogo,
+		HOR: horLogo,
+		TTR: ttrLogo,
+		TBB: tbbLogo,
+		JTRR: jtrrLogo,
+		OJS: ojsLogo,
+		STD: stdLogo,
+		TBC: tbcLogo
 	};
 
 	function getTeamLogo(team: Team | null): string | null {
@@ -57,11 +57,7 @@
 		<div class="flex items-center gap-2">
 			{#if match.team1}
 				{#if getTeamLogo(match.team1)}
-					<img
-						src={getTeamLogo(match.team1)}
-						alt={match.team1.name}
-						class="h-5 w-5 object-cover"
-					/>
+					<img src={getTeamLogo(match.team1)} alt={match.team1.name} class="h-5 w-5 object-cover" />
 				{/if}
 				<span class="text-foreground text-sm font-medium">{match.team1.tag}</span>
 			{:else}
@@ -72,7 +68,7 @@
 			<span class="text-muted-foreground text-xs">({match.team1.seed})</span>
 		{/if}
 	</button>
-	<div class="h-px bg-border"></div>
+	<div class="bg-border h-px"></div>
 	<button
 		type="button"
 		class="flex w-full items-center justify-between gap-2 px-3 py-2 text-left {getTeamClass(
@@ -84,11 +80,7 @@
 		<div class="flex items-center gap-2">
 			{#if match.team2}
 				{#if getTeamLogo(match.team2)}
-					<img
-						src={getTeamLogo(match.team2)}
-						alt={match.team2.name}
-						class="h-5 w-5 object-cover"
-					/>
+					<img src={getTeamLogo(match.team2)} alt={match.team2.name} class="h-5 w-5 object-cover" />
 				{/if}
 				<span class="text-foreground text-sm font-medium">{match.team2.tag}</span>
 			{:else}

@@ -1,5 +1,6 @@
-import { writable, derived } from 'svelte/store';
-import { browser } from '$app/environment';
+import { writable, derived, get } from 'svelte/store';
+import { user, isLoggedIn } from './auth';
+import { supabase } from '$lib/supabaseClient';
 
 export interface Team {
 	name: string;
@@ -20,7 +21,10 @@ export interface Match {
 
 type MatchState = Record<string, Match>;
 
-const STORAGE_KEY = 'bracket.state.v1';
+export const bracketLoading = writable<boolean>(false);
+export const bracketError = writable<string | null>(null);
+export const hasSavedBracket = writable<boolean>(false);
+export const showOverrideConfirm = writable<boolean>(false);
 
 const teams: Team[] = [
 	{ name: 'Pokeball of Wonders', tag: 'POW', seed: 1 },
@@ -70,21 +74,6 @@ const createInitialMatches = (): MatchState => ({
 	L8: createMatch('L8', null, null, 'GF', 'team2', null, null),
 	GF: createMatch('GF', null, null, null, null, null, null)
 });
-
-const loadFromStorage = (): MatchState | null => {
-	if (!browser) return null;
-	try {
-		const stored = localStorage.getItem(STORAGE_KEY);
-		if (stored) return JSON.parse(stored) as MatchState;
-	} catch (error) {
-		console.error('Failed to load bracket state from storage:', error);
-	}
-	return null;
-};
-
-const saveToStorage = (state: MatchState) => {
-	if (browser) localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-};
 
 const resetWinnerIfNeeded = (
 	match: Match,
@@ -169,7 +158,180 @@ const clearTeamFromFuture = (
 	return updatedState;
 };
 
-export const matches = writable<MatchState>(loadFromStorage() ?? createInitialMatches());
+async function checkUserHasBracket(userId: string, emitError: boolean = false): Promise<boolean> {
+	const { data, error } = await supabase
+		.from('brackets')
+		.select('id')
+		.eq('user_id', userId)
+		.single();
+
+	if (error && error.code !== 'PGRST116') {
+		if (emitError) {
+			bracketError.set(error.message);
+		} else {
+			console.error('Failed to check if user has bracket', error);
+		}
+		return false;
+	}
+
+	return !!data;
+}
+
+async function loadBracketFromDatabase(userId: string): Promise<MatchState | null> {
+	bracketLoading.set(true);
+
+	const { data, error } = await supabase
+		.from('brackets')
+		.select('picks')
+		.eq('user_id', userId)
+		.single();
+
+	bracketLoading.set(false);
+
+	if (error) {
+		if (error.code === 'PGRST116') {
+			return null;
+		}
+		console.error('Failed to load bracket from database', error);
+		return null;
+	}
+
+	const picks = data.picks as Record<string, string>;
+	const matchState = createInitialMatches();
+
+	for (const [matchId, tag] of Object.entries(picks)) {
+		const match = matchState[matchId];
+		if (match) {
+			const winnerTeam =
+				match.team1?.tag === tag ? match.team1 : match.team2?.tag === tag ? match.team2 : null;
+			if (winnerTeam) {
+				match.winner = winnerTeam;
+				matchState[matchId] = match;
+			}
+		}
+	}
+
+	return matchState;
+}
+
+export async function saveBracketToDatabase(
+	matchState: MatchState,
+	requireConfirmation: boolean = false
+): Promise<boolean> {
+	bracketLoading.set(true);
+	bracketError.set(null);
+
+	const validation = validateBracket();
+	if (!validation.valid) {
+		bracketError.set(validation.errors.join(' '));
+		bracketLoading.set(false);
+		return false;
+	}
+
+	const exportData = exportBracketPicks();
+	if (!exportData) {
+		bracketError.set('Failed to export bracket data.');
+		bracketLoading.set(false);
+		return false;
+	}
+
+	const currentUser = get(user);
+	if (!currentUser) {
+		bracketError.set('You must be logged in to save your bracket.');
+		bracketLoading.set(false);
+		return false;
+	}
+
+	const hasBracket = await checkUserHasBracket(currentUser.id, true);
+
+	if (hasBracket && !requireConfirmation) {
+		showOverrideConfirm.set(true);
+		bracketLoading.set(false);
+		return false;
+	}
+
+	const { error: saveError } = await supabase.from('brackets').upsert(
+		{
+			user_id: currentUser.id,
+			picks: exportData.picks,
+			champion: exportData.champion
+		},
+		{
+			onConflict: 'user_id'
+		}
+	);
+
+	bracketLoading.set(false);
+
+	if (saveError) {
+		bracketError.set(saveError.message);
+		return false;
+	}
+
+	hasSavedBracket.set(true);
+	bracketError.set(null);
+	return true;
+}
+
+export async function deleteBracketFromDatabase(): Promise<boolean> {
+	bracketLoading.set(true);
+	bracketError.set(null);
+
+	const currentUser = get(user);
+	if (!currentUser) {
+		bracketError.set('You must be logged in to delete your bracket.');
+		bracketLoading.set(false);
+		return false;
+	}
+
+	const { error: deleteError } = await supabase
+		.from('brackets')
+		.delete()
+		.eq('user_id', currentUser.id);
+
+	bracketLoading.set(false);
+
+	if (deleteError) {
+		bracketError.set(deleteError.message);
+		return false;
+	}
+
+	hasSavedBracket.set(false);
+	bracketError.set(null);
+	return true;
+}
+
+export const matches = writable<MatchState>(createInitialMatches());
+
+let isLoggedInUnsubscribe: (() => void) | null = null;
+
+export function initializeBracketStore() {
+	if (isLoggedInUnsubscribe) {
+		isLoggedInUnsubscribe();
+	}
+
+	isLoggedInUnsubscribe = isLoggedIn.subscribe(async (loggedIn) => {
+		if (loggedIn) {
+			const currentUser = get(user);
+			if (currentUser) {
+				const hasBracket = await checkUserHasBracket(currentUser.id);
+				hasSavedBracket.set(hasBracket);
+
+				if (hasBracket) {
+					const savedBracket = await loadBracketFromDatabase(currentUser.id);
+					if (savedBracket) {
+						matches.set(savedBracket);
+					}
+				} else {
+					matches.set(createInitialMatches());
+				}
+			}
+		} else {
+			hasSavedBracket.set(false);
+			matches.set(createInitialMatches());
+		}
+	});
+}
 
 export function setWinner(matchId: string, team: Team) {
 	matches.update((state) => {
@@ -198,7 +360,6 @@ export function setWinner(matchId: string, team: Team) {
 		updateNextMatch(newState, match, winner, match.nextMatchId, match.nextMatchSlot);
 		updateNextMatch(newState, match, loser, match.loserNextMatchId, match.loserNextMatchSlot);
 
-		saveToStorage(newState);
 		return newState;
 	});
 }
@@ -206,12 +367,11 @@ export function setWinner(matchId: string, team: Team) {
 export function resetBracket() {
 	const newMatches = createInitialMatches();
 	matches.set(newMatches);
-	saveToStorage(newMatches);
+	bracketError.set(null);
 }
 
 export const champion = derived(matches, ($matches) => $matches['GF']?.winner ?? null);
 
-// Match order for validation traversal (tournament progression order)
 const MATCH_ORDER = [
 	'U1',
 	'U2',
@@ -229,13 +389,7 @@ const MATCH_ORDER = [
 	'GF'
 ];
 
-// Matches where losing means elimination (lower bracket matches)
 const ELIMINATION_MATCHES = new Set(['L1', 'L2', 'L3', 'L4', 'L5', 'L8', 'GF']);
-
-export interface BracketValidationResult {
-	valid: boolean;
-	errors: string[];
-}
 
 export interface BracketPicksExport {
 	picks: Record<string, string>;
@@ -243,46 +397,44 @@ export interface BracketPicksExport {
 	timestamp: string;
 }
 
-export function validateBracket(): BracketValidationResult {
+export function validateBracket(): { valid: boolean; errors: string[] } {
 	let currentState: MatchState | null = null;
 	matches.subscribe((state) => (currentState = state))();
 
+	const errors: string[] = [];
+
 	if (!currentState) {
-		return { valid: false, errors: ['Unable to read bracket state'] };
+		errors.push('Bracket state is not available.');
+		return { valid: false, errors };
 	}
 
 	const state = currentState as MatchState;
-	const errors: string[] = [];
 	const eliminatedTeams = new Set<string>();
 
 	for (const matchId of MATCH_ORDER) {
 		const match = state[matchId];
 
-		// Check if match has both teams
 		if (!match.team1 || !match.team2) {
-			errors.push(`Match ${matchId}: Missing teams (bracket incomplete)`);
+			errors.push(`Match ${matchId} is missing one or both teams.`);
 			continue;
 		}
 
-		// Check if match has a winner
 		if (!match.winner) {
-			errors.push(`Match ${matchId}: No winner selected`);
+			errors.push(`Match ${matchId} does not have a winner selected.`);
 			continue;
 		}
 
-		// Check if winner is one of the teams in this match
 		const winnerName = match.winner.name;
 		if (winnerName !== match.team1.name && winnerName !== match.team2.name) {
-			errors.push(`Match ${matchId}: Winner is not a participant in this match`);
+			errors.push(`Match ${matchId} has an invalid winner.`);
 			continue;
 		}
 
-		// Check if winner was previously eliminated
 		if (eliminatedTeams.has(winnerName)) {
-			errors.push(`Match ${matchId}: Winner "${match.winner.tag}" was already eliminated`);
+			errors.push(`Match ${matchId} winner (${winnerName}) was already eliminated.`);
+			continue;
 		}
 
-		// Determine the loser and track elimination if this is an elimination match
 		const loser = match.winner.name === match.team1.name ? match.team2 : match.team1;
 		if (ELIMINATION_MATCHES.has(matchId) && loser) {
 			eliminatedTeams.add(loser.name);
@@ -293,12 +445,7 @@ export function validateBracket(): BracketValidationResult {
 }
 
 export function exportBracketPicks(): BracketPicksExport | null {
-	const validation = validateBracket();
-
-	if (!validation.valid) {
-		return null;
-	}
-
+	
 	let currentState: MatchState | null = null;
 	matches.subscribe((state) => (currentState = state))();
 
@@ -327,7 +474,16 @@ export function exportBracketPicks(): BracketPicksExport | null {
 		timestamp: new Date().toISOString()
 	};
 
-	console.log('Bracket Picks Export:', JSON.stringify(exportData, null, 2));
+	bracketError.set(null);
 
 	return exportData;
 }
+
+export const saveBracket = () => {
+	let currentState: MatchState | null = null;
+	matches.subscribe((state) => (currentState = state))();
+	if (currentState) {
+		return saveBracketToDatabase(currentState, false);
+	}
+	return Promise.resolve(false);
+};

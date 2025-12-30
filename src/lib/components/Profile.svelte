@@ -1,17 +1,25 @@
 <script lang="ts">
-	import { user, isAuthenticated, isLoading } from '$lib/stores/auth';
+	import { user, isLoggedIn, loading } from '$lib/stores/auth';
 </script>
 
-{#if $isLoading}
+{#if $loading}
 	<div class="loading-text">Loading profile...</div>
-{:else if $isAuthenticated && $user}
+{:else if $isLoggedIn && $user}
 	<div class="profile-container">
-		{#if $user.picture}
-			<img src={$user.picture} alt={$user.name || 'User'} class="profile-picture" />
+		{#if $user.user_metadata?.avatar_url}
+			<img
+				src={$user.user_metadata.avatar_url}
+				alt={$user.user_metadata.name || $user.email || 'User'}
+				class="profile-picture"
+			/>
+		{:else}
+			<div class="profile-placeholder">
+				{($user.user_metadata?.name || $user.email || 'U').charAt(0).toUpperCase()}
+			</div>
 		{/if}
 		<div class="profile-info">
 			<div class="profile-name">
-				{$user.name || 'Unknown User'}
+				{$user.user_metadata?.name || $user.email || 'Unknown User'}
 			</div>
 			<div class="profile-email">
 				{$user.email || ''}
@@ -45,6 +53,25 @@
 	}
 
 	.profile-picture:hover {
+		transform: scale(1.05);
+	}
+
+	.profile-placeholder {
+		width: 110px;
+		height: 110px;
+		border-radius: 50%;
+		background-color: #63b3ed;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 3rem;
+		font-weight: 700;
+		color: #1a1e27;
+		border: 3px solid #63b3ed;
+		transition: transform 0.3s ease-in-out;
+	}
+
+	.profile-placeholder:hover {
 		transform: scale(1.05);
 	}
 
