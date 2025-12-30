@@ -7,9 +7,9 @@
 		setWinner,
 		validateBracket,
 		hasSavedBracket,
-		deleteBracketFromDatabase,
-		saveBracketToDatabase
-	} from '$lib/stores/bracketStore';
+		saveBracket,
+		deleteBracket
+	} from '$lib/bracket_store/bracketStore';
 	import { get } from 'svelte/store';
 	import { Button } from '$lib/components/ui/button';
 	import { RefreshCw, Trophy, Send, Trash2 } from '@lucide/svelte';
@@ -55,8 +55,7 @@
 			return;
 		}
 
-		const currentState = get(matches);
-		const success = await saveBracketToDatabase(currentState, true);
+		const success = await saveBracket(true);
 
 		if (success) {
 			alert('Bracket submitted successfully!');
@@ -65,7 +64,7 @@
 
 	async function handleDeleteBracket() {
 		if (confirm('Are you sure you want to delete your bracket? This cannot be undone.')) {
-			await deleteBracketFromDatabase();
+			await deleteBracket();
 		}
 	}
 </script>

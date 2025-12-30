@@ -10,8 +10,8 @@
 		saveBracketToDatabase,
 		matches,
 		type MatchState
-	} from '$lib/stores/bracketStore';
-	import { isLoggedIn } from '$lib/stores/auth';
+	} from '$lib/bracket_store/bracketStore';
+	import { isLoggedIn } from '$lib/bracket_store/auth';
 
 	let saveTimeout: ReturnType<typeof setTimeout> | null = null;
 

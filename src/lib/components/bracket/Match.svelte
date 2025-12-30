@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Team, Match } from '$lib/stores/bracketStore';
+	import type { Team, Match, BracketMatchId } from '$lib/bracket_store/bracketTypes';
 
 	// Import all team logos
 	import powLogo from '$lib/assets/teams/pokeballofwonders.png';
@@ -11,8 +11,10 @@
 	import stdLogo from '$lib/assets/teams/std.png';
 	import tbcLogo from '$lib/assets/teams/tbc.png';
 
-	let { match, onSetWinner }: { match: Match; onSetWinner: (matchId: string, team: Team) => void } =
-		$props();
+	let {
+		match,
+		onSetWinner
+	}: { match: Match; onSetWinner: (matchId: BracketMatchId, team: Team) => boolean } = $props();
 
 	const teamLogos: Record<string, string> = {
 		POW: powLogo,
