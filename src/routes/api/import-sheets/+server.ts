@@ -355,17 +355,15 @@ export async function POST() {
 				const team_id = await resolvePlayerTeamId(player.id);
 				const { player: _ignore, player_color: _ignore2, ...statFields } = rec;
 
-				const { error: psError } = await supabaseAdmin
-					.from('player_stats')
-					.upsert(
-						{
-							dataset_id: datasetId,
-							player_id: player.id,
-							team_id,
-							...statFields
-						},
-						{ onConflict: 'dataset_id,player_id' }
-					);
+				const { error: psError } = await supabaseAdmin.from('player_stats').upsert(
+					{
+						dataset_id: datasetId,
+						player_id: player.id,
+						team_id,
+						...statFields
+					},
+					{ onConflict: 'dataset_id,player_id' }
+				);
 
 				if (psError) {
 					console.error(`⚠️ Weekly upsert error for ${playerName} in ${tab}:`, psError);

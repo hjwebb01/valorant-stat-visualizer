@@ -2,7 +2,16 @@
 import { supabaseAdmin } from '$lib/server/supabaseAdmin';
 import type { Player } from '$lib/types';
 
-type TimePeriod = 'week1' | 'week2' | 'week3' | 'week4' | 'week5' | 'week6' | 'week7' | 'week8' | 'alltime';
+type TimePeriod =
+	| 'week1'
+	| 'week2'
+	| 'week3'
+	| 'week4'
+	| 'week5'
+	| 'week6'
+	| 'week7'
+	| 'week8'
+	| 'alltime';
 
 const getViewName = (period: TimePeriod): string => {
 	switch (period) {
@@ -21,7 +30,7 @@ const getViewName = (period: TimePeriod): string => {
 		case 'week7':
 			return 'v_player_stats_week7';
 		case 'week8':
-      return 'v_player_stats_week8';
+			return 'v_player_stats_week8';
 		case 'alltime':
 		default:
 			return 'v_player_stats_alltime';
@@ -71,7 +80,9 @@ export const load = async ({ url }) => {
 
 				players = players.map((p: any) => {
 					try {
-						const key = String(p.player ?? '').toLowerCase().trim();
+						const key = String(p.player ?? '')
+							.toLowerCase()
+							.trim();
 						const meta = metaMap.get(key);
 						if (meta) {
 							return {

@@ -1,120 +1,131 @@
-import { writable, derived, get, type Readable } from 'svelte/store';
-import { createAuth0Client, type Auth0Client, type User } from '@auth0/auth0-spa-js';
-import { browser } from '$app/environment';
+import { writable, derived, get } from 'svelte/store';
+import { supabase } from '$lib/supabaseClient';
+import type { User, Session } from '@supabase/supabase-js';
 
-export const auth0Client = writable<Auth0Client | null>(null);
 export const user = writable<User | null>(null);
-export const isAuthenticated = writable<boolean>(false);
-export const isLoading = writable<boolean>(true);
+export const session = writable<Session | null>(null);
+export const loading = writable<boolean>(true);
 export const error = writable<string | null>(null);
 
-// Derived stores
-export const isLoggedIn: Readable<boolean> = derived(
-	[isAuthenticated, isLoading],
-	([$isAuthenticated, $isLoading]) => $isAuthenticated && !$isLoading
-);
+export const isLoggedIn = derived(user, ($user) => $user !== null);
 
-export async function initializeAuth() {
-	if (!browser) return;
+export const userEmail = derived(user, ($user) => $user?.email ?? null);
 
-	try {
-		const client = await createAuth0Client({
-			domain: import.meta.env.VITE_AUTH0_DOMAIN,
-			clientId: import.meta.env.VITE_AUTH0_CLIENT_ID,
-			authorizationParams: {
-				redirect_uri: window.location.origin
-			},
-			useRefreshTokens: true,
-			cacheLocation: 'localstorage'
-		});
+export function initializeAuth() {
+	loading.set(true);
+	error.set(null);
 
-		auth0Client.set(client);
-
-		// Handle callback
-		if (window.location.search.includes('code=')) {
-			await client.handleRedirectCallback();
-			window.history.replaceState({}, document.title, window.location.pathname);
+	supabase.auth.getSession().then(({ data: { session: currentSession }, error: sessionError }) => {
+		if (sessionError) {
+			error.set(sessionError.message);
+		} else {
+			session.set(currentSession);
+			user.set(currentSession?.user ?? null);
 		}
+		loading.set(false);
+	});
 
-		// Check authentication status
-		const authenticated = await client.isAuthenticated();
-		isAuthenticated.set(authenticated);
-
-		if (authenticated) {
-			const userData = await client.getUser();
-			user.set(userData || null);
+	const {
+		data: { subscription }
+	} = supabase.auth.onAuthStateChange((event, currentSession) => {
+		switch (event) {
+			case 'SIGNED_IN':
+			case 'TOKEN_REFRESHED':
+				session.set(currentSession);
+				user.set(currentSession?.user ?? null);
+				break;
+			case 'SIGNED_OUT':
+				session.set(null);
+				user.set(null);
+				break;
 		}
+		loading.set(false);
+	});
 
-		error.set(null);
-	} catch (err) {
-		console.error('Auth initialization error:', err);
-		error.set(err instanceof Error ? err.message : 'Authentication initialization failed');
-	} finally {
-		isLoading.set(false);
-	}
+	return () => subscription.unsubscribe();
 }
 
-export async function login() {
-	if (!browser) {
-		console.error('Auth0 login called on server side');
-		return;
+export async function signInWithPassword(email: string, password: string) {
+	loading.set(true);
+	error.set(null);
+
+	const { data, error: signInError } = await supabase.auth.signInWithPassword({
+		email,
+		password
+	});
+
+	loading.set(false);
+
+	if (signInError) {
+		error.set(signInError.message);
+		return false;
 	}
 
-	let client = get(auth0Client);
-
-	// If client is not initialized yet, initialize it first
-	if (!client) {
-		console.log('Auth0 client not initialized, initializing...');
-		await initializeAuth();
-		client = get(auth0Client);
-	}
-
-	if (!client) {
-		console.error('Failed to initialize Auth0 client');
-		error.set('Failed to initialize authentication. Please refresh the page.');
-		return;
-	}
-
-	try {
-		await client.loginWithRedirect();
-	} catch (err) {
-		console.error('Login error:', err);
-		error.set(err instanceof Error ? err.message : 'Login failed');
-	}
+	return true;
 }
 
-export async function logout() {
-	if (!browser) {
-		console.error('Auth0 logout called on server side');
-		return;
+export async function signUp(email: string, password: string) {
+	loading.set(true);
+	error.set(null);
+
+	const { data, error: signUpError } = await supabase.auth.signUp({
+		email,
+		password
+	});
+
+	loading.set(false);
+
+	if (signUpError) {
+		error.set(signUpError.message);
+		return false;
 	}
 
-	const client = get(auth0Client);
-	if (client) {
-		// Clear local state immediately
-		user.set(null);
-		isAuthenticated.set(false);
-		error.set(null);
+	return true;
+}
 
-		// Logout from Auth0
-		client.logout({
-			logoutParams: {
-				returnTo: window.location.origin
+export async function signInWithGoogle() {
+	loading.set(true);
+	error.set(null);
+
+	const { data, error: oauthError } = await supabase.auth.signInWithOAuth({
+		provider: 'google',
+		options: {
+			redirectTo: `${window.location.origin}/auth/callback`,
+			queryParams: {
+				access_type: 'offline',
+				prompt: 'consent'
 			}
-		});
-	}
-}
-
-export async function getToken(): Promise<string | null> {
-	const client = get(auth0Client);
-	if (!client) return null;
-
-	try {
-		return await client.getTokenSilently();
-	} catch (err) {
-		if (err && typeof err === 'object' && 'error' in err && err.error === 'login_required') {
-			await login();
 		}
-		return null;
+	});
+
+	if (oauthError) {
+		loading.set(false);
+		error.set(oauthError.message);
+		return false;
 	}
+
+	return true;
 }
+
+export async function signOut() {
+	loading.set(true);
+	error.set(null);
+
+	const { error: signOutError } = await supabase.auth.signOut();
+
+	loading.set(false);
+
+	if (signOutError) {
+		error.set(signOutError.message);
+		return false;
+	}
+
+	return true;
+}
+
+export function clearError() {
+	error.set(null);
+}
+
+export const login = signInWithPassword;
+export const logout = signOut;

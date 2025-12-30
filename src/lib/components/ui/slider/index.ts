@@ -8,4 +8,3 @@ export {
 	Root as Slider,
 	Thumb as SliderThumb
 };
-

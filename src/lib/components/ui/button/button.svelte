@@ -44,17 +44,17 @@
 
 	// Allow listening to DOM events (e.g., `on:click`) on the component
 	export interface ButtonEvents {
-	    click: MouseEvent;
+		click: MouseEvent;
 	}
 
 	export interface ButtonSlots {
-	    default: {};
+		default: {};
 	}
 
-// Generic name some tools expect
-export interface Events {
-    click: MouseEvent;
-}
+	// Generic name some tools expect
+	export interface Events {
+		click: MouseEvent;
+	}
 </script>
 
 <script lang="ts">

@@ -75,7 +75,9 @@
 			<div class="space-y-4">
 				{#each topStats as stat (stat.key)}
 					{#if percentiles[stat.key] !== undefined}
-						<div class="space-y-2 {highlights[stat.key] ? 'border-l-4 border-green-400/60 pl-2' : ''}">
+						<div
+							class="space-y-2 {highlights[stat.key] ? 'border-l-4 border-green-400/60 pl-2' : ''}"
+						>
 							<div class="flex items-center justify-between">
 								<span class="text-sm font-medium">{stat.label}</span>
 								<div class="flex items-center gap-2">

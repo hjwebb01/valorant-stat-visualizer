@@ -84,7 +84,6 @@ export type Key =
 	| 'econ_rating'
 	| 'created_at';
 
-
 export type Col = {
 	key: Key;
 	label: string;

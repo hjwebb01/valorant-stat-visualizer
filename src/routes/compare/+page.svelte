@@ -117,12 +117,14 @@
 	}
 </script>
 
-<div class="px-4 py-3 max-w-5xl mx-auto">
+<div class="mx-auto max-w-5xl px-4 py-3">
 	<h1 class="mb-3 text-xl font-semibold">Compare Players</h1>
 
-	<div class="mb-4 grid gap-2 md:grid-cols-2 items-start">
-		<div class="flex-1 relative">
-			<label for="player1-input" class="block text-sm font-medium text-muted-foreground mb-1">Player 1</label>
+	<div class="mb-4 grid items-start gap-2 md:grid-cols-2">
+		<div class="relative flex-1">
+			<label for="player1-input" class="text-muted-foreground mb-1 block text-sm font-medium"
+				>Player 1</label
+			>
 			<input
 				id="player1-input"
 				type="search"
@@ -130,7 +132,7 @@
 				on:focus={() => (open1 = true)}
 				on:input={() => (open1 = true)}
 				placeholder="Search players..."
-				class="border-input bg-background dark:bg-input/30 text-foreground w-full rounded-md border px-2 py-1 text-sm h-9 shadow-xs transition-[color,box-shadow] outline-none disabled:cursor-not-allowed disabled:opacity-50"
+				class="border-input bg-background dark:bg-input/30 text-foreground h-9 w-full rounded-md border px-2 py-1 text-sm shadow-xs transition-[color,box-shadow] outline-none disabled:cursor-not-allowed disabled:opacity-50"
 				aria-autocomplete="list"
 				aria-controls="player1-listbox"
 				aria-expanded={open1}
@@ -141,13 +143,13 @@
 				<ul
 					id="player1-listbox"
 					role="listbox"
-					class="absolute z-50 mt-1 max-h-56 w-full overflow-auto rounded-md border border-border bg-card shadow-lg"
+					class="border-border bg-card absolute z-50 mt-1 max-h-56 w-full overflow-auto rounded-md border shadow-lg"
 				>
 					{#each filtered1 as p}
 						<li
 							role="option"
-							aria-selected={(selected1 && playerKey(selected1) === playerKey(p))}
-							class="cursor-pointer px-2 py-1 hover:bg-accent/10 dark:hover:bg-input/50 text-foreground text-sm"
+							aria-selected={selected1 && playerKey(selected1) === playerKey(p)}
+							class="hover:bg-accent/10 dark:hover:bg-input/50 text-foreground cursor-pointer px-2 py-1 text-sm"
 							on:mousedown|preventDefault={() => selectPlayer1(p)}
 						>
 							{p.player}
@@ -155,14 +157,18 @@
 					{/each}
 				</ul>
 			{:else if open1}
-				<div class="absolute z-50 mt-1 w-full rounded-md border border-border bg-card px-2 py-1 text-sm text-muted-foreground">
+				<div
+					class="border-border bg-card text-muted-foreground absolute z-50 mt-1 w-full rounded-md border px-2 py-1 text-sm"
+				>
 					No results
 				</div>
 			{/if}
 		</div>
 
-		<div class="flex-1 relative">
-			<label for="player2-input" class="block text-sm font-medium text-muted-foreground mb-1">Player 2</label>
+		<div class="relative flex-1">
+			<label for="player2-input" class="text-muted-foreground mb-1 block text-sm font-medium"
+				>Player 2</label
+			>
 			<input
 				id="player2-input"
 				type="search"
@@ -170,7 +176,7 @@
 				on:focus={() => (open2 = true)}
 				on:input={() => (open2 = true)}
 				placeholder="Search players..."
-				class="border-input bg-background dark:bg-input/30 text-foreground w-full rounded-md border px-2 py-1 text-sm h-9 shadow-xs transition-[color,box-shadow] outline-none disabled:cursor-not-allowed disabled:opacity-50"
+				class="border-input bg-background dark:bg-input/30 text-foreground h-9 w-full rounded-md border px-2 py-1 text-sm shadow-xs transition-[color,box-shadow] outline-none disabled:cursor-not-allowed disabled:opacity-50"
 				aria-autocomplete="list"
 				aria-controls="player2-listbox"
 				aria-expanded={open2}
@@ -181,13 +187,13 @@
 				<ul
 					id="player2-listbox"
 					role="listbox"
-					class="absolute z-50 mt-1 max-h-56 w-full overflow-auto rounded-md border border-border bg-card shadow-lg"
+					class="border-border bg-card absolute z-50 mt-1 max-h-56 w-full overflow-auto rounded-md border shadow-lg"
 				>
 					{#each filtered2 as p}
 						<li
 							role="option"
-							aria-selected={(selected2 && playerKey(selected2) === playerKey(p))}
-							class="cursor-pointer px-2 py-1 hover:bg-accent/10 dark:hover:bg-input/50 text-foreground text-sm"
+							aria-selected={selected2 && playerKey(selected2) === playerKey(p)}
+							class="hover:bg-accent/10 dark:hover:bg-input/50 text-foreground cursor-pointer px-2 py-1 text-sm"
 							on:mousedown|preventDefault={() => selectPlayer2(p)}
 						>
 							{p.player}
@@ -195,7 +201,9 @@
 					{/each}
 				</ul>
 			{:else if open2}
-				<div class="absolute z-50 mt-1 w-full rounded-md border border-border bg-card px-2 py-1 text-sm text-muted-foreground">
+				<div
+					class="border-border bg-card text-muted-foreground absolute z-50 mt-1 w-full rounded-md border px-2 py-1 text-sm"
+				>
 					No results
 				</div>
 			{/if}
@@ -203,16 +211,15 @@
 	</div>
 
 	<div class="grid grid-cols-1 gap-4 md:grid-cols-2 md:items-start">
-		<div class="w-full md:max-w-md md:mx-auto">
-				<div class="min-h-0">
-					<PercentileCard percentiles={percentiles1} player={selected1} highlights={highlights1} />
-				</div>
+		<div class="w-full md:mx-auto md:max-w-md">
+			<div class="min-h-0">
+				<PercentileCard percentiles={percentiles1} player={selected1} highlights={highlights1} />
+			</div>
 		</div>
-		<div class="w-full md:max-w-md md:mx-auto">
-				<div class="min-h-0">
-					<PercentileCard percentiles={percentiles2} player={selected2} highlights={highlights2} />
-				</div>
+		<div class="w-full md:mx-auto md:max-w-md">
+			<div class="min-h-0">
+				<PercentileCard percentiles={percentiles2} player={selected2} highlights={highlights2} />
+			</div>
 		</div>
 	</div>
 </div>
-

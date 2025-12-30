@@ -1,12 +1,38 @@
 <script lang="ts">
-	import { login } from '$lib/stores/auth';
+	import { signInWithGoogle, loading, error, clearError } from '$lib/stores/auth';
 
 	async function handleLogin() {
-		await login();
+		const success = await signInWithGoogle();
+		if (success) {
+			clearError();
+		}
+	}
+
+	function dismissError() {
+		clearError();
 	}
 </script>
 
-<button on:click={handleLogin} class="button login"> Log In </button>
+<div class="relative">
+	<button on:click={handleLogin} disabled={$loading} class="button login">
+		{#if $loading}
+			Loading...
+		{:else}
+			Log In
+		{/if}
+	</button>
+
+	{#if $error}
+		<div
+			class="absolute top-full right-0 left-0 mt-2 rounded border border-red-400 bg-red-100 px-3 py-2 text-sm text-red-700"
+		>
+			<span>{$error}</span>
+			<button on:click={dismissError} class="float-right ml-2 text-red-500 hover:text-red-700">
+				&times;
+			</button>
+		</div>
+	{/if}
+</div>
 
 <style>
 	.button {

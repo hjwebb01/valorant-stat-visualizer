@@ -20,7 +20,16 @@
 	// Server-provided data
 	export let data: {
 		players?: Array<Record<string, any>>;
-		period?: 'week1' | 'week2' | 'week3' | 'week4' | 'week5' | 'week6' | 'week7' | 'week8' | 'alltime';
+		period?:
+			| 'week1'
+			| 'week2'
+			| 'week3'
+			| 'week4'
+			| 'week5'
+			| 'week6'
+			| 'week7'
+			| 'week8'
+			| 'alltime';
 	} = {};
 
 	let allPlayers: Array<Record<string, any>> = data.players ?? [];
@@ -140,7 +149,7 @@
 						<div class="relative inline-block">
 							<select
 								id="period-select"
-								class="appearance-none rounded-md border border-border bg-card px-3 py-1 text-sm text-foreground shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary pr-8"
+								class="border-border bg-card text-foreground focus:ring-primary focus:border-primary appearance-none rounded-md border px-3 py-1 pr-8 text-sm shadow-sm focus:ring-2 focus:outline-none"
 								bind:value={selectedPeriod}
 								on:change={() => goto(`?period=${selectedPeriod}`)}
 								aria-label="Select period"
@@ -161,10 +170,14 @@
 								xmlns="http://www.w3.org/2000/svg"
 								viewBox="0 0 20 20"
 								fill="currentColor"
-								class="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"
+								class="text-muted-foreground pointer-events-none absolute top-1/2 right-2 h-4 w-4 -translate-y-1/2"
 								aria-hidden="true"
 							>
-								<path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clip-rule="evenodd" />
+								<path
+									fill-rule="evenodd"
+									d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z"
+									clip-rule="evenodd"
+								/>
 							</svg>
 						</div>
 					</div>
