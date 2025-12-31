@@ -19,7 +19,7 @@ export interface Match {
 	loserNextMatchSlot: 'team1' | 'team2' | null;
 }
 
-type MatchState = Record<string, Match>;
+export type MatchState = Record<string, Match>;
 
 export const bracketLoading = writable<boolean>(false);
 export const bracketError = writable<string | null>(null);
@@ -478,12 +478,3 @@ export function exportBracketPicks(): BracketPicksExport | null {
 
 	return exportData;
 }
-
-export const saveBracket = () => {
-	let currentState: MatchState | null = null;
-	matches.subscribe((state) => (currentState = state))();
-	if (currentState) {
-		return saveBracketToDatabase(currentState, false);
-	}
-	return Promise.resolve(false);
-};

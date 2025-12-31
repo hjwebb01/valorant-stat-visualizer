@@ -4,15 +4,10 @@
 		matches,
 		resetBracket,
 		champion,
-		setWinner,
-		validateBracket,
-		hasSavedBracket,
-		deleteBracketFromDatabase,
-		saveBracketToDatabase
+		setWinner
 	} from '$lib/stores/bracketStore';
-	import { get } from 'svelte/store';
 	import { Button } from '$lib/components/ui/button';
-	import { RefreshCw, Trophy, Send, Trash2 } from '@lucide/svelte';
+	import { RefreshCw, Trophy } from '@lucide/svelte';
 
 	// Import all team logos
 	import powLogo from '$lib/assets/teams/pokeballofwonders.png';
@@ -46,28 +41,6 @@
 	function handleResetBracket() {
 		resetBracket();
 	}
-
-	async function handleSubmitBracket() {
-		const validation = validateBracket();
-
-		if (!validation.valid) {
-			alert('Bracket Invalid, Reset and Try again!');
-			return;
-		}
-
-		const currentState = get(matches);
-		const success = await saveBracketToDatabase(currentState, true);
-
-		if (success) {
-			alert('Bracket submitted successfully!');
-		}
-	}
-
-	async function handleDeleteBracket() {
-		if (confirm('Are you sure you want to delete your bracket? This cannot be undone.')) {
-			await deleteBracketFromDatabase();
-		}
-	}
 </script>
 
 <div class="mx-auto max-w-7xl p-6">
@@ -78,21 +51,8 @@
 				<RefreshCw size={16} />
 				Reset Bracket
 			</Button>
-			<Button variant="default" onclick={handleSubmitBracket} class="gap-2">
-				<Send size={16} />
-				Submit Bracket
-			</Button>
 		</div>
 	</div>
-
-	{#if $hasSavedBracket}
-		<div class="mb-6 flex justify-end">
-			<Button variant="destructive" onclick={handleDeleteBracket} class="gap-2">
-				<Trash2 size={16} />
-				Delete Submission
-			</Button>
-		</div>
-	{/if}
 
 	{#if championName}
 		<div
