@@ -1,90 +1,22 @@
 <script lang="ts">
-	import { onMount, onDestroy } from 'svelte';
+	import { onMount } from 'svelte';
 	import Bracket from '$lib/components/bracket/Bracket.svelte';
 	import {
 		initializeBracketStore,
 		bracketLoading,
-		bracketError,
-		hasSavedBracket,
-		showOverrideConfirm,
-		saveBracketToDatabase,
-		matches,
-		type MatchState
+		bracketError
 	} from '$lib/bracket_store/bracketStore';
-	import { isLoggedIn } from '$lib/bracket_store/auth';
-
-	let saveTimeout: ReturnType<typeof setTimeout> | null = null;
-
 	onMount(() => {
-		initializeBracketStore();
-		loadLocalBracket();
-		subscribeToChanges();
-	});
-
-	onDestroy(() => {
-		if (saveTimeout) clearTimeout(saveTimeout);
-	});
-
-	function loadLocalBracket() {
-		const localData = localStorage.getItem('bracket_draft');
-		if (localData) {
-			try {
-				const parsed = JSON.parse(localData);
-				matches.set(parsed);
-			} catch (e) {
-				console.error('Failed to load local bracket:', e);
+		// Clean up localStorage bracket data (one-time migration)
+		if (typeof window !== 'undefined') {
+			const migrated = localStorage.getItem('bracket_migration');
+			if (!migrated) {
+				localStorage.removeItem('bracket_draft');
+				localStorage.setItem('bracket_migration', 'true');
 			}
 		}
-	}
-
-	function saveLocalBracket(state: MatchState) {
-		localStorage.setItem('bracket_draft', JSON.stringify(state));
-	}
-
-	function subscribeToChanges() {
-		matches.subscribe((state) => {
-			if (saveTimeout) clearTimeout(saveTimeout);
-
-			saveTimeout = setTimeout(async () => {
-				saveLocalBracket(state);
-
-				if (!$isLoggedIn) return;
-
-				if ($hasSavedBracket) {
-					await saveBracketToDatabase(state, false);
-				} else {
-					const validation = await validateBracket();
-					if (validation.valid) {
-						await saveBracketToDatabase(state, false);
-					}
-				}
-			}, 1000);
-		});
-	}
-
-	async function validateBracket(): Promise<boolean> {
-		let currentState: MatchState | null = null;
-		matches.subscribe((state) => (currentState = state))();
-
-		if (!currentState) return false;
-
-		const hasAllWinners = Object.values(currentState).every((match) => match.winner !== null);
-
-		const grandFinal = currentState['GF'];
-		const hasChampion = grandFinal && grandFinal.winner !== null;
-
-		return hasAllWinners && hasChampion;
-	}
-
-	async function confirmOverride() {
-		showOverrideConfirm.set(false);
-		let currentState: MatchState | null = null;
-		matches.subscribe((state) => (currentState = state))();
-		if (currentState) {
-			await saveBracketToDatabase(currentState, true);
-		}
-	}
-
+		initializeBracketStore();
+	});
 	function clearError() {
 		bracketError.set(null);
 	}
@@ -104,31 +36,5 @@
 			</button>
 		</div>
 	{/if}
-
 	<Bracket />
-
-	{#if $showOverrideConfirm}
-		<div class="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black">
-			<div class="max-w-md rounded-lg bg-white p-6 text-gray-900">
-				<h3 class="mb-4 text-lg font-semibold">Override Previous Bracket?</h3>
-				<p class="mb-4">
-					You already have a saved bracket. Do you want to override it with this new submission?
-				</p>
-				<div class="flex justify-end gap-4">
-					<button
-						on:click={() => showOverrideConfirm.set(false)}
-						class="rounded border border-gray-300 px-4 py-2 hover:bg-gray-100"
-					>
-						Cancel
-					</button>
-					<button
-						on:click={confirmOverride}
-						class="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
-					>
-						Yes, Override
-					</button>
-				</div>
-			</div>
-		</div>
-	{/if}
 {/if}

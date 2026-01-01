@@ -16,6 +16,11 @@ export type BracketMatchId =
 	| 'L5'
 	| 'L8'
 	| 'GF';
+	
+// Match ID : Real-Life Winner of match to compare against user picks
+// Used for validation and scoring
+export type RealLifeWinners = Record<BracketMatchId, string>;
+
 
 // Team slot in next match
 export type MatchSlot = 'team1' | 'team2';

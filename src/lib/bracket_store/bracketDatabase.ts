@@ -1,10 +1,7 @@
-import { get } from 'svelte/store';
-import { user } from './auth';
 import { supabase } from '$lib/supabaseClient';
-import type { Team, Match, MatchState, BracketPicksExport, BracketMatchId } from './bracketTypes';
-
-// Re-export types for backward compatibility
-export type { Team, Match, MatchState, BracketPicksExport, BracketMatchId };
+import { MATCH_ORDER } from './bracketConstants';
+import { updateNextMatch, getWinnerLoser } from './bracketHelpers';
+import type { MatchState, BracketMatchId } from './bracketTypes';
 
 export async function checkUserHasBracket(
 	userId: string,
@@ -45,71 +42,50 @@ export async function loadBracketFromDatabase(
 		return null;
 	}
 
-	const picks = data.picks as Record<string, string>;
-	const matchState = createInitialMatches();
+	const picks = data.picks as Partial<Record<BracketMatchId, string>>;
+	const orderedMatchIds = MATCH_ORDER.filter((matchId) => matchId in picks);
+	let matchState = createInitialMatches();
 
-	for (const [matchId, tag] of Object.entries(picks)) {
-		const match = matchState[matchId as BracketMatchId];
-		if (match) {
-			const winnerTeam =
-				match.team1?.tag === tag ? match.team1 : match.team2?.tag === tag ? match.team2 : null;
-			if (winnerTeam) {
-				const updatedMatch = { ...match, winner: winnerTeam };
-				matchState[matchId as BracketMatchId] = updatedMatch;
-			}
+	for (const matchId of orderedMatchIds) {
+		const tag = picks[matchId];
+		if (!tag) {
+			continue;
 		}
+
+		const match = matchState[matchId];
+		if (!match || !match.team1 || !match.team2) {
+			continue;
+		}
+
+		const winnerTeam =
+			match.team1.tag === tag ? match.team1 : match.team2.tag === tag ? match.team2 : null;
+		if (!winnerTeam) {
+			continue;
+		}
+
+		const { winner, loser } = getWinnerLoser(match, winnerTeam);
+		if (!winner || !loser) {
+			continue;
+		}
+
+		const updatedMatch = { ...match, winner };
+		matchState = { ...matchState, [matchId]: updatedMatch };
+
+		matchState = updateNextMatch(
+			matchState,
+			updatedMatch,
+			winner,
+			updatedMatch.nextMatchId,
+			updatedMatch.nextMatchSlot
+		);
+		matchState = updateNextMatch(
+			matchState,
+			updatedMatch,
+			loser,
+			updatedMatch.loserNextMatchId,
+			updatedMatch.loserNextMatchSlot
+		);
 	}
 
 	return matchState;
-}
-
-export async function saveBracketToDatabase(
-	exportData: BracketPicksExport,
-	requireConfirmation: boolean = false
-): Promise<{ success: boolean; hasExistingBracket: boolean }> {
-	const currentUser = get(user);
-	if (!currentUser) {
-		throw new Error('You must be logged in to save your bracket.');
-	}
-
-	const hasBracket = await checkUserHasBracket(currentUser.id, true);
-
-	if (hasBracket && !requireConfirmation) {
-		return { success: false, hasExistingBracket: true };
-	}
-
-	const { error: saveError } = await supabase.from('brackets').upsert(
-		{
-			user_id: currentUser.id,
-			picks: exportData.picks,
-			champion: exportData.champion
-		},
-		{
-			onConflict: 'user_id'
-		}
-	);
-
-	if (saveError) {
-		throw new Error(saveError.message);
-	}
-
-	return { success: true, hasExistingBracket: false };
-}
-
-export async function deleteBracketFromDatabase(): Promise<boolean> {
-	const currentUser = get(user);
-	if (!currentUser) {
-		throw new Error('You must be logged in to delete your bracket.');
-	}
-
-	const { error: deleteError } = await supabase
-		.from('brackets')
-		.delete()
-		.eq('user_id', currentUser.id);
-
-	if (deleteError) {
-		throw new Error(deleteError.message);
-	}
-
-	return true;
 }

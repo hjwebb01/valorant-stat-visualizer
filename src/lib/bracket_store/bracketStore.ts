@@ -13,19 +13,15 @@ import {
 // Re-export types for external consumers
 export type { Team, Match, MatchState, BracketPicksExport, BracketMatchId };
 
-// Re-export database functions for backward compatibility
 export {
 	checkUserHasBracket,
-	loadBracketFromDatabase,
-	saveBracketToDatabase,
-	deleteBracketFromDatabase
+	loadBracketFromDatabase
 } from './bracketDatabase';
 
 // UI State stores
 export const bracketLoading = writable<boolean>(false);
 export const bracketError = writable<string | null>(null);
-export const hasSavedBracket = writable<boolean>(false);
-export const showOverrideConfirm = writable<boolean>(false);
+
 
 // Main store
 export const matches = writable<MatchState>(createInitialMatches());
@@ -59,7 +55,7 @@ export function initializeBracketStore() {
 						return; // Abandon this operation, a newer one started
 					}
 
-					hasSavedBracket.set(hasBracket);
+					
 
 					if (hasBracket) {
 						const savedBracket = await bracketDb.loadBracketFromDatabase(
@@ -88,7 +84,6 @@ export function initializeBracketStore() {
 			}
 		} else {
 			if (operationId === currentOperationId) {
-				hasSavedBracket.set(false);
 				matches.set(createInitialMatches());
 			}
 		}
@@ -158,14 +153,6 @@ export function setWinner(matchId: BracketMatchId, team: Team): boolean {
 	});
 
 	return success;
-}
-
-/**
- * Resets bracket to initial state with default teams.
- */
-export function resetBracket() {
-	matches.set(createInitialMatches());
-	bracketError.set(null);
 }
 
 /**
@@ -259,103 +246,4 @@ export function validateBracket(): { valid: boolean; errors: string[] } {
 	}
 
 	return { valid: errors.length === 0, errors };
-}
-
-/**
- * Exports current bracket picks for storage.
- * @returns Export data or null if no champion selected
- */
-export function exportBracketPicks(): BracketPicksExport | null {
-	const state = get(matches);
-	const picks: Record<BracketMatchId, string> = {} as Record<BracketMatchId, string>;
-
-	for (const matchId of MATCH_ORDER) {
-		const match = state[matchId];
-		if (match.winner) {
-			picks[matchId] = match.winner.tag;
-		}
-	}
-
-	const championTeam = state['GF']?.winner;
-	if (!championTeam) {
-		return null;
-	}
-
-	return {
-		picks,
-		champion: championTeam.tag,
-		timestamp: new Date().toISOString()
-	};
-}
-
-/**
- * Saves current bracket to database.
- * @param requireConfirmation - Prompt before overwriting existing bracket
- * @returns true if saved successfully
- */
-export async function saveBracket(requireConfirmation: boolean = false): Promise<boolean> {
-	bracketLoading.set(true);
-	bracketError.set(null);
-
-	try {
-		const validation = validateBracket();
-		if (!validation.valid) {
-			bracketError.set(validation.errors.join(' '));
-			bracketLoading.set(false);
-			return false;
-		}
-
-		const exportData = exportBracketPicks();
-		if (!exportData) {
-			bracketError.set('Failed to export bracket data.');
-			bracketLoading.set(false);
-			return false;
-		}
-
-		const result = await bracketDb.saveBracketToDatabase(exportData, requireConfirmation);
-
-		if (result.hasExistingBracket) {
-			showOverrideConfirm.set(true);
-			bracketLoading.set(false);
-			return false;
-		}
-
-		hasSavedBracket.set(true);
-		bracketError.set(null);
-		bracketLoading.set(false);
-		return true;
-	} catch (error) {
-		bracketError.set(
-			error instanceof Error
-				? error.message
-				: 'An unexpected error occurred while saving the bracket.'
-		);
-		bracketLoading.set(false);
-		return false;
-	}
-}
-
-/**
- * Deletes user's bracket from database.
- * @returns true if deleted successfully
- */
-export async function deleteBracket(): Promise<boolean> {
-	bracketLoading.set(true);
-	bracketError.set(null);
-
-	try {
-		await bracketDb.deleteBracketFromDatabase();
-		hasSavedBracket.set(false);
-		bracketError.set(null);
-		bracketLoading.set(false);
-		return true;
-	} catch (error) {
-		bracketError.set(
-			error instanceof Error
-				? error.message
-				: 'An unexpected error occurred while deleting the bracket.'
-		);
-		bracketLoading.set(false);
-		return false;
-	}
 }
