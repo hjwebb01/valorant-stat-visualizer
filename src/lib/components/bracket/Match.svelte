@@ -33,9 +33,7 @@
 	}
 
 	function handleTeamClick(team: Team) {
-		if (!match.team1 || !match.team2) return;
-		if (match.winner && match.winner.name === team.name) return;
-		onSetWinner(match.id, team);
+		// Click functionality has been disabled
 	}
 
 	function getTeamClass(team: Team | null): string {
