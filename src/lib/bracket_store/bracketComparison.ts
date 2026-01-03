@@ -26,9 +26,9 @@ export function getPredictionStatus(match: Match): PredictionStatus {
 	const userPickedTeam1 = match.team1?.name === match.winner.name;
 	const userPickedTeam2 = match.team2?.name === match.winner.name;
 
-	// Determine which team actually won
-	const actualIsTeam1 = actualWinner === 'team1';
-	const actualIsTeam2 = actualWinner === 'team2';
+	// Determine which team actually won by comparing team tags
+	const actualIsTeam1 = actualWinner === match.team1?.tag;
+	const actualIsTeam2 = actualWinner === match.team2?.tag;
 
 	// Check if prediction is correct
 	if ((userPickedTeam1 && actualIsTeam1) || (userPickedTeam2 && actualIsTeam2)) {
@@ -50,11 +50,11 @@ export function getActualWinner(match: Match): { name: string; tag: string } | n
 		return null;
 	}
 
-	if (actualWinner === 'team1' && match.team1) {
+	if (actualWinner === match.team1?.tag && match.team1) {
 		return { name: match.team1.name, tag: match.team1.tag };
 	}
 
-	if (actualWinner === 'team2' && match.team2) {
+	if (actualWinner === match.team2?.tag && match.team2) {
 		return { name: match.team2.name, tag: match.team2.tag };
 	}
 
