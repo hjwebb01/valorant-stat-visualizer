@@ -1,52 +1,22 @@
 <script lang="ts">
-	import { onMount, onDestroy } from 'svelte';
+	import { onMount } from 'svelte';
 	import Bracket from '$lib/components/bracket/Bracket.svelte';
 	import {
 		initializeBracketStore,
 		bracketLoading,
-		bracketError,
-		matches,
-		type MatchState
-	} from '$lib/stores/bracketStore';
-
-	let saveTimeout: ReturnType<typeof setTimeout> | null = null;
-
+		bracketError
+	} from '$lib/bracket_store/bracketStore';
 	onMount(() => {
-		initializeBracketStore();
-		loadLocalBracket();
-		subscribeToChanges();
-	});
-
-	onDestroy(() => {
-		if (saveTimeout) clearTimeout(saveTimeout);
-	});
-
-	function loadLocalBracket() {
-		const localData = localStorage.getItem('bracket_draft');
-		if (localData) {
-			try {
-				const parsed = JSON.parse(localData);
-				matches.set(parsed);
-			} catch (e) {
-				console.error('Failed to load local bracket:', e);
+		// Clean up localStorage bracket data (one-time migration)
+		if (typeof window !== 'undefined') {
+			const migrated = localStorage.getItem('bracket_migration');
+			if (!migrated) {
+				localStorage.removeItem('bracket_draft');
+				localStorage.setItem('bracket_migration', 'true');
 			}
 		}
-	}
-
-	function saveLocalBracket(state: MatchState) {
-		localStorage.setItem('bracket_draft', JSON.stringify(state));
-	}
-
-	function subscribeToChanges() {
-		matches.subscribe((state) => {
-			if (saveTimeout) clearTimeout(saveTimeout);
-
-			saveTimeout = setTimeout(() => {
-				saveLocalBracket(state);
-			}, 1000);
-		});
-	}
-
+		initializeBracketStore();
+	});
 	function clearError() {
 		bracketError.set(null);
 	}
@@ -66,6 +36,5 @@
 			</button>
 		</div>
 	{/if}
-
 	<Bracket />
 {/if}

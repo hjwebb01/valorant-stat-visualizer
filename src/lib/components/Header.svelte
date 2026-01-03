@@ -19,7 +19,7 @@
 	import { Home, Trophy, Menu, GitBranch } from '@lucide/svelte';
 	import { Users } from '@lucide/svelte';
 	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
-	import { isLoggedIn } from '$lib/stores/auth';
+	import { isLoggedIn } from '$lib/bracket_store/auth';
 	import LoginButton from '$lib/components/LoginButton.svelte';
 	import LogoutButton from '$lib/components/LogoutButton.svelte';
 </script>

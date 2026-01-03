@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { logout } from '$lib/stores/auth';
+	import { logout } from '$lib/bracket_store/auth';
 	import { goto } from '$app/navigation';
 
 	async function handleLogout() {

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { user, isLoggedIn, loading } from '$lib/stores/auth';
+	import { user, isLoggedIn, loading } from '$lib/bracket_store/auth';
 </script>
 
 {#if $loading}

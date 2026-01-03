@@ -2,7 +2,7 @@
 	import '../app.css';
 	import favicon from '$lib/assets/rivals_logo.png';
 	import Header from '$lib/components/Header.svelte';
-	import { initializeAuth, signInWithGoogle } from '$lib/stores/auth';
+	import { initializeAuth, signInWithGoogle } from '$lib/bracket_store/auth';
 	import { onMount, onDestroy } from 'svelte';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';

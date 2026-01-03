@@ -1,11 +1,7 @@
 <script lang="ts">
 	import Match from './Match.svelte';
-	import {
-		matches,
-		resetBracket,
-		champion,
-		setWinner
-	} from '$lib/stores/bracketStore';
+	import { matches, champion, setWinner } from '$lib/bracket_store/bracketStore';
+
 	import { Button } from '$lib/components/ui/button';
 	import { RefreshCw, Trophy } from '@lucide/svelte';
 
@@ -37,21 +33,11 @@
 		if (!championTag) return null;
 		return teamLogos[championTag] || null;
 	}
-
-	function handleResetBracket() {
-		resetBracket();
-	}
 </script>
 
 <div class="mx-auto max-w-7xl p-6">
 	<div class="mb-6 flex items-center justify-between">
 		<h1 class="text-foreground text-2xl font-bold">Tournament Bracket</h1>
-		<div class="flex gap-2">
-			<Button variant="outline" onclick={handleResetBracket} class="gap-2">
-				<RefreshCw size={16} />
-				Reset Bracket
-			</Button>
-		</div>
 	</div>
 
 	{#if championName}

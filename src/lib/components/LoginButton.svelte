@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { signInWithGoogle, loading, error, clearError } from '$lib/stores/auth';
+	import { signInWithGoogle, loading, error, clearError } from '$lib/bracket_store/auth';
 
 	async function handleLogin() {
 		const success = await signInWithGoogle();
