@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Match from './Match.svelte';
 	import { matches, champion, setWinner } from '$lib/bracket_store/bracketStore';
+	import { calculateBracketScore } from '$lib/bracket_store/bracketComparison';
 
 	import { Button } from '$lib/components/ui/button';
 	import { RefreshCw, Trophy } from '@lucide/svelte';
@@ -28,6 +29,7 @@
 
 	let championName = $derived($champion?.name ?? null);
 	let championTag = $derived($champion?.tag ?? null);
+	let score = $derived(calculateBracketScore($matches));
 
 	function getChampionLogo(): string | null {
 		if (!championTag) return null;
@@ -38,7 +40,44 @@
 <div class="mx-auto max-w-7xl p-6">
 	<div class="mb-6 flex items-center justify-between">
 		<h1 class="text-foreground text-2xl font-bold">Tournament Bracket</h1>
+
+		<!-- Legend for comparison results -->
+		<div class="flex items-center gap-4 text-sm">
+			<div class="flex items-center gap-2">
+				<div class="h-4 w-4 rounded border-2 border-green-500 bg-green-500/10 ring-2 ring-green-500"></div>
+				<span class="text-muted-foreground">Correct Prediction</span>
+			</div>
+			<div class="flex items-center gap-2">
+				<div class="h-4 w-4 rounded border-2 border-red-500 bg-red-500/10 ring-2 ring-red-500"></div>
+				<span class="text-muted-foreground">Incorrect Prediction</span>
+			</div>
+		</div>
 	</div>
+
+	<!-- Score summary -->
+	{#if score.total > 0}
+		<div class="bg-muted mb-6 rounded-lg p-4">
+			<h3 class="text-foreground mb-2 font-semibold">Your Bracket Score</h3>
+			<div class="grid grid-cols-4 gap-4 text-center">
+				<div>
+					<div class="text-green-500 text-2xl font-bold">{score.correct}</div>
+					<div class="text-muted-foreground text-xs">Correct</div>
+				</div>
+				<div>
+					<div class="text-red-500 text-2xl font-bold">{score.incorrect}</div>
+					<div class="text-muted-foreground text-xs">Incorrect</div>
+				</div>
+				<div>
+					<div class="text-muted-foreground text-2xl font-bold">{score.pending}</div>
+					<div class="text-muted-foreground text-xs">Pending</div>
+				</div>
+				<div>
+					<div class="text-primary text-2xl font-bold">{score.accuracy.toFixed(1)}%</div>
+					<div class="text-muted-foreground text-xs">Accuracy</div>
+				</div>
+			</div>
+		</div>
+	{/if}
 
 	{#if championName}
 		<div

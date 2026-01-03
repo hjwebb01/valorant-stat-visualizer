@@ -65,3 +65,22 @@ export const LOWER_BRACKET_MATCHES: readonly BracketMatchId[] = [
 
 // Finals match IDs
 export const FINALS_MATCHES: readonly BracketMatchId[] = ['GF'] as const;
+
+// Actual match results - updated as matches are played
+// Values: 'team1' | 'team2' | 'tbd' (match not yet played)
+export const REFERENCE_RESULTS: Record<BracketMatchId, 'team1' | 'team2' | 'tbd'> = {
+	U1: 'tbd',
+	U2: 'tbd',
+	U3: 'tbd',
+	U4: 'tbd',
+	U5: 'tbd',
+	U6: 'tbd',
+	U7: 'tbd',
+	L1: 'tbd',
+	L2: 'tbd',
+	L3: 'tbd',
+	L4: 'tbd',
+	L5: 'tbd',
+	L8: 'tbd',
+	GF: 'tbd'
+};
