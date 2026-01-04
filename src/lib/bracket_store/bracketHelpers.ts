@@ -84,7 +84,6 @@ export const getWinnerLoser = (
 
 /**
  * Updates the next match with a team advancing from current match.
- * Returns new state to maintain immutability (fixes mutation bug).
  * @param currentState - Current bracket state
  * @param match - Match causing the update
  * @param newTeam - Team advancing to next match
@@ -106,7 +105,6 @@ export const updateNextMatch = (
 
 	const updatedNextMatch = resetWinnerIfNeeded(nextMatch, newTeam);
 
-	// FIX: Return new state object instead of mutating
 	return { ...currentState, [nextMatchId]: updatedNextMatch };
 };
 
@@ -132,7 +130,6 @@ export const clearTeamFromFuture = (
 	while (queue.length > 0) {
 		const matchId = queue.shift()!;
 
-		// FIX: Validate match exists instead of silently skipping
 		if (!updatedState[matchId]) {
 			console.warn(`clearTeamFromFuture: Match ${matchId} not found`);
 			continue;
@@ -161,13 +158,76 @@ export const clearTeamFromFuture = (
 
 		updatedState[matchId] = updatedMatch;
 
-		// Add next matches to queue
 		if (match.nextMatchId) queue.push(match.nextMatchId);
 		if (match.loserNextMatchId) queue.push(match.loserNextMatchId);
 	}
 
 	return updatedState;
 };
+
+/**
+ * Applies a winner to a match and propagates teams to downstream matches.
+ * Pure function that returns new state without side effects.
+ * @param state - Current bracket state
+ * @param matchId - ID of match to update
+ * @param team - Team to set as winner
+ * @returns New MatchState with winner applied and progression updated, or null on validation error
+ */
+export function applyWinnerToState(
+	state: MatchState,
+	matchId: BracketMatchId,
+	team: Team
+): MatchState | null {
+	const match = { ...state[matchId] };
+
+	// Validate match exists and has both teams
+	if (!match.team1 || !match.team2) {
+		console.warn(`applyWinnerToState: Match ${matchId} is missing teams.`);
+		return null;
+	}
+
+	// Validate the team is actually in this match
+	const teamInMatch = match.team1.name === team.name || match.team2.name === team.name;
+	if (!teamInMatch) {
+		console.warn(`applyWinnerToState: Team ${team.name} is not in match ${matchId}.`);
+		return null;
+	}
+
+	const { winner, loser } = getWinnerLoser(match, team);
+	if (!winner || !loser) {
+		console.warn(`applyWinnerToState: Failed to determine winner/loser for match ${matchId}.`);
+		return null;
+	}
+
+	const oldWinner = match.winner;
+	const oldLoser =
+		match.loserNextMatchId && match.loserNextMatchSlot
+			? (state[match.loserNextMatchId]?.[match.loserNextMatchSlot] ?? null)
+			: null;
+
+	match.winner = winner;
+	let newState = { ...state, [matchId]: match };
+
+	// Clear old winner from future matches if changing a pick
+	if (oldWinner && match.nextMatchId) {
+		newState = clearTeamFromFuture(newState, oldWinner, match.nextMatchId);
+	}
+	if (oldLoser && oldLoser.name !== loser.name && match.loserNextMatchId) {
+		newState = clearTeamFromFuture(newState, oldLoser, match.loserNextMatchId);
+	}
+
+	// Propagate winner and loser to next matches
+	newState = updateNextMatch(newState, match, winner, match.nextMatchId, match.nextMatchSlot);
+	newState = updateNextMatch(
+		newState,
+		match,
+		loser,
+		match.loserNextMatchId,
+		match.loserNextMatchSlot
+	);
+
+	return newState;
+}
 
 /**
  * Creates initial match state for a new bracket.

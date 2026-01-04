@@ -1,5 +1,5 @@
 import type { Match, BracketMatchId } from './bracketTypes';
-import { REFERENCE_RESULTS } from './bracketConstants';
+import { REFERENCE_WINNERS } from './bracketConstants';
 
 // Prediction status for a match
 export type PredictionStatus = 'correct' | 'incorrect' | 'pending';
@@ -10,27 +10,22 @@ export type PredictionStatus = 'correct' | 'incorrect' | 'pending';
  * @returns Prediction status
  */
 export function getPredictionStatus(match: Match): PredictionStatus {
-	const actualWinner = REFERENCE_RESULTS[match.id];
+	const actualWinner = REFERENCE_WINNERS[match.id];
 
-	// Match hasn't been played yet
 	if (actualWinner === 'tbd') {
 		return 'pending';
 	}
 
-	// User hasn't made a prediction
 	if (!match.winner) {
 		return 'pending';
 	}
 
-	// Determine which team the user picked
 	const userPickedTeam1 = match.team1?.name === match.winner.name;
 	const userPickedTeam2 = match.team2?.name === match.winner.name;
 
-	// Determine which team actually won by comparing team tags
 	const actualIsTeam1 = actualWinner === match.team1?.tag;
 	const actualIsTeam2 = actualWinner === match.team2?.tag;
 
-	// Check if prediction is correct
 	if ((userPickedTeam1 && actualIsTeam1) || (userPickedTeam2 && actualIsTeam2)) {
 		return 'correct';
 	}
@@ -44,7 +39,7 @@ export function getPredictionStatus(match: Match): PredictionStatus {
  * @returns The actual winning team, or null if match not played
  */
 export function getActualWinner(match: Match): { name: string; tag: string } | null {
-	const actualWinner = REFERENCE_RESULTS[match.id];
+	const actualWinner = REFERENCE_WINNERS[match.id];
 
 	if (actualWinner === 'tbd') {
 		return null;

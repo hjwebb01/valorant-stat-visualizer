@@ -18,8 +18,13 @@
 
 	let {
 		match,
+		userPrediction,
 		onSetWinner
-	}: { match: Match; onSetWinner: (matchId: BracketMatchId, team: Team) => boolean } = $props();
+	}: {
+		match: Match;
+		userPrediction?: Match;
+		onSetWinner: (matchId: BracketMatchId, team: Team) => boolean;
+	} = $props();
 
 	const teamLogos: Record<string, string> = {
 		POW: powLogo,
@@ -44,10 +49,28 @@
 	function getTeamClass(team: Team | null): string {
 		if (!team) return '';
 
-		// Check prediction status
+		if (userPrediction) {
+			const actualWinner = match.winner;
+			const predictedWinner = userPrediction.winner;
+
+			if (!actualWinner) {
+				return '';
+			}
+
+			const isThisTeamTheActualWinner = team.name === actualWinner.name;
+			const predictionWasCorrect = predictedWinner?.name === actualWinner.name;
+
+			if (isThisTeamTheActualWinner) {
+				return predictionWasCorrect
+					? 'border-green-500 ring-2 ring-green-500 bg-green-500/10'
+					: 'border-red-500 ring-2 ring-red-500 bg-red-500/10';
+			}
+
+			return 'opacity-50';
+		}
+
 		const predictionStatus = getPredictionStatus(match);
 
-		// If match hasn't been played, use existing logic
 		if (predictionStatus === 'pending') {
 			if (match.winner && match.winner.name === team.name)
 				return 'border-primary ring-2 ring-primary';
@@ -55,18 +78,14 @@
 			return 'hover:bg-accent cursor-pointer';
 		}
 
-		// Match has been played - show comparison results
 		if (isTeamCorrectlyPredicted(match, team)) {
-			// Correct prediction - green highlight
 			return 'border-green-500 ring-2 ring-green-500 bg-green-500/10';
 		}
 
 		if (isTeamIncorrectlyPredicted(match, team)) {
-			// Incorrect prediction - red highlight
 			return 'border-red-500 ring-2 ring-red-500 bg-red-500/10';
 		}
 
-		// Not the predicted team (the other team)
 		return 'opacity-50';
 	}
 </script>
