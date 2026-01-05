@@ -15,7 +15,7 @@
 	import ttrLogo from '$lib/assets/teams/terenceterencerence.png';
 	import tbbLogo from '$lib/assets/teams/thebigblack.png';
 	import jtrrLogo from '$lib/assets/teams/jtrebuildrebuild.png';
-	import ojsLogo from '$lib/assets/teams/ojenksimpsons.png';
+	import chudLogo from '$lib/assets/teams/chud.png';
 	import stdLogo from '$lib/assets/teams/std.png';
 	import tbcLogo from '$lib/assets/teams/tbc.png';
 
@@ -25,7 +25,7 @@
 		TTR: ttrLogo,
 		TBB: tbbLogo,
 		JTRR: jtrrLogo,
-		OJS: ojsLogo,
+		CHUD: chudLogo,
 		STD: stdLogo,
 		TBC: tbcLogo
 	};
