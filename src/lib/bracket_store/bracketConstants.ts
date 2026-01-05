@@ -37,7 +37,7 @@ export const INITIAL_TEAMS: Team[] = [
 	{ name: 'Terence Terence Rence', tag: 'TTR', seed: 3 },
 	{ name: 'The Big Black', tag: 'TBB', seed: 4 },
 	{ name: 'JT Rebuild Rebuild', tag: 'JTRR', seed: 5 },
-	{ name: 'O. Jenk Simpsons', tag: 'OJS', seed: 6 },
+	{ name: "Can't Honestly Understand Defaults", tag: 'CHUD', seed: 6 },
 	{ name: 'STranger Danger', tag: 'STD', seed: 7 },
 	{ name: 'The Bron Crusaders', tag: 'TBC', seed: 8 }
 ];
@@ -65,3 +65,22 @@ export const LOWER_BRACKET_MATCHES: readonly BracketMatchId[] = [
 
 // Finals match IDs
 export const FINALS_MATCHES: readonly BracketMatchId[] = ['GF'] as const;
+
+// Actual match results - updated as matches are played
+// Values: team tag (e.g., 'POW', 'HOR') | 'tbd' (match not yet played)
+export const REFERENCE_WINNERS: Record<BracketMatchId, string> = {
+	U1: 'tbd',
+	U2: 'JTRR',
+	U3: 'STD',
+	U4: 'TTR',
+	U5: 'tbd',
+	U6: 'tbd',
+	U7: 'tbd',
+	L1: 'tbd',
+	L2: 'tbd',
+	L3: 'tbd',
+	L4: 'tbd',
+	L5: 'tbd',
+	L8: 'tbd',
+	GF: 'tbd'
+};

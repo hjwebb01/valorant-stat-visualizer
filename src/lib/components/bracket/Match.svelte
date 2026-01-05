@@ -1,5 +1,10 @@
 <script lang="ts">
 	import type { Team, Match, BracketMatchId } from '$lib/bracket_store/bracketTypes';
+	import {
+		getPredictionStatus,
+		isTeamCorrectlyPredicted,
+		isTeamIncorrectlyPredicted
+	} from '$lib/bracket_store/bracketComparison';
 
 	// Import all team logos
 	import powLogo from '$lib/assets/teams/pokeballofwonders.png';
@@ -7,14 +12,19 @@
 	import ttrLogo from '$lib/assets/teams/terenceterencerence.png';
 	import tbbLogo from '$lib/assets/teams/thebigblack.png';
 	import jtrrLogo from '$lib/assets/teams/jtrebuildrebuild.png';
-	import ojsLogo from '$lib/assets/teams/ojenksimpsons.png';
+	import chudLogo from '$lib/assets/teams/chud.png';
 	import stdLogo from '$lib/assets/teams/std.png';
 	import tbcLogo from '$lib/assets/teams/tbc.png';
 
 	let {
 		match,
+		userPrediction,
 		onSetWinner
-	}: { match: Match; onSetWinner: (matchId: BracketMatchId, team: Team) => boolean } = $props();
+	}: {
+		match: Match;
+		userPrediction?: Match;
+		onSetWinner: (matchId: BracketMatchId, team: Team) => boolean;
+	} = $props();
 
 	const teamLogos: Record<string, string> = {
 		POW: powLogo,
@@ -22,7 +32,7 @@
 		TTR: ttrLogo,
 		TBB: tbbLogo,
 		JTRR: jtrrLogo,
-		OJS: ojsLogo,
+		CHUD: chudLogo,
 		STD: stdLogo,
 		TBC: tbcLogo
 	};
@@ -38,10 +48,45 @@
 
 	function getTeamClass(team: Team | null): string {
 		if (!team) return '';
-		if (match.winner && match.winner.name === team.name)
-			return 'border-primary ring-2 ring-primary';
-		if (match.winner) return 'opacity-50';
-		return 'hover:bg-accent cursor-pointer';
+
+		if (userPrediction) {
+			const actualWinner = match.winner;
+			const predictedWinner = userPrediction.winner;
+
+			if (!actualWinner) {
+				return '';
+			}
+
+			const isThisTeamTheActualWinner = team.name === actualWinner.name;
+			const predictionWasCorrect = predictedWinner?.name === actualWinner.name;
+
+			if (isThisTeamTheActualWinner) {
+				return predictionWasCorrect
+					? 'border-green-500 ring-2 ring-green-500 bg-green-500/10'
+					: 'border-red-500 ring-2 ring-red-500 bg-red-500/10';
+			}
+
+			return 'opacity-50';
+		}
+
+		const predictionStatus = getPredictionStatus(match);
+
+		if (predictionStatus === 'pending') {
+			if (match.winner && match.winner.name === team.name)
+				return 'border-primary ring-2 ring-primary';
+			if (match.winner) return 'opacity-50';
+			return 'hover:bg-accent cursor-pointer';
+		}
+
+		if (isTeamCorrectlyPredicted(match, team)) {
+			return 'border-green-500 ring-2 ring-green-500 bg-green-500/10';
+		}
+
+		if (isTeamIncorrectlyPredicted(match, team)) {
+			return 'border-red-500 ring-2 ring-red-500 bg-red-500/10';
+		}
+
+		return 'opacity-50';
 	}
 </script>
 

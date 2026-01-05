@@ -7,7 +7,8 @@ import {
 	createInitialMatches,
 	updateNextMatch,
 	clearTeamFromFuture,
-	getWinnerLoser
+	getWinnerLoser,
+	applyWinnerToState
 } from './bracketHelpers';
 
 // Re-export types for external consumers
@@ -41,7 +42,6 @@ export function initializeBracketStore() {
 	}
 
 	isLoggedInUnsubscribe = isLoggedIn.subscribe(async (loggedIn) => {
-		// Generate unique operation ID for this login cycle
 		const operationId = ++currentOperationId;
 
 		if (loggedIn) {
@@ -50,12 +50,9 @@ export function initializeBracketStore() {
 				try {
 					const hasBracket = await bracketDb.checkUserHasBracket(currentUser.id);
 
-					// Check if this operation is still current
 					if (operationId !== currentOperationId) {
-						return; // Abandon this operation, a newer one started
+						return;
 					}
-
-					
 
 					if (hasBracket) {
 						const savedBracket = await bracketDb.loadBracketFromDatabase(
@@ -63,7 +60,6 @@ export function initializeBracketStore() {
 							createInitialMatches
 						);
 
-						// Check again before updating state
 						if (operationId !== currentOperationId) {
 							return;
 						}
@@ -100,52 +96,12 @@ export function setWinner(matchId: BracketMatchId, team: Team): boolean {
 	let success = false;
 
 	matches.update((state) => {
-		const match = { ...state[matchId] };
-
-		// Validate match has both teams
-		if (!match.team1 || !match.team2) {
-			bracketError.set(`Match ${matchId} is missing teams.`);
+		const newState = applyWinnerToState(state, matchId, team);
+		
+		if (newState === null) {
+			bracketError.set(`Failed to set winner for match ${matchId}.`);
 			return state;
 		}
-
-		// Validate the team is actually in this match
-		const teamInMatch = match.team1.name === team.name || match.team2.name === team.name;
-
-		if (!teamInMatch) {
-			bracketError.set(`Team ${team.name} is not in match ${matchId}.`);
-			return state;
-		}
-
-		const { winner, loser } = getWinnerLoser(match, team);
-		if (!winner || !loser) {
-			bracketError.set(`Failed to determine winner/loser for match ${matchId}.`);
-			return state;
-		}
-
-		const oldWinner = match.winner;
-		const oldLoser =
-			match.loserNextMatchId && match.loserNextMatchSlot
-				? (state[match.loserNextMatchId]?.[match.loserNextMatchSlot] ?? null)
-				: null;
-
-		match.winner = winner;
-		let newState = { ...state, [matchId]: match };
-
-		if (oldWinner && match.nextMatchId) {
-			newState = clearTeamFromFuture(newState, oldWinner, match.nextMatchId);
-		}
-		if (oldLoser && oldLoser.name !== loser.name && match.loserNextMatchId) {
-			newState = clearTeamFromFuture(newState, oldLoser, match.loserNextMatchId);
-		}
-
-		newState = updateNextMatch(newState, match, winner, match.nextMatchId, match.nextMatchSlot);
-		newState = updateNextMatch(
-			newState,
-			match,
-			loser,
-			match.loserNextMatchId,
-			match.loserNextMatchSlot
-		);
 
 		success = true;
 		bracketError.set(null);
@@ -155,95 +111,3 @@ export function setWinner(matchId: BracketMatchId, team: Team): boolean {
 	return success;
 }
 
-/**
- * Validates the bracket for completeness and consistency.
- * @returns Validation result with errors if any
- */
-export function validateBracket(): { valid: boolean; errors: string[] } {
-	const state = get(matches);
-	const errors: string[] = [];
-	const eliminatedTeams = new Set<string>();
-	const teamPositions = new Map<string, Set<string>>(); // team name -> set of match IDs
-
-	for (const matchId of MATCH_ORDER) {
-		const match = state[matchId];
-
-		// Check teams exist
-		if (!match.team1 || !match.team2) {
-			errors.push(`Match ${matchId} is missing one or both teams.`);
-			continue;
-		}
-
-		// Track team positions
-		if (match.team1) {
-			if (!teamPositions.has(match.team1.name)) {
-				teamPositions.set(match.team1.name, new Set());
-			}
-			teamPositions.get(match.team1.name)!.add(matchId);
-		}
-		if (match.team2) {
-			if (!teamPositions.has(match.team2.name)) {
-				teamPositions.set(match.team2.name, new Set());
-			}
-			teamPositions.get(match.team2.name)!.add(matchId);
-		}
-
-		// Check winner exists
-		if (!match.winner) {
-			errors.push(`Match ${matchId} does not have a winner selected.`);
-			continue;
-		}
-
-		// Check winner is valid
-		const winnerName = match.winner.name;
-		if (winnerName !== match.team1.name && winnerName !== match.team2.name) {
-			errors.push(`Match ${matchId} has an invalid winner.`);
-			continue;
-		}
-
-		// Check winner not already eliminated
-		if (eliminatedTeams.has(winnerName)) {
-			errors.push(`Match ${matchId} winner (${winnerName}) was already eliminated.`);
-			continue;
-		}
-
-		// Track eliminated teams
-		const loser = match.winner.name === match.team1.name ? match.team2 : match.team1;
-		if (ELIMINATION_MATCHES.has(matchId) && loser) {
-			eliminatedTeams.add(loser.name);
-		}
-
-		// Check winner advances to next match
-		if (match.nextMatchId && match.nextMatchSlot) {
-			const nextMatch = state[match.nextMatchId];
-			if (nextMatch) {
-				const slotTeam = nextMatch[match.nextMatchSlot];
-				if (!slotTeam || slotTeam.name !== winnerName) {
-					errors.push(
-						`Match ${matchId} winner (${winnerName}) does not advance to match ${match.nextMatchId}.`
-					);
-				}
-			}
-		}
-	}
-
-	// Check for teams appearing in multiple matches simultaneously
-	for (const [teamName, matchIds] of teamPositions.entries()) {
-		if (matchIds.size > 1) {
-			errors.push(
-				`Team ${teamName} appears in multiple matches: ${Array.from(matchIds).join(', ')}`
-			);
-		}
-	}
-
-	// Check champion consistency
-	const champion = state['GF']?.winner;
-	if (champion) {
-		const championInFinal = teamPositions.get(champion.name);
-		if (!championInFinal || !championInFinal.has('GF')) {
-			errors.push(`Champion ${champion.name} is not in the Grand Final.`);
-		}
-	}
-
-	return { valid: errors.length === 0, errors };
-}
