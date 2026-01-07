@@ -61,7 +61,7 @@
 			const isThisTeamTheActualWinner = team.name === actualWinner.name;
 
 			if (isThisTeamTheActualWinner) {
-				return 'border-foreground';
+				return 'border-foreground ring-primary ring-2';
 			}
 
 			return 'opacity-50';
@@ -70,17 +70,17 @@
 		const predictionStatus = getPredictionStatus(match);
 
 		if (predictionStatus === 'pending') {
-			if (match.winner && match.winner.name === team.name) return 'border-foreground';
+			if (match.winner && match.winner.name === team.name) return 'border-foreground ring-primary ring-2';
 			if (match.winner) return 'opacity-50';
 			return 'hover:bg-accent cursor-pointer';
 		}
 
 		if (isTeamCorrectlyPredicted(match, team)) {
-			return 'border-green-500';
+			return 'border-green-500 ring-green-500 ring-2 bg-green-500/10';
 		}
 
 		if (isTeamIncorrectlyPredicted(match, team)) {
-			return 'border-red-500';
+			return 'border-red-500 ring-red-500 ring-2 bg-red-500/10';
 		}
 
 		return 'opacity-50';
