@@ -19,11 +19,13 @@
 	let {
 		match,
 		userPrediction,
-		onSetWinner
+		onSetWinner,
+		viewMode = 'prediction'
 	}: {
 		match: Match;
 		userPrediction?: Match;
 		onSetWinner: (matchId: BracketMatchId, team: Team) => boolean;
+		viewMode?: 'live' | 'prediction';
 	} = $props();
 
 	const teamLogos: Record<string, string> = {
@@ -49,21 +51,17 @@
 	function getTeamClass(team: Team | null): string {
 		if (!team) return '';
 
-		if (userPrediction) {
+		if (viewMode === 'live') {
 			const actualWinner = match.winner;
-			const predictedWinner = userPrediction.winner;
 
 			if (!actualWinner) {
 				return '';
 			}
 
 			const isThisTeamTheActualWinner = team.name === actualWinner.name;
-			const predictionWasCorrect = predictedWinner?.name === actualWinner.name;
 
 			if (isThisTeamTheActualWinner) {
-				return predictionWasCorrect
-					? 'border-green-500 ring-2 ring-green-500 bg-green-500/10'
-					: 'border-red-500 ring-2 ring-red-500 bg-red-500/10';
+				return 'border-foreground ring-primary ring-2';
 			}
 
 			return 'opacity-50';
@@ -72,18 +70,17 @@
 		const predictionStatus = getPredictionStatus(match);
 
 		if (predictionStatus === 'pending') {
-			if (match.winner && match.winner.name === team.name)
-				return 'border-primary ring-2 ring-primary';
+			if (match.winner && match.winner.name === team.name) return 'border-foreground ring-primary ring-2';
 			if (match.winner) return 'opacity-50';
 			return 'hover:bg-accent cursor-pointer';
 		}
 
 		if (isTeamCorrectlyPredicted(match, team)) {
-			return 'border-green-500 ring-2 ring-green-500 bg-green-500/10';
+			return 'border-green-500 ring-green-500 ring-2 bg-green-500/10';
 		}
 
 		if (isTeamIncorrectlyPredicted(match, team)) {
-			return 'border-red-500 ring-2 ring-red-500 bg-red-500/10';
+			return 'border-red-500 ring-red-500 ring-2 bg-red-500/10';
 		}
 
 		return 'opacity-50';

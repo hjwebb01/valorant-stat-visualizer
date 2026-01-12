@@ -69,7 +69,7 @@ export const FINALS_MATCHES: readonly BracketMatchId[] = ['GF'] as const;
 // Actual match results - updated as matches are played
 // Values: team tag (e.g., 'POW', 'HOR') | 'tbd' (match not yet played)
 export const REFERENCE_WINNERS: Record<BracketMatchId, string> = {
-	U1: 'tbd',
+	U1: 'TBC',
 	U2: 'JTRR',
 	U3: 'STD',
 	U4: 'TTR',
