@@ -1,7 +1,7 @@
 import { json } from '@sveltejs/kit';
 import { google } from 'googleapis';
 import { supabaseAdmin } from '$lib/server/supabaseAdmin';
-import { SHEET_ID_TEAMS, SHEET_ID_STATS, GOOGLE_SERVICE_KEY_PATH } from '$env/static/private';
+import { SHEET_ID_TEAMS, SHEET_ID_STATS, SHEET_ID_PLAYOFFS, GOOGLE_SERVICE_KEY_PATH } from '$env/static/private';
 
 /* ==========================================================
    RANK MAP (color → tier)
@@ -499,6 +499,81 @@ export async function POST() {
 					...statFields
 				},
 				{ onConflict: 'dataset_id,player_id' }
+			);
+		}
+
+		/* ==========================================================
+		   4️⃣ PLAYOFFS STATS IMPORT
+		   ========================================================== */
+		console.log('📚 Processing playoffs stats');
+
+		const PLAYOFFS_SHEET_ID = SHEET_ID_PLAYOFFS;
+		const playoffsRes = await sheets.spreadsheets.values.get({
+			spreadsheetId: PLAYOFFS_SHEET_ID,
+			range: `'stats'!A1:ZZ`
+		});
+
+		const playoffsRows = playoffsRes.data.values ?? [];
+		const playoffsHeaders = playoffsRows.shift();
+		if (!playoffsHeaders) {
+			console.log('ℹ️ No playoffs stats found or headers missing');
+		} else {
+			const playoffsNormalizedRecords = playoffsRows.map((r) => {
+				const obj: Record<string, any> = {};
+				playoffsHeaders.forEach((h, i) => {
+					const key = STATS_HEADER_MAP[String(h).trim().toLowerCase()] ?? h;
+					// Normalize player names
+					if (key === 'player') obj[key] = parsePlayerCell(r[i] ? String(r[i]) : '');
+					else obj[key] = r[i];
+				});
+				return normalizeStatsRecord(obj);
+			});
+
+			const { data: playoffsDataset } = await supabaseAdmin
+				.from('datasets')
+				.upsert(
+					{ label: 'playoffs', type: 'playoffs', period_start: new Date(), period_end: new Date() },
+					{ onConflict: 'label' }
+				)
+				.select('id')
+				.single();
+
+			const playoffsDatasetId = playoffsDataset?.id;
+			if (!playoffsDatasetId) throw new Error('Failed to upsert dataset for playoffs');
+
+			console.log(
+				`📚 Processing playoffs stats — datasetId=${playoffsDatasetId} rows=${playoffsNormalizedRecords.length}`
+			);
+
+			let playoffsUpsertedCount = 0;
+
+			for (const rec of playoffsNormalizedRecords) {
+				const playerName = rec.player;
+				if (!playerName) continue;
+
+				const player = await getOrCreatePlayer(playerName);
+				const team_id = await resolvePlayerTeamId(player.id);
+				const { player: _ignore, player_color: _ignore2, ...statFields } = rec;
+
+				const { error: psError } = await supabaseAdmin.from('player_stats').upsert(
+					{
+						dataset_id: playoffsDatasetId,
+						player_id: player.id,
+						team_id,
+						...statFields
+					},
+					{ onConflict: 'dataset_id,player_id' }
+				);
+
+				if (psError) {
+					console.error(`⚠️ Playoffs upsert error for ${playerName}:`, psError);
+				} else {
+					playoffsUpsertedCount++;
+				}
+			}
+
+			console.log(
+				`✅ Playoffs stats upsert complete — upserted ${playoffsUpsertedCount}/${playoffsNormalizedRecords.length} rows`
 			);
 		}
 

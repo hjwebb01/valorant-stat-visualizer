@@ -11,6 +11,7 @@ type TimePeriod =
 	| 'week6'
 	| 'week7'
 	| 'week8'
+	| 'playoffs'
 	| 'alltime';
 
 const getViewName = (period: TimePeriod): string => {
@@ -31,6 +32,8 @@ const getViewName = (period: TimePeriod): string => {
 			return 'v_player_stats_week7';
 		case 'week8':
 			return 'v_player_stats_week8';
+		case 'playoffs':
+			return 'v_player_stats_playoffs';
 		case 'alltime':
 		default:
 			return 'v_player_stats_alltime';

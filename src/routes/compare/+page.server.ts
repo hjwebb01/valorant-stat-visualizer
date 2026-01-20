@@ -1,10 +1,25 @@
 import { supabaseAdmin } from '$lib/server/supabaseAdmin';
 import type { Player } from '$lib/types';
 
-export const load = async () => {
+type TimePeriod = 'alltime' | 'playoffs';
+
+const getViewName = (period: TimePeriod): string => {
+	switch (period) {
+		case 'playoffs':
+			return 'v_player_stats_playoffs';
+		case 'alltime':
+		default:
+			return 'v_player_stats_alltime';
+	}
+};
+
+export const load = async ({ url }) => {
+	const period = (url.searchParams.get('period') as TimePeriod) || 'alltime';
+
 	try {
+		const viewName = getViewName(period);
 		const { data, error } = await supabaseAdmin
-			.from('v_player_stats_alltime')
+			.from(viewName)
 			.select('*')
 			.order('acs', { ascending: false });
 
@@ -38,16 +53,17 @@ export const load = async () => {
 							}
 						} catch (e) {}
 						return p;
-					})
+					}),
+					period
 				};
 			}
 		} catch (e) {
 			// ignore merge errors
 		}
 
-		return { players };
+		return { players, period };
 	} catch (err) {
 		console.error('Failed to load compare players', err);
-		return { players: [] };
+		return { players: [], period };
 	}
 };

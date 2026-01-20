@@ -29,6 +29,7 @@
 			| 'week6'
 			| 'week7'
 			| 'week8'
+			| 'playoffs'
 			| 'alltime';
 	} = {};
 
@@ -162,7 +163,8 @@
 								<option value="week6">Week 6</option>
 								<option value="week7">Week 7</option>
 								<option value="week8">Week 8</option>
-								<option value="alltime">All Time</option>
+								<option value="alltime">Regular Season</option>
+								<option value="playoffs">Playoffs</option>
 							</select>
 
 							<!-- chevron icon -->

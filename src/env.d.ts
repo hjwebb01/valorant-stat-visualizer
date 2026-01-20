@@ -9,6 +9,7 @@ declare module '$env/static/private' {
 	export const GOOGLE_SERVICE_KEY_PATH: string;
 	export const SHEET_ID_TEAMS: string;
 	export const SHEET_ID_STATS: string;
+	export const SHEET_ID_PLAYOFFS: string;
 }
 
 declare module '$env/dynamic/private' {
