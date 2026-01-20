@@ -36,16 +36,16 @@
 
 <style>
 	.button {
-		padding: 1.1rem 2.8rem;
-		font-size: 1.2rem;
+		padding: 0.6rem 1.6rem;
+		font-size: 0.95rem;
 		font-weight: 600;
-		border-radius: 10px;
+		border-radius: 8px;
 		border: none;
 		cursor: pointer;
 		transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-		box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+		box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
 		text-transform: uppercase;
-		letter-spacing: 0.08em;
+		letter-spacing: 0.06em;
 		outline: none;
 	}
 
