@@ -16,7 +16,7 @@
 	import NavigationMenu from './ui/navigation-menu/navigation-menu.svelte';
 
 	// Icons from lucide
-	import { Home, Trophy, Menu, GitBranch } from '@lucide/svelte';
+	import { Home, Trophy, Menu, GitBranch, BarChart3 } from '@lucide/svelte';
 	import { Users } from '@lucide/svelte';
 	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
 	import { isLoggedIn } from '$lib/bracket_store/auth';
@@ -70,6 +70,15 @@
 						>
 							<Users size={18} />
 							<span>Compare</span>
+						</NavigationMenuLink>
+					</NavigationMenuItem>
+					<NavigationMenuItem>
+						<NavigationMenuLink
+							href="/visuals"
+							class="flex items-center gap-2 rounded-md px-3 py-2 transition-colors"
+						>
+							<BarChart3 size={18} />
+							<span>Visuals</span>
 						</NavigationMenuLink>
 					</NavigationMenuItem>
 					<NavigationMenuItem>
@@ -139,6 +148,15 @@
 								>
 									<Users size={18} />
 									<span>Compare</span>
+								</a>
+							</li>
+							<li>
+								<a
+									href="/visuals"
+									class="hover:bg-accent hover:text-accent-foreground flex items-center gap-2 rounded-md px-3 py-2"
+								>
+									<BarChart3 size={18} />
+									<span>Visuals</span>
 								</a>
 							</li>
 							<li>
