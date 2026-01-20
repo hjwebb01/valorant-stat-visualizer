@@ -203,8 +203,8 @@
 							<option value="week6">Week 6</option>
 							<option value="week7">Week 7</option>
 							<option value="week8">Week 8</option>
-						<option value="alltime">Regular Season</option>
-						<option value="playoffs">Playoffs</option>
+							<option value="alltime">Regular Season</option>
+							<option value="playoffs">Playoffs</option>
 						</select>
 
 						<svg

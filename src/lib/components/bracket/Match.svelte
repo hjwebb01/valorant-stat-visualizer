@@ -70,7 +70,8 @@
 		const predictionStatus = getPredictionStatus(match);
 
 		if (predictionStatus === 'pending') {
-			if (match.winner && match.winner.name === team.name) return 'border-foreground ring-primary ring-2';
+			if (match.winner && match.winner.name === team.name)
+				return 'border-foreground ring-primary ring-2';
 			if (match.winner) return 'opacity-50';
 			return 'hover:bg-accent cursor-pointer';
 		}
