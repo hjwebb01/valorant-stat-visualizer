@@ -1,7 +1,12 @@
 import { json } from '@sveltejs/kit';
 import { google } from 'googleapis';
 import { supabaseAdmin } from '$lib/server/supabaseAdmin';
-import { SHEET_ID_TEAMS, SHEET_ID_STATS, SHEET_ID_PLAYOFFS, GOOGLE_SERVICE_KEY_PATH } from '$env/static/private';
+import {
+	SHEET_ID_TEAMS,
+	SHEET_ID_STATS,
+	SHEET_ID_PLAYOFFS,
+	GOOGLE_SERVICE_KEY_PATH
+} from '$env/static/private';
 
 /* ==========================================================
    RANK MAP (color → tier)

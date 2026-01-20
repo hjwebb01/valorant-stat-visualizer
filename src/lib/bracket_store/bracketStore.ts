@@ -14,15 +14,11 @@ import {
 // Re-export types for external consumers
 export type { Team, Match, MatchState, BracketPicksExport, BracketMatchId };
 
-export {
-	checkUserHasBracket,
-	loadBracketFromDatabase
-} from './bracketDatabase';
+export { checkUserHasBracket, loadBracketFromDatabase } from './bracketDatabase';
 
 // UI State stores
 export const bracketLoading = writable<boolean>(false);
 export const bracketError = writable<string | null>(null);
-
 
 // Main store
 export const matches = writable<MatchState>(createInitialMatches());
@@ -97,7 +93,7 @@ export function setWinner(matchId: BracketMatchId, team: Team): boolean {
 
 	matches.update((state) => {
 		const newState = applyWinnerToState(state, matchId, team);
-		
+
 		if (newState === null) {
 			bracketError.set(`Failed to set winner for match ${matchId}.`);
 			return state;
@@ -110,4 +106,3 @@ export function setWinner(matchId: BracketMatchId, team: Team): boolean {
 
 	return success;
 }
-

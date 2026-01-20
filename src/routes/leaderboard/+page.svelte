@@ -11,7 +11,20 @@
 	import profilePicture from '$lib/assets/fatpig.jpg';
 	import './+page.css';
 
-	export let data: { players: Player[]; period?: 'week1' | 'week2' | 'week3' | 'week4' | 'week5' | 'week6' | 'week7' | 'week8' | 'playoffs' | 'alltime' };
+	export let data: {
+		players: Player[];
+		period?:
+			| 'week1'
+			| 'week2'
+			| 'week3'
+			| 'week4'
+			| 'week5'
+			| 'week6'
+			| 'week7'
+			| 'week8'
+			| 'playoffs'
+			| 'alltime';
+	};
 	let players: Player[] = [];
 	$: players = data.players ?? [];
 	let selectedPeriod = $page.url.searchParams.get('period') || 'alltime';

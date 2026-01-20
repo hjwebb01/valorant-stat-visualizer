@@ -29,12 +29,12 @@
 		STD: stdLogo,
 		TBC: tbcLogo
 	};
-	
+
 	let showLive = $state(false);
 	let predictionBracket = $derived($matches);
 	let liveBracket = $derived(buildLiveBracketFromReferenceWinners());
 	let displayedBracket = $derived(showLive ? liveBracket : predictionBracket);
-	
+
 	let championName = $derived(displayedBracket['GF']?.winner?.name ?? null);
 	let championTag = $derived(displayedBracket['GF']?.winner?.tag ?? null);
 	let score = $derived(calculateBracketScore($matches));
@@ -50,26 +50,27 @@
 
 	function buildLiveBracketFromReferenceWinners(): MatchState {
 		let state = createInitialMatches();
-		
+
 		for (const matchId of MATCH_ORDER) {
 			const winnerTag = REFERENCE_WINNERS[matchId];
 			if (winnerTag === 'tbd') continue;
-			
+
 			const match = state[matchId];
 			if (!match?.team1 || !match?.team2) continue;
-			
-			const team = match.team1.tag === winnerTag 
-				? match.team1 
-				: match.team2.tag === winnerTag 
-					? match.team2 
-					: null;
-			
+
+			const team =
+				match.team1.tag === winnerTag
+					? match.team1
+					: match.team2.tag === winnerTag
+						? match.team2
+						: null;
+
 			if (!team) continue;
-			
+
 			const newState = applyWinnerToState(state, matchId, team);
 			if (newState) state = newState;
 		}
-		
+
 		return state;
 	}
 </script>
@@ -81,7 +82,11 @@
 		{:else}
 			<h1 class="text-foreground text-2xl font-bold">Predicted Tournament Bracket</h1>
 		{/if}
-		<Button variant="toggle" data-state={showLive ? 'active' : 'inactive'} onclick={revealLiveBracket}>
+		<Button
+			variant="toggle"
+			data-state={showLive ? 'active' : 'inactive'}
+			onclick={revealLiveBracket}
+		>
 			{showLive ? 'Show My Predictions' : 'Show Live Results'}
 		</Button>
 	</div>
@@ -133,17 +138,52 @@
 					<h2 class="text-muted-foreground mb-4 text-sm font-semibold uppercase">Upper Bracket</h2>
 					<div class="flex items-center gap-16">
 						<div class="flex flex-col gap-8">
-							<Match match={displayedBracket['U1']} userPrediction={showLive ? predictionBracket['U1'] : undefined} onSetWinner={setWinner} viewMode={showLive ? 'live' : 'prediction'} />
-							<Match match={displayedBracket['U2']} userPrediction={showLive ? predictionBracket['U2'] : undefined} onSetWinner={setWinner} viewMode={showLive ? 'live' : 'prediction'} />
-							<Match match={displayedBracket['U3']} userPrediction={showLive ? predictionBracket['U3'] : undefined} onSetWinner={setWinner} viewMode={showLive ? 'live' : 'prediction'} />
-							<Match match={displayedBracket['U4']} userPrediction={showLive ? predictionBracket['U4'] : undefined} onSetWinner={setWinner} viewMode={showLive ? 'live' : 'prediction'} />
+							<Match
+								match={displayedBracket['U1']}
+								userPrediction={showLive ? predictionBracket['U1'] : undefined}
+								onSetWinner={setWinner}
+								viewMode={showLive ? 'live' : 'prediction'}
+							/>
+							<Match
+								match={displayedBracket['U2']}
+								userPrediction={showLive ? predictionBracket['U2'] : undefined}
+								onSetWinner={setWinner}
+								viewMode={showLive ? 'live' : 'prediction'}
+							/>
+							<Match
+								match={displayedBracket['U3']}
+								userPrediction={showLive ? predictionBracket['U3'] : undefined}
+								onSetWinner={setWinner}
+								viewMode={showLive ? 'live' : 'prediction'}
+							/>
+							<Match
+								match={displayedBracket['U4']}
+								userPrediction={showLive ? predictionBracket['U4'] : undefined}
+								onSetWinner={setWinner}
+								viewMode={showLive ? 'live' : 'prediction'}
+							/>
 						</div>
 						<div class="flex flex-col gap-32">
-							<Match match={displayedBracket['U5']} userPrediction={showLive ? predictionBracket['U5'] : undefined} onSetWinner={setWinner} viewMode={showLive ? 'live' : 'prediction'} />
-							<Match match={displayedBracket['U6']} userPrediction={showLive ? predictionBracket['U6'] : undefined} onSetWinner={setWinner} viewMode={showLive ? 'live' : 'prediction'} />
+							<Match
+								match={displayedBracket['U5']}
+								userPrediction={showLive ? predictionBracket['U5'] : undefined}
+								onSetWinner={setWinner}
+								viewMode={showLive ? 'live' : 'prediction'}
+							/>
+							<Match
+								match={displayedBracket['U6']}
+								userPrediction={showLive ? predictionBracket['U6'] : undefined}
+								onSetWinner={setWinner}
+								viewMode={showLive ? 'live' : 'prediction'}
+							/>
 						</div>
 						<div class="flex flex-col justify-center">
-							<Match match={displayedBracket['U7']} userPrediction={showLive ? predictionBracket['U7'] : undefined} onSetWinner={setWinner} viewMode={showLive ? 'live' : 'prediction'} />
+							<Match
+								match={displayedBracket['U7']}
+								userPrediction={showLive ? predictionBracket['U7'] : undefined}
+								onSetWinner={setWinner}
+								viewMode={showLive ? 'live' : 'prediction'}
+							/>
 						</div>
 						<div class="relative ml-8 flex flex-col justify-center">
 							<h2
@@ -151,7 +191,12 @@
 							>
 								Grand Final
 							</h2>
-							<Match match={displayedBracket['GF']} userPrediction={showLive ? predictionBracket['GF'] : undefined} onSetWinner={setWinner} viewMode={showLive ? 'live' : 'prediction'} />
+							<Match
+								match={displayedBracket['GF']}
+								userPrediction={showLive ? predictionBracket['GF'] : undefined}
+								onSetWinner={setWinner}
+								viewMode={showLive ? 'live' : 'prediction'}
+							/>
 						</div>
 					</div>
 				</div>
@@ -160,18 +205,48 @@
 					<h2 class="text-muted-foreground mb-4 text-sm font-semibold uppercase">Lower Bracket</h2>
 					<div class="flex items-center gap-16">
 						<div class="flex flex-col gap-4">
-							<Match match={displayedBracket['L1']} userPrediction={showLive ? predictionBracket['L1'] : undefined} onSetWinner={setWinner} viewMode={showLive ? 'live' : 'prediction'} />
-							<Match match={displayedBracket['L2']} userPrediction={showLive ? predictionBracket['L2'] : undefined} onSetWinner={setWinner} viewMode={showLive ? 'live' : 'prediction'} />
+							<Match
+								match={displayedBracket['L1']}
+								userPrediction={showLive ? predictionBracket['L1'] : undefined}
+								onSetWinner={setWinner}
+								viewMode={showLive ? 'live' : 'prediction'}
+							/>
+							<Match
+								match={displayedBracket['L2']}
+								userPrediction={showLive ? predictionBracket['L2'] : undefined}
+								onSetWinner={setWinner}
+								viewMode={showLive ? 'live' : 'prediction'}
+							/>
 						</div>
 						<div class="-mt-16 flex flex-col gap-4">
-							<Match match={displayedBracket['L3']} userPrediction={showLive ? predictionBracket['L3'] : undefined} onSetWinner={setWinner} viewMode={showLive ? 'live' : 'prediction'} />
-							<Match match={displayedBracket['L4']} userPrediction={showLive ? predictionBracket['L4'] : undefined} onSetWinner={setWinner} viewMode={showLive ? 'live' : 'prediction'} />
+							<Match
+								match={displayedBracket['L3']}
+								userPrediction={showLive ? predictionBracket['L3'] : undefined}
+								onSetWinner={setWinner}
+								viewMode={showLive ? 'live' : 'prediction'}
+							/>
+							<Match
+								match={displayedBracket['L4']}
+								userPrediction={showLive ? predictionBracket['L4'] : undefined}
+								onSetWinner={setWinner}
+								viewMode={showLive ? 'live' : 'prediction'}
+							/>
 						</div>
 						<div class="-mt-20 flex flex-col justify-center">
-							<Match match={displayedBracket['L5']} userPrediction={showLive ? predictionBracket['L5'] : undefined} onSetWinner={setWinner} viewMode={showLive ? 'live' : 'prediction'} />
+							<Match
+								match={displayedBracket['L5']}
+								userPrediction={showLive ? predictionBracket['L5'] : undefined}
+								onSetWinner={setWinner}
+								viewMode={showLive ? 'live' : 'prediction'}
+							/>
 						</div>
 						<div class="-mt-28 ml-8 flex flex-col justify-center">
-							<Match match={displayedBracket['L8']} userPrediction={showLive ? predictionBracket['L8'] : undefined} onSetWinner={setWinner} viewMode={showLive ? 'live' : 'prediction'} />
+							<Match
+								match={displayedBracket['L8']}
+								userPrediction={showLive ? predictionBracket['L8'] : undefined}
+								onSetWinner={setWinner}
+								viewMode={showLive ? 'live' : 'prediction'}
+							/>
 						</div>
 					</div>
 				</div>
