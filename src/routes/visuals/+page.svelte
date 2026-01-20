@@ -3,8 +3,13 @@
 	import { onMount } from 'svelte';
 	import { goto, invalidateAll } from '$app/navigation';
 	import type { Player } from '$lib/types';
+	import CombinedPerformanceDelta from '$lib/charts/CombinedPerformanceDelta.svelte';
 
-	export let data: { players: Player[]; period: 'alltime' | 'playoffs' };
+	export let data: {
+		players: Player[];
+		period: 'alltime' | 'playoffs';
+		performanceDeltas: any[];
+	};
 
 	let selectedPeriod: 'alltime' | 'playoffs' = data.period;
 	let players: Array<Player & { rank_group: string }> = [];
@@ -476,4 +481,33 @@
 		</div>
 		<svg bind:this={svgScatter} class="w-full"></svg>
 	</div>
+
+	{#if data.performanceDeltas && data.performanceDeltas.length > 0}
+		<div class="border-border bg-card space-y-4 rounded-lg border p-4 shadow-sm">
+			<div class="flex items-center justify-between">
+				<div>
+					<h2 class="text-foreground text-lg font-semibold">Performance Delta Analysis</h2>
+					<p class="text-muted-foreground mt-1 text-sm">
+						Combined z-score comparison of playoff vs regular season performance for all players.
+					</p>
+				</div>
+			</div>
+			<CombinedPerformanceDelta players={data.performanceDeltas} />
+			<div class="text-muted-foreground mt-4 space-y-1 text-xs">
+				<p><strong>How to read:</strong></p>
+				<ul class="ml-2 list-inside list-disc space-y-1">
+					<li>
+						<strong>Combined z-score</strong> = average of ACS and KAST z-score deltas (normalizes both
+						metrics to same scale)
+					</li>
+					<li>Green bars = improved performance in playoffs (positive combined delta)</li>
+					<li>Red bars = declined performance in playoffs (negative combined delta)</li>
+					<li>σ (sigma) represents standard deviations from league average</li>
+					<li>
+						<strong>±0.5σ or more</strong> = significant change in overall performance
+					</li>
+				</ul>
+			</div>
+		</div>
+	{/if}
 </section>

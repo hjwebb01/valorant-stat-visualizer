@@ -1,5 +1,6 @@
 import { supabaseAdmin } from '$lib/server/supabaseAdmin';
 import type { Player } from '$lib/types';
+import { calculateLeagueStats } from '$lib/utils/statsHelpers';
 
 type TimePeriod = 'alltime' | 'playoffs';
 
@@ -64,5 +65,79 @@ export const load = async ({ url }) => {
 		console.log('Sample player:', players[0]);
 	}
 
-	return { players, period };
+	// Fetch performance delta data for all players who have both regular season and playoff stats
+	let performanceDeltas: any[] = [];
+	try {
+		// Get all regular season stats
+		const { data: regularStats } = await supabaseAdmin
+			.from('v_player_stats_alltime')
+			.select('player_id, player, acs, kast_pct');
+
+		// Get all playoff stats
+		const { data: playoffStats } = await supabaseAdmin
+			.from('v_player_stats_playoffs')
+			.select('player_id, player, acs, kast_pct');
+
+		if (regularStats && playoffStats && regularStats.length > 0) {
+			// Calculate league stats from regular season
+			const leagueStats = calculateLeagueStats(
+				regularStats
+					.filter((s: any) => s.acs != null && s.kast_pct != null)
+					.map((s: any) => ({
+						acs: s.acs,
+						kastPct: s.kast_pct
+					}))
+			);
+
+			// Create map of playoff stats by player_id
+			const playoffMap = new Map(
+				playoffStats
+					.filter((p: any) => p.player_id && p.acs != null && p.kast_pct != null)
+					.map((p: any) => [p.player_id, p])
+			);
+
+			// Calculate deltas for players who have both regular and playoff stats
+			performanceDeltas = regularStats
+				.filter(
+					(r: any) =>
+						r.player_id && r.acs != null && r.kast_pct != null && playoffMap.has(r.player_id)
+				)
+				.map((r: any) => {
+					const p = playoffMap.get(r.player_id);
+
+					// Calculate Z-scores
+					const acsRegularZ = (r.acs - leagueStats.acs.mean) / leagueStats.acs.stdDev;
+					const acsPlayoffZ = (p.acs - leagueStats.acs.mean) / leagueStats.acs.stdDev;
+					const kastRegularZ = (r.kast_pct - leagueStats.kast.mean) / leagueStats.kast.stdDev;
+					const kastPlayoffZ = (p.kast_pct - leagueStats.kast.mean) / leagueStats.kast.stdDev;
+
+					const acsZDelta = acsPlayoffZ - acsRegularZ;
+					const kastZDelta = kastPlayoffZ - kastRegularZ;
+
+					// Combined z-score delta (average of both metrics)
+					const combinedZDelta = (acsZDelta + kastZDelta) / 2;
+
+					return {
+						playerId: r.player_id,
+						playerName: r.player,
+						combinedZDelta,
+						acsZDelta,
+						kastZDelta,
+						regularSeasonStats: {
+							acs: r.acs,
+							kastPct: r.kast_pct
+						},
+						playoffStats: {
+							acs: p.acs,
+							kastPct: p.kast_pct
+						}
+					};
+				})
+				.sort((a: any, b: any) => b.combinedZDelta - a.combinedZDelta);
+		}
+	} catch (e) {
+		console.warn('Failed to load performance deltas:', e);
+	}
+
+	return { players, period, performanceDeltas };
 };
