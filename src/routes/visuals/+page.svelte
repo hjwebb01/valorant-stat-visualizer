@@ -40,12 +40,12 @@
 			console.log('All player keys:', keys);
 			console.log('Number of keys:', keys.length);
 			// Check for rank-related fields
-			const rankKeys = keys.filter(k => k.toLowerCase().includes('rank'));
+			const rankKeys = keys.filter((k) => k.toLowerCase().includes('rank'));
 			console.log('Rank-related keys:', rankKeys);
-			rankKeys.forEach(k => {
+			rankKeys.forEach((k) => {
 				console.log(`${k}:`, (players[0] as any)[k]);
 			});
-			const rankGroups = [...new Set(players.map(p => p.rank_group))];
+			const rankGroups = [...new Set(players.map((p) => p.rank_group))];
 			console.log('Unique rank groups:', rankGroups);
 		}
 		console.log('Filtered players:', filtered.length);
@@ -88,9 +88,11 @@
 		const points = data.filter(
 			(d) => Number.isFinite(Number((d as any).acs)) && Number.isFinite(Number((d as any).kast_pct))
 		);
-		
+
 		// Get unique ranks that actually exist in the data
-		const existingRanks = [...new Set(points.map(d => d.rank_group))].filter(r => r !== 'other' && r !== 'unranked');
+		const existingRanks = [...new Set(points.map((d) => d.rank_group))].filter(
+			(r) => r !== 'other' && r !== 'unranked'
+		);
 		const width = 960;
 		const height = 500;
 		const margin = { top: 30, right: 30, bottom: 100, left: 70 };
@@ -136,7 +138,7 @@
 		const kastVals = points.map((d) => Number((d as any).kast_pct));
 		let xDomain = d3.extent(acsVals) as [number, number];
 		let yDomain = d3.extent(kastVals) as [number, number];
-		
+
 		// Add padding when showing a single rank for better spacing
 		const showLabels = existingRanks.length === 1;
 		if (showLabels) {
@@ -150,7 +152,7 @@
 		// Always add a bit of headroom so points are not flush with the top
 		const yPad = (yDomain[1] - yDomain[0]) * 0.05;
 		yDomain = [yDomain[0], yDomain[1] + yPad];
-		
+
 		let x = d3
 			.scaleLinear()
 			.domain([xDomain[0] ?? 0, xDomain[1] ?? 1])
@@ -177,7 +179,10 @@
 		const leftAxisGroup = g.append('g').attr('class', 'y-axis');
 		leftAxisGroup.call(d3.axisLeft(y)).selectAll('text').style('font-size', '10px');
 
-		const bottomAxisGroup = g.append('g').attr('class', 'x-axis').attr('transform', `translate(0,${innerH})`);
+		const bottomAxisGroup = g
+			.append('g')
+			.attr('class', 'x-axis')
+			.attr('transform', `translate(0,${innerH})`);
 		bottomAxisGroup.call(d3.axisBottom(x)).selectAll('text').style('font-size', '10px');
 
 		g.append('text')
@@ -222,15 +227,15 @@
 			.attr('opacity', 0.7)
 			.style('cursor', 'pointer')
 			.style('pointer-events', 'auto')
-			.on('mouseenter', function(event, d) {
+			.on('mouseenter', function (event, d) {
 				const acs = Number((d as any).acs);
 				const kast = Number((d as any).kast_pct);
 				tooltip
 					.style('opacity', '1')
 					.html(
 						`<div style="font-weight:600; margin-bottom:4px;">${(d as any).player}</div>` +
-						`<div>ACS: ${Number.isFinite(acs) ? acs.toFixed(1) : 'N/A'}</div>` +
-						`<div>KAST: ${Number.isFinite(kast) ? kast.toFixed(1) : 'N/A'}%</div>`
+							`<div>ACS: ${Number.isFinite(acs) ? acs.toFixed(1) : 'N/A'}</div>` +
+							`<div>KAST: ${Number.isFinite(kast) ? kast.toFixed(1) : 'N/A'}%</div>`
 					);
 				d3.select(this)
 					.transition()
@@ -239,12 +244,10 @@
 					.attr('opacity', 1)
 					.attr('stroke-width', 2);
 			})
-			.on('mousemove', function(event) {
-				tooltip
-					.style('left', `${event.pageX + 12}px`)
-					.style('top', `${event.pageY - 32}px`);
+			.on('mousemove', function (event) {
+				tooltip.style('left', `${event.pageX + 12}px`).style('top', `${event.pageY - 32}px`);
 			})
-			.on('mouseleave', function() {
+			.on('mouseleave', function () {
 				tooltip.style('opacity', '0');
 				d3.select(this)
 					.transition()
@@ -286,10 +289,17 @@
 		}
 
 		// Add zoom functionality attached to overlay (circles stay interactive on top)
-		const zoom = d3.zoom<SVGRectElement, unknown>()
+		const zoom = d3
+			.zoom<SVGRectElement, unknown>()
 			.scaleExtent([1, 8])
-			.translateExtent([[0, 0], [innerW, innerH]])
-			.extent([[0, 0], [innerW, innerH]])
+			.translateExtent([
+				[0, 0],
+				[innerW, innerH]
+			])
+			.extent([
+				[0, 0],
+				[innerW, innerH]
+			])
 			.on('zoom', (event) => {
 				const newX = event.transform.rescaleX(x);
 				const newY = event.transform.rescaleY(y);
@@ -344,7 +354,7 @@
 
 		// Position legend items with dynamic spacing based on precomputed widths
 		let xPos = 0;
-		legend.attr('transform', function(_, i) {
+		legend.attr('transform', function (_, i) {
 			const pos = xPos;
 			xPos += legendWidths[i];
 			return `translate(${pos}, 0)`;
@@ -398,20 +408,22 @@
 	<title>Visuals | ACS vs KAST</title>
 </svelte:head>
 
-<section class="mx-auto max-w-6xl px-4 py-6 space-y-6">
+<section class="mx-auto max-w-6xl space-y-6 px-4 py-6">
 	<div class="flex flex-wrap items-center justify-between gap-3">
 		<div>
-			<h1 class="text-2xl font-semibold text-foreground">Visuals</h1>
-			<p class="text-sm text-muted-foreground">ACS and KAST across all players, filter by rank groups.</p>
+			<h1 class="text-foreground text-2xl font-semibold">Visuals</h1>
+			<p class="text-muted-foreground text-sm">
+				ACS and KAST across all players, filter by rank groups.
+			</p>
 		</div>
 		<div class="flex flex-wrap gap-3">
-			<div class="flex gap-2 items-center">
+			<div class="flex items-center gap-2">
 				<button
 					on:click={() => changePeriod('alltime')}
 					class={`rounded-md px-3 py-1 text-sm font-medium transition-colors ${
 						selectedPeriod === 'alltime'
-							? 'border border-primary text-primary bg-card'
-							: 'border border-border text-muted-foreground bg-card hover:bg-accent'
+							? 'border-primary text-primary bg-card border'
+							: 'border-border text-muted-foreground bg-card hover:bg-accent border'
 					}`}
 				>
 					Regular Season
@@ -420,8 +432,8 @@
 					on:click={() => changePeriod('playoffs')}
 					class={`rounded-md px-3 py-1 text-sm font-medium transition-colors ${
 						selectedPeriod === 'playoffs'
-							? 'border border-primary text-primary bg-card'
-							: 'border border-border text-muted-foreground bg-card hover:bg-accent'
+							? 'border-primary text-primary bg-card border'
+							: 'border-border text-muted-foreground bg-card hover:bg-accent border'
 					}`}
 				>
 					Playoffs
@@ -430,8 +442,8 @@
 					on:click={() => (showTrendline = !showTrendline)}
 					class={`rounded-md px-3 py-1 text-sm font-medium transition-colors ${
 						showTrendline
-							? 'border border-primary text-primary bg-card'
-							: 'border border-border text-muted-foreground bg-card hover:bg-accent'
+							? 'border-primary text-primary bg-card border'
+							: 'border-border text-muted-foreground bg-card hover:bg-accent border'
 					}`}
 				>
 					Line of best fit
@@ -439,7 +451,7 @@
 			</div>
 			<div class="flex flex-wrap gap-2">
 				{#each rankOrder as r}
-					<label class="flex items-center gap-2 rounded-md border border-border px-2 py-1 text-sm">
+					<label class="border-border flex items-center gap-2 rounded-md border px-2 py-1 text-sm">
 						<input
 							type="checkbox"
 							checked={selectedRanks.has(r)}
@@ -447,7 +459,8 @@
 							class="accent-primary"
 						/>
 						<span class="inline-flex items-center gap-1">
-							<span class="h-3 w-3 rounded-sm" style={`background:${rankColors[r] ?? '#999'}`}></span>
+							<span class="h-3 w-3 rounded-sm" style={`background:${rankColors[r] ?? '#999'}`}
+							></span>
 							{r.charAt(0).toUpperCase() + r.slice(1)}
 						</span>
 					</label>
@@ -456,10 +469,10 @@
 		</div>
 	</div>
 
-	<div class="space-y-4 rounded-lg border border-border bg-card p-4 shadow-sm">
+	<div class="border-border bg-card space-y-4 rounded-lg border p-4 shadow-sm">
 		<div class="flex items-center justify-between">
-			<h2 class="text-lg font-semibold text-foreground">ACS vs KAST</h2>
-			<p class="text-sm text-muted-foreground">Scatter plot colored by rank group.</p>
+			<h2 class="text-foreground text-lg font-semibold">ACS vs KAST</h2>
+			<p class="text-muted-foreground text-sm">Scatter plot colored by rank group.</p>
 		</div>
 		<svg bind:this={svgScatter} class="w-full"></svg>
 	</div>
