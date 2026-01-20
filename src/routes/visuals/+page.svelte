@@ -494,18 +494,15 @@
 			</div>
 			<CombinedPerformanceDelta players={data.performanceDeltas} />
 			<div class="text-muted-foreground mt-4 space-y-1 text-xs">
-				<p><strong>How to read:</strong></p>
+				<p><strong>What the numbers mean:</strong></p>
 				<ul class="ml-2 list-inside list-disc space-y-1">
 					<li>
-						<strong>Combined z-score</strong> = average of ACS and KAST z-score deltas (normalizes both
-						metrics to same scale)
+						Numbers represent <strong>standard deviations</strong> from league average (σ)
 					</li>
-					<li>Green bars = improved performance in playoffs (positive combined delta)</li>
-					<li>Red bars = declined performance in playoffs (negative combined delta)</li>
-					<li>σ (sigma) represents standard deviations from league average</li>
 					<li>
-						<strong>±0.5σ or more</strong> = significant change in overall performance
+						<strong>±0.5σ or more</strong> = significant difference in performance
 					</li>
+					<li>Combines both ACS and KAST stats into one number for easy comparison</li>
 				</ul>
 			</div>
 		</div>

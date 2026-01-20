@@ -165,7 +165,7 @@
 			.attr('fill', 'currentColor')
 			.attr('font-size', '16px')
 			.attr('font-weight', 'bold')
-			.text('Playoff Performance Delta (Combined Z-Score)');
+			.text('How Players Performed in Playoffs vs Regular Season');
 
 		svg
 			.append('text')
@@ -175,11 +175,13 @@
 			.attr('fill', 'currentColor')
 			.attr('font-size', '12px')
 			.attr('opacity', 0.7)
-			.text('Top & bottom performers ranked by average of ACS and KAST z-score changes');
+			.text(
+				'Green = better in playoffs | Red = worse in playoffs | Bars show overall performance change'
+			);
 
 		// Cleanup on destroy
 		return () => {
-			toolti`All ${displayPlayers.length} players ranked by average of ACS and KAST z-score changes`;
+			tooltip.remove();
 		};
 	}
 
@@ -190,7 +192,7 @@
 	$: (players, maxPlayers, draw());
 </script>
 
-<div bind:this={container} class="text-foreground overflow-x-auto"></div>
+<div bind:this={container} class="text-foreground flex justify-center"></div>
 
 <style>
 	div {
