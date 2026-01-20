@@ -3,13 +3,13 @@ import { json } from '@sveltejs/kit';
 import { supabaseAdmin } from '$lib/server/supabaseAdmin';
 
 export async function GET({ url }) {
-	const label = url.searchParams.get('label') ?? 'All-Time';
+	const label = url.searchParams.get('label') ?? 'Regular Season';
 	console.log(`📊 API: fetching leaderboard for ${label}`);
 
 	try {
 		let players: any[] = [];
 
-		if (label === 'All-Time') {
+		if (label === 'Regular Season' || label === 'All-Time') {
 			// Use the aggregated all-time view
 			const { data, error } = await supabaseAdmin
 				.from('v_player_stats_alltime')

@@ -1,10 +1,13 @@
 <script lang="ts">
 	import PercentileCard from '$lib/components/PercentileCard.svelte';
+	import { goto } from '$app/navigation';
 	import type { Player } from '$lib/types';
 	import { percentileRank, toPercent } from '$lib/utils';
 
-	export let data: { players: Player[] };
+	export let data: { players: Player[]; period?: 'alltime' | 'playoffs' };
 	let players: Player[] = data.players ?? [];
+	let selectedPeriod = data.period || 'alltime';
+	let currentPeriod = selectedPeriod;
 
 	const playerKey = (p: any) => {
 		if (!p) return '';
@@ -39,6 +42,19 @@
 	let selected1: Player | null = null;
 	let selected2: Player | null = null;
 
+	// When server data/period changes, refresh list and reset selections/search
+	$: if (data && data.period !== currentPeriod) {
+		currentPeriod = data.period || 'alltime';
+		selectedPeriod = currentPeriod;
+		players = data.players ?? [];
+		selected1 = null;
+		selected2 = null;
+		query1 = '';
+		query2 = '';
+		open1 = false;
+		open2 = false;
+	}
+
 	$: percentiles1 = selected1 ? computeSelectedPercentiles(selected1, sortedPlayers) : {};
 	$: percentiles2 = selected2 ? computeSelectedPercentiles(selected2, sortedPlayers) : {};
 
@@ -57,6 +73,20 @@
 	let query2 = '';
 	let open1 = false;
 	let open2 = false;
+	let dropdown1Ref: HTMLDivElement | null = null;
+	let dropdown2Ref: HTMLDivElement | null = null;
+
+	// Close dropdowns when clicking outside
+	import { onMount } from 'svelte';
+	onMount(() => {
+		const handlePointerDown = (e: PointerEvent) => {
+			const t = e.target as Node | null;
+			if (dropdown1Ref && !dropdown1Ref.contains(t)) open1 = false;
+			if (dropdown2Ref && !dropdown2Ref.contains(t)) open2 = false;
+		};
+		document.addEventListener('pointerdown', handlePointerDown, true);
+		return () => document.removeEventListener('pointerdown', handlePointerDown, true);
+	});
 
 	$: filtered1 = (() => {
 		const q = (query1 ?? '').toLowerCase().trim();
@@ -118,10 +148,24 @@
 </script>
 
 <div class="mx-auto max-w-5xl px-4 py-3">
-	<h1 class="mb-3 text-xl font-semibold">Compare Players</h1>
+	<div class="mb-4 flex items-center justify-between">
+		<h1 class="text-xl font-semibold">Compare Players</h1>
+		<div class="flex items-center gap-2">
+			<label for="period-select" class="text-sm font-medium">Period:</label>
+			<select
+				id="period-select"
+				class="border-border bg-card text-foreground focus:ring-primary focus:border-primary appearance-none rounded-md border px-3 py-1 text-sm shadow-sm focus:ring-2 focus:outline-none"
+				bind:value={selectedPeriod}
+				on:change={(e) => goto(`?period=${(e.currentTarget as HTMLSelectElement).value}`)}
+			>
+				<option value="alltime">Regular Season</option>
+				<option value="playoffs">Playoffs</option>
+			</select>
+		</div>
+	</div>
 
 	<div class="mb-4 grid items-start gap-2 md:grid-cols-2">
-		<div class="relative flex-1">
+		<div class="relative flex-1" bind:this={dropdown1Ref}>
 			<label for="player1-input" class="text-muted-foreground mb-1 block text-sm font-medium"
 				>Player 1</label
 			>
@@ -165,7 +209,7 @@
 			{/if}
 		</div>
 
-		<div class="relative flex-1">
+		<div class="relative flex-1" bind:this={dropdown2Ref}>
 			<label for="player2-input" class="text-muted-foreground mb-1 block text-sm font-medium"
 				>Player 2</label
 			>
