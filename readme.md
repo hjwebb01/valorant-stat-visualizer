@@ -18,9 +18,9 @@ A full-stack esports analytics dashboard built for a private amateur Valorant le
 
 *Add screenshots here to showcase the dashboard:*
 
-| Dashboard | Leaderboard | Bracket |
-|-----------|-------------|---------|
-| ![Dashboard](docs/screenshots/dashboard.png) | ![Leaderboard](docs/screenshots/leaderboard.png) | ![Bracket](docs/screenshots/bracket.png) |
+| Dashboard | Leaderboard | Bracket | Visuals |
+|-----------|-------------|---------|---------|
+| ![Dashboard](docs/screenshots/dashboard.png) | ![Leaderboard](docs/screenshots/leaderboard.png) | ![Bracket](docs/screenshots/bracket.png) | ![Visuals](docs/screenshots/visuals.png) |
 
 ---
 
@@ -46,7 +46,6 @@ A full-stack esports analytics dashboard built for a private amateur Valorant le
 | **Authentication** | Supabase Auth with Google OAuth |
 | **Data Pipeline** | Google Sheets API, Node.js cron jobs |
 | **Deployment** | Vercel with automated deployments |
-| **Monitoring** | Sentry error tracking |
 | **Testing** | Vitest, Playwright E2E |
 
 ---
