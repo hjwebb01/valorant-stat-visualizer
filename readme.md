@@ -16,8 +16,6 @@ A full-stack esports analytics dashboard built for a private amateur Valorant le
 
 ## Screenshots
 
-*Add screenshots here to showcase the dashboard:*
-
 | Dashboard | Leaderboard | Bracket | Visuals |
 |-----------|-------------|---------|---------|
 | ![Dashboard](docs/screenshots/dashboard.png) | ![Leaderboard](docs/screenshots/leaderboard.png) | ![Bracket](docs/screenshots/bracket.png) | ![Visuals](docs/screenshots/visuals.png) |
